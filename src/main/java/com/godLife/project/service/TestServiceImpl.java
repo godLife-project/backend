@@ -1,5 +1,6 @@
 package com.godLife.project.service;
 
+import com.godLife.project.dto.categories.JobCateDTO;
 import com.godLife.project.dto.datas.UserDTO;
 import com.godLife.project.mapper.TestMapper;
 import org.springframework.stereotype.Service;
@@ -29,5 +30,10 @@ public class TestServiceImpl implements TestService{
     @Override
     public List<UserDTO> getAllUsers() {
         return testMapper.findAll();
+    }
+
+    @Override
+    public List<JobCateDTO> getJobAll() {
+        return testMapper.selectJobAll();
     }
 }

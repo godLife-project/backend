@@ -1,5 +1,6 @@
 package com.godLife.project.controller;
 
+import com.godLife.project.dto.categories.JobCateDTO;
 import com.godLife.project.dto.datas.UserDTO;
 import com.godLife.project.service.TestService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,5 +37,11 @@ public class TestController {
     @GetMapping("/{userIdx}")
     public UserDTO getUserById(@PathVariable int userIdx) {
         return  testService.getUserById(userIdx);
+    }
+
+    @Operation(summary = "직업 카테고리 전부 조회", description = "직업 카테고리의 인덱스와 이름까지 조회")
+    @GetMapping("/getJobAll")
+    public List<JobCateDTO> getJobAll() {
+        return  testService.getJobAll();
     }
 }

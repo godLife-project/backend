@@ -1,6 +1,6 @@
 package com.godLife.project.mapper;
 
-import com.godLife.project.dto.tables.UserDTO;
+import com.godLife.project.dto.datas.UserDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 

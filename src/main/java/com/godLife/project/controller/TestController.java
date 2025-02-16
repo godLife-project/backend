@@ -1,6 +1,6 @@
 package com.godLife.project.controller;
 
-import com.godLife.project.dto.tables.UserDTO;
+import com.godLife.project.dto.datas.UserDTO;
 import com.godLife.project.service.TestService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.web.bind.annotation.GetMapping;

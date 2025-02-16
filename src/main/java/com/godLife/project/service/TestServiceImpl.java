@@ -1,6 +1,6 @@
 package com.godLife.project.service;
 
-import com.godLife.project.dto.tables.UserDTO;
+import com.godLife.project.dto.datas.UserDTO;
 import com.godLife.project.mapper.TestMapper;
 import org.springframework.stereotype.Service;
 

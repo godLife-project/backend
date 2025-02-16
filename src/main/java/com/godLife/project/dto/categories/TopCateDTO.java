@@ -10,4 +10,7 @@ public class TopCateDTO {
 
     @Schema(description = "탑메뉴 이름", example = "New")
     private String topName;
+
+    @Schema(description = "탑메뉴 api경로", example = "/New")
+    private String topAddr;
 }

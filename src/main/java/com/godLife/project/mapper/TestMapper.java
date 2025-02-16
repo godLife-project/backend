@@ -1,5 +1,6 @@
 package com.godLife.project.mapper;
 
+import com.godLife.project.dto.categories.JobCateDTO;
 import com.godLife.project.dto.datas.UserDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
@@ -15,4 +16,7 @@ public interface TestMapper {
     UserDTO findById(int userIdx);
 
     List<UserDTO> findAll();
+
+    @Select("SELECT * FROM JOB_CATEGORY")
+    List<JobCateDTO> selectJobAll();
 }

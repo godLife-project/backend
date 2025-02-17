@@ -91,6 +91,11 @@
 			<version>2.8.4</version>
 		</dependency>
 
+		<!-- 비밀번호 암호화 -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
 
 
 	</dependencies>

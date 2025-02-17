@@ -1,5 +1,7 @@
 package com.godLife.project.controller;
 
+import com.godLife.project.dto.categories.JobCateDTO;
+import com.godLife.project.dto.categories.TargetCateDTO;
 import com.godLife.project.dto.categories.TopCateDTO;
 import com.godLife.project.service.CategoryService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,8 +20,15 @@ public class CategoryController {
         this.categoryService = categoryService;
     }
 
+    // 탑메뉴 카테고리
     @GetMapping("/topMenu")
     public List<TopCateDTO> topMenu() {
         return categoryService.getAllTopCategories();
     }
+    // 직업 카테고리
+    @GetMapping("/job")
+    public List<JobCateDTO>  job() { return categoryService.getAllJobCategories(); }
+    // 관심사 카테고리
+    @GetMapping("/target")
+    public List<TargetCateDTO> target() { return categoryService.getAllTargetCategories(); }
 }

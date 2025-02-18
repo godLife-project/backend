@@ -34,7 +34,7 @@ public class UserServiceImpl implements UserService{
         UserDTO user = userMapper.UserLogin(userId);
         System.out.println("DB에서 찾은 사용자: " + user);
         // 사용자가 존재하지 않거나 비밀번호가 일치하지 않으면 로그인 실패
-        if (user == null || !userPw.equals(user.getUserPw())) {  // 평문 비밀번호 비교
+        if (user == null || !passwordEncoder.matches(userPw, user.getUserPw())) {  // 평문 비밀번호 비교
             // 커스텀 예외를 사용하거나 적절한 예외를 던질 수 있음
             throw new LoginFailedException("아이디 또는 비밀번호가 올바르지 않습니다.");
         }

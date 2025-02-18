@@ -2,8 +2,11 @@ package com.godLife.project.controller;
 
 
 import com.godLife.project.dto.datas.UserDTO;
+import com.godLife.project.exception.LoginFailedException;
 import com.godLife.project.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -21,14 +24,23 @@ public class UserController {
         this.userService = userService;
     }
 
-
-
-    //@GetMapping("/login")
-
+    @Operation(summary = "로그인", description = "로그인 ID,Pw API")
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody UserDTO userDTO) {
+        System.out.println("받은데이터 :" + userDTO.getUserId() + ","+ userDTO.getUserPw());
+        try {
+            UserDTO user = userService.login(userDTO.getUserId(), userDTO.getUserPw());
+            return ResponseEntity.ok(user); // 로그인 성공 시 사용자 정보 반환
+        } catch (LoginFailedException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 실패: 아이디 또는 비밀번호가 잘못되었습니다.");
+        }
+    }
 
     // 회원가입
+    @Operation(summary = "회원가입 API", description = "유효성 검사 후 모두 통과시 정보 Insert")
     @PostMapping("/join")
     public ResponseEntity<Map<String, String>> join (@Valid @RequestBody UserDTO joinUserDTO, BindingResult result) {
+        System.out.println(joinUserDTO);
         // 유효성 검사
         if (result.hasErrors()) {
             Map<String, String> errors = new HashMap<>();
@@ -50,13 +62,14 @@ public class UserController {
             // 삽입 에러시 에러 메세지
             else {
                 Map<String, String> error = new HashMap<>();
-                error.put("message", "회원가입 실패");
+                error.put("message",successMessage);
                 return ResponseEntity.badRequest().body(error);
             }
         }
     }
 
     // 아이디 중복 체크
+    @Operation(summary = "회원가입_아이디 체크 API", description = "중복 아이디 조회")
     @GetMapping("/checkId/{userId}")
     public ResponseEntity<Boolean> checkUserIdExist(@PathVariable String userId) {
         Boolean isAvailable = userService.checkUserIdExist(userId);

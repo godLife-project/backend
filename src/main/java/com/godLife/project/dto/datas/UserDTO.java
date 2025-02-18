@@ -1,10 +1,7 @@
 package com.godLife.project.dto.datas;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -45,11 +42,11 @@ public class UserDTO {
     private String userEmail;
 
     @Schema(description = "현재 직업 idx", example = "1")
-    @NotBlank(message = "{joinUser.jobIdx.notBlank}")
+    @Min(value = 1, message = "{joinUser.jobIdx.min}")
     private int jobIdx;
 
     @Schema(description = "초기 관심사 idx", example = "1")
-    @NotBlank(message = "{joinUser.targetIdx.notBlank}")
+    @Min(value = 1, message = "{joinUser.targetIdx.min}")
     private int targetIdx;
 
     @Schema(description = "유저 전화번호", example = "010-1234-5678")
@@ -61,7 +58,7 @@ public class UserDTO {
     private String userPhone;
 
     @Schema(description = "유저 성별", example = "0")
-    @NotBlank(message = "{joinUser.userGender.notBlank}")
+    @Min(value = 1, message = "{joinUser.userGender.min}")
     private int userGender;
 
     @Schema(description = "유저 가입일", example = "2025-02-14")

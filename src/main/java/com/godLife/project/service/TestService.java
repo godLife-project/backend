@@ -1,20 +1,14 @@
 package com.godLife.project.service;
 
-import com.godLife.project.dto.TestDTO;
-import com.godLife.project.mapper.TestMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import com.godLife.project.dto.categories.JobCateDTO;
+import com.godLife.project.dto.datas.UserDTO;
 
 import java.util.List;
 
-@Service
-public class TestService {
+public interface TestService {
+    UserDTO getUserById(int userIdx);
+    List<String> getJobName();
+    List<UserDTO> getAllUsers();
 
-    @Autowired
-    private TestMapper testMapper;
-
-    public List<String> selectAll() {
-        return testMapper.selectAll();
-    }
-
+    List<JobCateDTO> getJobAll();
 }

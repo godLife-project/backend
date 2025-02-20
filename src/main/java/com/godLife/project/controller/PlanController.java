@@ -5,10 +5,9 @@ import com.godLife.project.service.PlanService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/plan")
@@ -28,5 +27,18 @@ public class PlanController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
+    }
+
+    // 랭킹 순서대로 계획 반환
+    @GetMapping("/ranking")
+    public ResponseEntity<List<PlanDTO>> getRankingPlans() {
+        List<PlanDTO> plans = planService.getRankingPlans();
+        return ResponseEntity.ok(plans);
+    }
+    // 최신 순서대로 계획 반환
+    @GetMapping("/latest")
+    public ResponseEntity<List<PlanDTO>> getLatestPlans() {
+        List<PlanDTO> plans = planService.getLatestPlans();
+        return ResponseEntity.ok(plans);
     }
 }

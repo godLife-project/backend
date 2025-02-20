@@ -4,6 +4,8 @@ import com.godLife.project.dto.datas.PlanDTO;
 import com.godLife.project.mapper.PlanMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class PlanServicelmpl implements PlanService{
 
@@ -27,5 +29,15 @@ public class PlanServicelmpl implements PlanService{
 
         // Mapper를 사용하여 DB에 계획 정보 등록
         planMapper.insertPlan(plan);
+    }
+
+    // 가중치를 적용한 랭킹 순으로 계획 조회
+    public List<PlanDTO> getRankingPlans() {
+        return planMapper.getRankingPlans();
+    }
+
+    // 계획 리스트페이지 (최신순)
+    public List<PlanDTO> getLatestPlans() {
+        return planMapper.getLatestPlans();
     }
 }

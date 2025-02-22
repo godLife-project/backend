@@ -1,6 +1,6 @@
-package com.godLife.project.service.impl;
+package com.godLife.project.service.impl.jwt;
 
-import com.godLife.project.dto.CustomUserDetails;
+import com.godLife.project.dto.jwt.CustomUserDetails;
 import com.godLife.project.dto.datas.UserDTO;
 import com.godLife.project.mapper.UserMapper;
 import org.springframework.security.core.userdetails.UserDetails;

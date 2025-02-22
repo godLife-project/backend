@@ -1,8 +1,10 @@
 package com.godLife.project.config;
 
+import com.godLife.project.jwt.CustomLogoutFilter;
 import com.godLife.project.jwt.JWTFilter;
 import com.godLife.project.jwt.JWTUtil;
 import com.godLife.project.jwt.LoginFilter;
+import com.godLife.project.service.jwt.RefreshService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.NonNull;
 import org.springframework.context.annotation.Bean;
@@ -16,6 +18,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -30,10 +33,13 @@ public class SecurityConfig {
 
   private final JWTUtil jwtUtil;
 
-  public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil) {
+  private final RefreshService refreshService;
+
+  public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil, RefreshService refreshService) {
 
     this.authenticationConfiguration = authenticationConfiguration;
     this.jwtUtil = jwtUtil;
+    this.refreshService = refreshService;
   }
 
   //AuthenticationManager Bean 등록
@@ -61,14 +67,24 @@ public class SecurityConfig {
 
     // 경로별 인가 작업
     http.authorizeHttpRequests(auth -> auth
-        .requestMatchers("/login", "/", "api/user/join").permitAll()
+        // 스웨거 관련
+        .requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**")
+        .permitAll()
+        // 카테고리 관련
+        .requestMatchers("/api/categories/**").permitAll()
+        // 추가 경로 제외
+        .requestMatchers("/", "/api/user/join").permitAll()
+        // 특정 권한만 접근 가능
         .requestMatchers("/admin").hasAuthority("7")
+        // refresh 토큰 검증 api경로
+        .requestMatchers("/api/reissue").permitAll()
         .anyRequest().authenticated()
     );
 
     // 필터 적용
     http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
-    http.addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
+    http.addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshService), UsernamePasswordAuthenticationFilter.class);
+    http.addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshService), LogoutFilter.class);
 
     // 세션 비활성화
     http.sessionManagement((session) -> session

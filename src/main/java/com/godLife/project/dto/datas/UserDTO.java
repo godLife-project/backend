@@ -3,16 +3,11 @@ package com.godLife.project.dto.datas;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.time.LocalDate;
-@Getter
-@Setter
+
 @Data
 public class UserDTO {
-
-
     @Schema(description = "유저 idx", example = "1")
     private int userIdx;
 
@@ -74,7 +69,4 @@ public class UserDTO {
 
     @Schema(description = "유저 권한", example = "1")
     private int authorityIdx;
-
-    // 기본 생성자 추가 (Spring이 JSON을 객체로 변환할 때 필요)
-    public UserDTO() {}
 }

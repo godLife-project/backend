@@ -2,7 +2,6 @@ package com.godLife.project.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.godLife.project.dto.datas.UserDTO;
-import com.godLife.project.dto.jwt.RefreshDTO;
 import com.godLife.project.service.jwt.RefreshService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
@@ -110,7 +109,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     refreshService.addRefreshToken(username, refresh, refreshExp);
 
     //응답 설정
-    response.setHeader("access", access);
+    response.setHeader("Authorization", "Bearer " + access);
     response.addCookie(createCookie("refresh", refresh, request));
     response.setStatus(HttpStatus.OK.value());
 

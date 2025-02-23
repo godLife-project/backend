@@ -1,8 +1,6 @@
 package com.godLife.project.controller;
 
-import com.godLife.project.dto.categories.JobCateDTO;
-import com.godLife.project.dto.categories.TargetCateDTO;
-import com.godLife.project.dto.categories.TopCateDTO;
+import com.godLife.project.dto.categories.*;
 import com.godLife.project.service.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,4 +33,5 @@ public class CategoryController {
     @Operation(summary = "카테고리 조회", description = "관심사")
     @GetMapping("/target")
     public List<TargetCateDTO> target() { return categoryService.getAllTargetCategories(); }
+
 }

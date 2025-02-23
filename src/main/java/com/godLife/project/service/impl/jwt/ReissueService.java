@@ -67,7 +67,7 @@ public class ReissueService {
     refreshService.addRefreshToken(username, newRefresh, refreshExp);
 
     // 5. 응답 헤더에 새로운 access 토큰 추가
-    response.setHeader("access", newAccess);
+    response.setHeader("Authorization", "Bearer " + newAccess);
     response.addCookie(createCookie("refresh", newRefresh, request));
 
     return  ResponseEntity.ok().body(createSuccessResponse("Token reissued successfully"));

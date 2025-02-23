@@ -91,17 +91,11 @@
 			<version>2.8.4</version>
 		</dependency>
 
-<<<<<<< HEAD
-		<!-- Spring Security -->
-=======
 		<!-- 비밀번호 암호화 -->
->>>>>>> hm
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
-<<<<<<< HEAD
-=======
 
 		<!-- JWT 토큰 -->
 		<dependency>
@@ -121,7 +115,6 @@
 			<version>0.12.6</version>
 			<scope>runtime</scope>
 		</dependency>
->>>>>>> hm
 
 
 	</dependencies>

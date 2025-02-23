@@ -8,27 +8,18 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class CorsConfig {
+
     @Bean
     public WebMvcConfigurer corsConfigurer() {
+
         return new WebMvcConfigurer() {
+
             @Override
-            public void addCorsMappings(CorsRegistry registry){
-                registry.addMapping("/api/**") //모든 API 경로에 적용
-                        .allowedOrigins("http://localhost:3000") // React 주소 허용
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-<<<<<<< HEAD
-                        .allowedHeaders("*") // 모든 헤더 허용
-                        .exposedHeaders("*") // 클라이언트가 응답 헤더를 읽을 수 있도록 허용
-                        .allowCredentials(true) // 쿠키 포함 시 필요
-                        .maxAge(3600); // 1시간 동안 CORS 설정 캐싱
-=======
-                        .allowCredentials(true); // 쿠키 포함 시 필요
-                        /*
-                        .allowedHeaders("*") // 모든 헤더 허용
-                        .exposedHeaders("*") // 클라이언트가 응답 헤더를 읽을 수 있도록 허용
-                        .maxAge(3600); // 1시간 동안 CORS 설정 캐싱
-                         */
->>>>>>> hm
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedOrigins("http://219.240.4.144:3000") // A의 프론트엔드 IP
+                        .allowedMethods("GET", "POST", "PUT", "DELETE")
+                        .allowCredentials(true);
             }
         };
     }

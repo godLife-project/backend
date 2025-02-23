@@ -73,11 +73,11 @@ public class SecurityConfig {
         // 카테고리 관련
         .requestMatchers("/api/categories/**").permitAll()
         // 추가 경로 제외
-        .requestMatchers("/", "/api/user/join").permitAll()
-        // 특정 권한만 접근 가능
-        .requestMatchers("/admin").hasAuthority("7")
+        .requestMatchers("/", "/api/user/join", "/api/user/checkId/*").permitAll()
         // refresh 토큰 검증 api경로
         .requestMatchers("/api/reissue").permitAll()
+        // 특정 권한만 접근 가능
+        .requestMatchers("/admin").hasAuthority("7")
         .anyRequest().authenticated()
     );
 

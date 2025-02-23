@@ -2,7 +2,6 @@ package com.godLife.project.service.impl;
 
 
 import com.godLife.project.dto.datas.UserDTO;
-import com.godLife.project.exception.LoginFailedException;
 import com.godLife.project.mapper.UserMapper;
 import com.godLife.project.service.UserService;
 import org.springframework.security.crypto.password.PasswordEncoder;

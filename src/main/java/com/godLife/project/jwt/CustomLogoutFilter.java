@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 
 public class CustomLogoutFilter extends GenericFilterBean {
 
@@ -46,20 +47,12 @@ public class CustomLogoutFilter extends GenericFilterBean {
     }
 
     //get refresh token
-    String refresh = null;
-    Cookie[] cookies = request.getCookies();
-    for (Cookie cookie : cookies) {
-
-      if (cookie.getName().equals("refresh")) {
-
-        refresh = cookie.getValue();
-      }
-    }
+    String refresh = getRefreshTokenFromCookies(request);
 
     //refresh null check
     if (refresh == null) {
 
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Refresh 토큰이 없습니다.");
       return;
     }
 
@@ -69,7 +62,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
     } catch (ExpiredJwtException e) {
 
       //response status code
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Refresh 토큰이 만료되었습니다.");
       return;
     }
 
@@ -78,7 +71,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
     if (!category.equals("refresh")) {
 
       //response status code
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST, "유효하지 않은 Refresh 토큰입니다.");
       return;
     }
 
@@ -87,7 +80,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
     if (!isExist) {
 
       //response status code
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "해당 Refresh 토큰이 존재하지 않습니다.");
       return;
     }
 
@@ -100,8 +93,36 @@ public class CustomLogoutFilter extends GenericFilterBean {
     cookie.setMaxAge(0);
     cookie.setPath("/");
 
-    response.addCookie(cookie);
+    // 성공 응답
     response.setStatus(HttpServletResponse.SC_OK);
+    response.setContentType("application/json");
+    response.setCharacterEncoding("UTF-8");
+    PrintWriter writer = response.getWriter();
+    writer.write("{\"message\": \"로그아웃이 완료되었습니다.\"}");
+    writer.flush();
+  }
+
+  private String getRefreshTokenFromCookies(HttpServletRequest request) {
+    Cookie[] cookies = request.getCookies();
+    if (cookies == null) return null;
+
+    for (Cookie cookie : cookies) {
+      if ("refresh".equals(cookie.getName())) {
+        return cookie.getValue();
+      }
+    }
+    return null;
+  }
+
+  // 에러 응답을 JSON 형식으로 보내는 메서드
+  private void sendErrorResponse(HttpServletResponse response, int status, String message) throws IOException {
+    response.setStatus(status);
+    response.setContentType("application/json");
+    response.setCharacterEncoding("UTF-8");
+
+    PrintWriter writer = response.getWriter();
+    writer.write("{\"error\": \"" + message + "\"}");
+    writer.flush();
   }
 }
 

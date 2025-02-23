@@ -1,15 +1,16 @@
-package com.godLife.project.service;
+package com.godLife.project.service.impl;
 
 import com.godLife.project.dto.categories.JobCateDTO;
 import com.godLife.project.dto.categories.TargetCateDTO;
 import com.godLife.project.dto.categories.TopCateDTO;
 import com.godLife.project.mapper.CategoryMapper;
+import com.godLife.project.service.CategoryService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class CategoryServiceImpl implements CategoryService{
+public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryMapper categoryMapper;
 

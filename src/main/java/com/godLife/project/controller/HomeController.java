@@ -18,7 +18,7 @@ public class HomeController {
 
     @GetMapping("/")
     public String home(Model model) {
-        model.addAttribute("message", "hello, fucking thymeleaf!");
+        model.addAttribute("message", "hello, thymeleaf!");
         List<String> testDTOS = testService.getJobName();
         System.out.println(testDTOS);
         model.addAttribute("testDTOS", testDTOS);

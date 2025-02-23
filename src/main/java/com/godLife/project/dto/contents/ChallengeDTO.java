@@ -33,4 +33,7 @@ public class ChallengeDTO {
 
     @Schema(description = "챌린지 종료 시간", example = "2025-02-16 HH:mm:ss")
     private LocalDateTime challEndTime;
+
+    @Schema(description = "챌린지 작성일", example = "2025-02-16 HH:mm:ss")
+    private LocalDateTime latestChallenges;
 }

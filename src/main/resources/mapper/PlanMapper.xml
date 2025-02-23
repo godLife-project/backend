@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+        <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godLife.project.mapper.PlanMapper">
+
+    <!-- 가중치 적용한 랭킹 계산 -->
+    <select id="getRankingPlans" resultType="com.godLife.project.dto.datas.PlanDTO">
+        SELECT
+            PLAN_IDX,
+            USER_IDX,
+            PLAN_TITLE,
+            END_TO,
+            TARGET_IDX,
+            PLAN_SUB,
+            PLAN_SUB_DATE,
+            PLAN_SUB_MOD,
+            PLAN_SUB_START,
+            PLAN_SUB_END,
+            VIEW_COUNT,
+            CERT_COUNT,
+            LIKE_COUNT,
+            IS_SHARED,
+            IS_ACTIVE,
+            IS_COMPLETED,
+            REVIEW,
+            (POW(END_TO, 0.6) * POW(CERT_COUNT, 0.8) * POW(LIKE_COUNT, 1.2)) AS SCORE
+        FROM PLAN_TABLE
+        WHERE IS_ACTIVE = TRUE
+        ORDER BY SCORE DESC
+    </select>
+
+    <!-- New Plan 조회 (루틴 작성일 기준) -->
+    <select id="getLatestPlans" resultType="com.godLife.project.dto.datas.PlanDTO">
+        SELECT
+            PLAN_IDX,
+            USER_IDX,
+            PLAN_TITLE,
+            END_TO,
+            TARGET_IDX,
+            PLAN_SUB,
+            PLAN_SUB_DATE,
+            PLAN_SUB_MOD,
+            PLAN_SUB_START,
+            PLAN_SUB_END,
+            VIEW_COUNT,
+            CERT_COUNT,
+            LIKE_COUNT,
+            IS_SHARED,
+            IS_ACTIVE,
+            IS_COMPLETED,
+            REVIEW
+        FROM PLAN_TABLE
+        ORDER BY PLAN_SUB_DATE DESC
+    </select>
+
+
+    <!-- 계획 작성 쿼리 -->
+    <insert id="insertPlan" parameterType="com.godLife.project.dto.datas.PlanDTO">
+        INSERT INTO PLAN_TABLE (
+            PLAN_IDX,
+            USER_IDX,
+            PLAN_TITLE,
+            END_TO,
+            TARGET_IDX,
+            PLAN_SUB,
+            PLAN_SUB_DATE,
+            PLAN_SUB_MOD,
+            PLAN_SUB_START,
+            PLAN_SUB_END
+        )
+        VALUES (
+                   PLAN_SEQ.NEXTVAL,
+                   #{userIdx},
+                   #{planTitle},
+                   #{endTo},
+                   #{targetIdx},
+                   #{planSub},
+                   SYSDATE,
+                   SYSDATE,
+                   NULL,
+                   NULL
+               );
+    </insert>
+
+
+</mapper>

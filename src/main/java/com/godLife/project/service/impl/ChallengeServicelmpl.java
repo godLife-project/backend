@@ -1,7 +1,8 @@
-package com.godLife.project.service;
+package com.godLife.project.service.impl;
 
 import com.godLife.project.dto.contents.ChallengeDTO;
 import com.godLife.project.mapper.ChallengeMapper;
+import com.godLife.project.service.ChallengeService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

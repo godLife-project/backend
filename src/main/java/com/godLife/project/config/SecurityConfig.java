@@ -1,46 +1,5 @@
 package com.godLife.project.config;
 
-<<<<<<< HEAD
-import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
-
-// 비밀번호 암호화
-@Configuration
-@AllArgsConstructor
-@EnableWebSecurity
-public class SecurityConfig {
-
-    @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // 로그인 페이지를 비활성화하고, 모든 요청을 허용
-        http
-                .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()
-                )
-                .csrf(csrf -> csrf.disable())
-                .formLogin(form -> form.disable());
-
-
-        return http.build();
-    }
-
-}
-
-
-=======
 import com.godLife.project.jwt.CustomLogoutFilter;
 import com.godLife.project.jwt.JWTFilter;
 import com.godLife.project.jwt.JWTUtil;
@@ -64,6 +23,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.Collections;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -109,12 +69,12 @@ public class SecurityConfig {
     // 경로별 인가 작업
     http.authorizeHttpRequests(auth -> auth
         // 스웨거 관련
-        .requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**")
+        .requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**", "/favicon.ico")
         .permitAll()
         // 카테고리 관련
         .requestMatchers("/api/categories/**").permitAll()
         // 추가 경로 제외
-        .requestMatchers("/", "/api/user/join", "/api/user/checkId/*").permitAll()
+        .requestMatchers("/", "/api/user/join", "/api/user/checkId/*", "/api/test1").permitAll()
         // refresh 토큰 검증 api경로
         .requestMatchers("/api/reissue").permitAll()
         // 특정 권한만 접근 가능
@@ -132,22 +92,28 @@ public class SecurityConfig {
         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
     // CORS 허용
-    http.cors((cors -> cors.configurationSource(request -> {
+    http
+        .cors((corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
 
-      CorsConfiguration configuration = new CorsConfiguration();
+          @Override
+          public CorsConfiguration getCorsConfiguration(@NonNull HttpServletRequest request) {
 
-      configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
-      configuration.setAllowedMethods(Collections.singletonList("*"));
-      configuration.setAllowCredentials(true);
-      configuration.setAllowedHeaders(Collections.singletonList("*"));
-      configuration.setMaxAge(3600L);
+            CorsConfiguration configuration = new CorsConfiguration();
 
-      configuration.setExposedHeaders(Collections.singletonList("Authorization"));
+            configuration.setAllowedOrigins(List.of("http://localhost:3000", "https://3a57-182-229-89-82.ngrok-free.app"));
+            configuration.setAllowedMethods(Collections.singletonList("*"));
+            configuration.setAllowCredentials(true);
+            configuration.setAllowedHeaders(Collections.singletonList("*"));
+            configuration.setMaxAge(3600L);
 
-      return configuration;
-    })));
+            configuration.setExposedHeaders(Collections.singletonList("Authorization"));
+
+            return configuration;
+          }
+        })));
+
+
 
     return http.build();
   }
 }
->>>>>>> hm

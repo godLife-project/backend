@@ -1,13 +1,14 @@
-package com.godLife.project.service;
+package com.godLife.project.service.impl;
 
 import com.godLife.project.dto.datas.PlanDTO;
 import com.godLife.project.mapper.PlanMapper;
+import com.godLife.project.service.PlanService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class PlanServicelmpl implements PlanService{
+public class PlanServicelmpl implements PlanService {
 
     private final PlanMapper planMapper;
 

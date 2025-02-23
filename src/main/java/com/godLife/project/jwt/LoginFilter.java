@@ -99,34 +99,46 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     GrantedAuthority auth = iterator.next();
     String role = auth.getAuthority();
 
+    Long accessExp = 600000L;     // 10분
+    Long refreshExp = 86400000L;  // 24시간
+
     //토큰 생성
-    String access = jwtUtil.createJwt("access", username, role, 600000L);     // 10분
-    String refresh = jwtUtil.createJwt("refresh", username, role, 86400000L); // 24시간
+    String access = jwtUtil.createJwt("access", username, role, accessExp);
+    String refresh = jwtUtil.createJwt("refresh", username, role, refreshExp);
 
     // Refresh 토큰 저장
-    refreshService.addRefreshToken(username, refresh, 86400000L);
+    refreshService.addRefreshToken(username, refresh, refreshExp);
 
     //응답 설정
     response.setHeader("access", access);
-    response.addCookie(createCookie("refresh", refresh));
+    response.addCookie(createCookie("refresh", refresh, request));
     response.setStatus(HttpStatus.OK.value());
 
   }
 
   //로그인 실패시 실행하는 메소드
   @Override
-  protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
+  protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException {
 
-    response.setStatus(401);
+    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 상태 코드 설정
+    response.setContentType("application/json");
+    response.setCharacterEncoding("UTF-8");
+
+    // JSON 형식으로 에러 메시지 전송
+    response.getWriter().write("{\"error\": \"아이디 혹은 비밀번호가 일치하지 않습니다.\"}");
   }
 
-  private Cookie createCookie(String key, String value) {
+  private Cookie createCookie(String key, String value,  HttpServletRequest request) {
 
     Cookie cookie = new Cookie(key, value);
     cookie.setMaxAge(24*60*60); // 생명 주기 : 24시간
-    //cookie.setSecure(true);  // https 사용시
     cookie.setPath("/");     // 쿠키 적용 범위
     cookie.setHttpOnly(true);
+
+    // 🔹 현재 요청이 HTTPS인지 확인하여 Secure 적용
+    if (request.isSecure()) {
+      cookie.setSecure(true);
+    }
 
     return cookie;
   }

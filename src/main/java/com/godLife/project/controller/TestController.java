@@ -1,47 +1,27 @@
 package com.godLife.project.controller;
 
-import com.godLife.project.dto.categories.JobCateDTO;
-import com.godLife.project.dto.datas.UserDTO;
-import com.godLife.project.service.TestService;
-import io.swagger.v3.oas.annotations.Operation;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.Iterator;
 
 @RestController
-@RequestMapping("/api/test")
 public class TestController {
+  @GetMapping("/test2")
+  public String TestP() {
+    String name = SecurityContextHolder.getContext().getAuthentication().getName();
 
-    private final TestService testService;
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-    public TestController(TestService testService) {
-        this.testService = testService;
-    }
+    Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+    Iterator<? extends GrantedAuthority> iter = authorities.iterator();
+    GrantedAuthority auth = iter.next();
+    String role = auth.getAuthority();
 
-    @Operation(summary = "직업 카테고리 직업명 조회", description = "직업 카테고리의 이름을 조회하는 API")
-    @GetMapping("/getJob")
-    public List<String> getJobName() {
-        return testService.getJobName();
-    }
-
-    @Operation(summary = "유저 테이블 조회", description = "유저 테이블의 모든 정보를 조회하는 API")
-    @GetMapping("/getAllUser")
-    public List<UserDTO> getAllUsers() {
-        return testService.getAllUsers();
-    }
-
-    @Operation(summary = "유저 테이블 조회", description = "유저 테이블에서 인덱스 번호에 맞는 유저를 조회하는 API")
-    @GetMapping("/{userIdx}")
-    public UserDTO getUserById(@PathVariable int userIdx) {
-        return  testService.getUserById(userIdx);
-    }
-
-    @Operation(summary = "직업 카테고리 전부 조회", description = "직업 카테고리의 인덱스와 이름까지 조회")
-    @GetMapping("/getJobAll")
-    public List<JobCateDTO> getJobAll() {
-        return  testService.getJobAll();
-    }
+    return "Test2 Conroller : " + name + " 권한 : " + role;
+  }
 }

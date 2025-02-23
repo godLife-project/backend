@@ -1,14 +1,15 @@
-package com.godLife.project.service;
+package com.godLife.project.service.impl;
 
 import com.godLife.project.dto.categories.JobCateDTO;
 import com.godLife.project.dto.datas.UserDTO;
 import com.godLife.project.mapper.TestMapper;
+import com.godLife.project.service.TestService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class TestServiceImpl implements TestService{
+public class TestServiceImpl implements TestService {
 
     private final TestMapper testMapper;
 

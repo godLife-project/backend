@@ -1,4 +1,4 @@
-package com.godLife.project.mapper.jwt;
+package com.godLife.project.mapper.jwtMapper;
 
 import com.godLife.project.dto.jwt.RefreshDTO;
 import org.apache.ibatis.annotations.Delete;

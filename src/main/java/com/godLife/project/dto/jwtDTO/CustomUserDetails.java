@@ -1,4 +1,4 @@
-package com.godLife.project.dto.jwt;
+package com.godLife.project.dto.jwtDTO;
 
 import com.godLife.project.dto.datas.UserDTO;
 import org.springframework.security.core.GrantedAuthority;

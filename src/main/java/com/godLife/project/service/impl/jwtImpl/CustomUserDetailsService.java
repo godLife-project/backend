@@ -1,4 +1,4 @@
-package com.godLife.project.service.impl.jwt;
+package com.godLife.project.service.impl.jwtImpl;
 
 import com.godLife.project.dto.jwt.CustomUserDetails;
 import com.godLife.project.dto.datas.UserDTO;

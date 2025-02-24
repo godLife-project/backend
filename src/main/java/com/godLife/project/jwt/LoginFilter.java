@@ -2,7 +2,7 @@ package com.godLife.project.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.godLife.project.dto.datas.UserDTO;
-import com.godLife.project.service.jwt.RefreshService;
+import com.godLife.project.service.jwtInterface.RefreshService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;

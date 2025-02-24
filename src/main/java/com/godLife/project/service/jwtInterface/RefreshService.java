@@ -1,6 +1,4 @@
-package com.godLife.project.service.jwt;
-
-import com.godLife.project.dto.jwt.RefreshDTO;
+package com.godLife.project.service.jwtInterface;
 
 public interface RefreshService {
 

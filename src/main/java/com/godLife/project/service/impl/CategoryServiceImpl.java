@@ -1,8 +1,6 @@
 package com.godLife.project.service.impl;
 
-import com.godLife.project.dto.categories.JobCateDTO;
-import com.godLife.project.dto.categories.TargetCateDTO;
-import com.godLife.project.dto.categories.TopCateDTO;
+import com.godLife.project.dto.categories.*;
 import com.godLife.project.mapper.CategoryMapper;
 import com.godLife.project.service.CategoryService;
 import org.springframework.stereotype.Service;
@@ -29,4 +27,13 @@ public class CategoryServiceImpl implements CategoryService {
     // 관심사 카테고리 조회
     @Override
     public  List<TargetCateDTO> getAllTargetCategories() { return categoryMapper.getAllTargetCategories(); }
+    // 챌린지 카테고리 조회
+    @Override
+    public List<ChallengeCateDTO> getAllChallCategories() { return categoryMapper.getAllChallCategories(); }
+    // 숏컷 카테고리
+    @Override
+    public List<ShortCutCateDTO> getAllShortCategories() { return categoryMapper.getAllShortCategories(); }
+    // 권한 카테고리
+    @Override
+    public List<AuthorityCateDTO> getAllAuthorityCategories() { return categoryMapper.getAllAuthorityCategories(); }
 }

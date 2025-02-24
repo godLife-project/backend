@@ -1,6 +1,6 @@
 package com.godLife.project.jwt;
 
-import com.godLife.project.dto.jwt.CustomUserDetails;
+import com.godLife.project.dto.jwtDTO.CustomUserDetails;
 import com.godLife.project.dto.datas.UserDTO;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;

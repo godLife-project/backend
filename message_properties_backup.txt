@@ -1,0 +1,27 @@
+joinUser.userName.notBlank=사용자 이름은 필수 항목입니다.
+joinUser.userName.size=3자 이상 15자 이하로 작성해주세요.
+
+joinUser.userId.notBlank=사용자 아이디는 필수 항목입니다.
+joinUser.userId.size=4자 이상 15자 이하로 작성해주세요.
+joinUser.userId.pattern=영문과 숫자만 사용해주세요.
+
+joinUser.userPw.notBlank=사용자 비밀번호는 필수 항목입니다.
+joinUser.userPw.size=4자 이상 15자 이하로 작성해주세요.
+joinUser.userPw.pattern=영문과 숫자만 사용해주세요.
+
+joinUser.userNick.notBlank=사용자 닉네임은 필수 항목입니다.
+joinUser.userNick.size=2자 이상 15자 이하로 작성해주세요.
+joinUser.userNick.pattern=영문과 한글, 숫자와 특수문자 '-', '_'만 사용해주세요.
+
+joinUser.userEmail.email=이메일 형식을 맞춰주세요. [example@godLife.com]
+
+joinUser.userPhone.notBlank=휴대전화 번호를 입력해주세요.
+joinUser.userPhone.pattern=휴대전화 번호를 확인해주세요. ('-' 를 포함 해주세요.)
+
+joinUser.jobIdx.min=현재 직업을 선택해주세요.
+
+joinUser.targetIdx.min=현재 관심사를 선택해주세요.
+
+joinUser.userGender.min=성별을 선택해주세요.
+
+joinUser.nickTag.pattern=닉네임 태그는 #으로 시작해야합니다.

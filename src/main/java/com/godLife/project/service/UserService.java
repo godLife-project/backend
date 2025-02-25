@@ -10,6 +10,7 @@ public interface UserService {
     // 유저 정보 조회
     UserDTO findByUserId(String userId);
 
-    // userId로 사용자 권한 조회
-    UserDTO getUserById(Long userId);
+    // 로그인 처리 (userId와 userPw로 로그인 검증
+    UserDTO login(String userId, String userPw);
+
 }

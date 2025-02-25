@@ -4,6 +4,19 @@
 
 <mapper namespace="com.godLife.project.mapper.ChallengeMapper">
 
+    <!-- 챌린지 생성 (관리자 전용) -->
+    <insert id="createChallenge">
+        INSERT INTO CHALL_TABLE (title, description, category_idx, state, created_at)
+        VALUES (#{title}, #{description}, #{categoryIdx}, #{state}, SYSDATE)
+    </insert>
+
+    <!-- 챌린지 시작 시간 및 종료 시간 업데이트 -->
+<update id="updateChallengeStartTime">
+    UPDATE CHALL_TABLE
+    SET chall_start_time = #{startTime}, chall_end_time = #{endTime}
+    WHERE chall_idx = #{challIdx}
+</update>
+
 <!-- 최신순 챌린지 리스트 조회 -->
 <select id="getLatestChallenges" resultType="com.godLife.project.dto.contents.ChallengeDTO">
     SELECT
@@ -11,14 +24,18 @@
     CHALL_TITLE,
     CHALL_DESCRIPTION,
     CHALL_CATEGORY_IDX,
-    MIN_PARTICIPATION_TIME,
-    TOTAL_CLEAR_TIME,
     MAX_PARTICIPANTS,
-    CHALL_START_TIME,
-    CHALL_END_TIME,
-    CHALL_CREATED_AT
+    CHALL_CREATED_AT,
+    CHALL_END_TIME
     FROM CHALL_TABLE
+    WHERE CHALL_END_TIME IS NULL OR CHALL_END_TIME > SYSDATE
     ORDER BY CHALL_CREATED_AT DESC
 </select>
+
+    <update id="updateChallengeStatus">
+        UPDATE challenge
+        SET chall_state = #{status}
+        WHERE chall_idx = #{challIdx};
+    </update>
 
 </mapper>

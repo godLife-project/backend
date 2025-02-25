@@ -1,47 +1,30 @@
 package com.godLife.project.controller;
 
-import com.godLife.project.dto.categories.JobCateDTO;
-import com.godLife.project.dto.datas.UserDTO;
-import com.godLife.project.service.TestService;
-import io.swagger.v3.oas.annotations.Operation;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api/test")
+@RequestMapping("/api")
 public class TestController {
+  @GetMapping("/test1")
+  public ResponseEntity<Map<String, String>> Test() {
+    Map<String, String> response = new HashMap<>();
+    response.put("message", "hello!!!!!");
 
-    private final TestService testService;
+    return ResponseEntity.ok(response);
+  }
 
-    public TestController(TestService testService) {
-        this.testService = testService;
-    }
+  @GetMapping("/test2")
+  public ResponseEntity<Map<String, String>> TestP() {
+    Map<String, String> response = new HashMap<>();
+    response.put("message", "You have JWT access Token");
 
-    @Operation(summary = "직업 카테고리 직업명 조회", description = "직업 카테고리의 이름을 조회하는 API")
-    @GetMapping("/getJob")
-    public List<String> getJobName() {
-        return testService.getJobName();
-    }
-
-    @Operation(summary = "유저 테이블 조회", description = "유저 테이블의 모든 정보를 조회하는 API")
-    @GetMapping("/getAllUser")
-    public List<UserDTO> getAllUsers() {
-        return testService.getAllUsers();
-    }
-
-    @Operation(summary = "유저 테이블 조회", description = "유저 테이블에서 인덱스 번호에 맞는 유저를 조회하는 API")
-    @GetMapping("/{userIdx}")
-    public UserDTO getUserById(@PathVariable int userIdx) {
-        return  testService.getUserById(userIdx);
-    }
-
-    @Operation(summary = "직업 카테고리 전부 조회", description = "직업 카테고리의 인덱스와 이름까지 조회")
-    @GetMapping("/getJobAll")
-    public List<JobCateDTO> getJobAll() {
-        return  testService.getJobAll();
-    }
+    return ResponseEntity.ok(response);
+  }
 }

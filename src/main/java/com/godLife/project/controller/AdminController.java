@@ -26,9 +26,9 @@ public class AdminController {
 
   // 챌린지 생성 API (관리자 전용)
   @PostMapping("/create")
-  public ResponseEntity<String> createChallenge(@RequestBody ChallengeDTO challengeDTO, @RequestParam Long userId) {
+  public ResponseEntity<String> createChallenge(@RequestBody ChallengeDTO challengeDTO) {
     try {
-      challengeService.createChallenge(challengeDTO, userId);
+      challengeService.createChallenge(challengeDTO);
       return ResponseEntity.ok("챌린지가 성공적으로 생성되었습니다.");
     } catch (UnauthorizedException e) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());

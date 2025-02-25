@@ -28,7 +28,7 @@ public class ChallengeController {
         return ResponseEntity.ok(challenges);
     }
 
-    // ✅ 챌린지 참여 API (일반 사용자용)
+    //  챌린지 참여 API (일반 사용자용)
     @PostMapping("/join")
     public ResponseEntity<String> joinChallenge(@RequestParam Long userId, @RequestParam int challIdx) {
         try {

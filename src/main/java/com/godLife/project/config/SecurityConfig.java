@@ -101,7 +101,7 @@ public class SecurityConfig {
 
             CorsConfiguration configuration = new CorsConfiguration();
 
-            configuration.setAllowedOrigins(List.of("http://localhost:3000", "https://fe02-121-170-152-201.ngrok-free.app"));
+            configuration.setAllowedOrigins(List.of("http://localhost:3000", "https://4214-175-117-30-43.ngrok-free.app"));
             configuration.setAllowedMethods(Collections.singletonList("*"));
             configuration.setAllowCredentials(true);
             configuration.setAllowedHeaders(Collections.singletonList("*"));

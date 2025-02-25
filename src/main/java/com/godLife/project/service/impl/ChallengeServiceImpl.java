@@ -1,14 +1,10 @@
 package com.godLife.project.service.impl;
 
 import com.godLife.project.dto.contents.ChallengeDTO;
-import com.godLife.project.dto.datas.UserDTO;
 import com.godLife.project.enums.ChallengeState;
-import com.godLife.project.exception.UnauthorizedException;
 import com.godLife.project.mapper.ChallengeJoinMapper;
 import com.godLife.project.mapper.ChallengeMapper;
-import com.godLife.project.mapper.UserMapper;
 import com.godLife.project.service.ChallengeService;
-import com.godLife.project.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,38 +13,26 @@ import java.util.List;
 
 @Service
 public class ChallengeServiceImpl implements ChallengeService {
-    private final ChallengeMapper challengeMapper;
-
+    private ChallengeMapper challengeMapper;
     private ChallengeJoinMapper challengeJoinMapper;
-    private UserService userService;
-    private UserMapper userMapper;
 
-    public ChallengeServiceImpl(ChallengeMapper challengeMapper) {
+    public ChallengeServiceImpl(ChallengeMapper challengeMapper, ChallengeJoinMapper challengeJoinMapper) {
         this.challengeMapper = challengeMapper;
         this.challengeJoinMapper = challengeJoinMapper;
-        this.userService = userService;
-        this.userMapper = userMapper;}
-
+    }
     // 최신 챌린지 가져오기
     public List<ChallengeDTO> getLatestChallenges() {
         // 종료된 챌린지를 제외하고 최신 챌린지 리스트를 조회
         return challengeMapper.getLatestChallenges();
     }
 
-    // 관리자 권한 체크 후 챌린지 생성
-    @Override
-    public void createChallenge(ChallengeDTO challengeDTO, Long userId) throws Exception{
-        // userId로 사용자 권한 조회
-        UserDTO user = userService.getUserById(userId);
-        // 권한이 7인 경우에만 챌린지 생성 가능
-        if (user.getAuthorityIdx() !=7) {
-            throw new UnauthorizedException("관리자 권한이 필요합니다.");
-        }
+    public void createChallenge(ChallengeDTO challengeDTO) throws Exception {
+        // 챌린지 기본값 설정 (권한 체크 없음)
+            challengeDTO.setChallState(ChallengeState.PUBLISHED.name());
 
-        // 챌린지 기본값 설정
-        challengeDTO.setChallState(ChallengeState.PUBLISHED.name());
-        challengeMapper.createChallenge(challengeDTO);
-    }
+            // 챌린지 생성
+            challengeMapper.createChallenge(challengeDTO);
+        }
 
 
     // 챌린지 참여 로직

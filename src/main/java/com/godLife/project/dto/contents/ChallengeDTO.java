@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @Data
 public class ChallengeDTO {
     @Schema(description = "챌린지 인덱스", example = "1")
-    private int challIdx;
+    private Long  challIdx;
 
     @Schema(description = "챌린지 제목", example = "하루 독서 2시간 챌린지")
     private String challTitle;
@@ -36,4 +36,7 @@ public class ChallengeDTO {
 
     @Schema(description = "챌린지 작성일", example = "2025-02-16 HH:mm:ss")
     private LocalDateTime latestChallenges;
+
+    @Schema(description = "챌린지 상태", example = "게시중")
+    private String challState;
 }

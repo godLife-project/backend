@@ -3,6 +3,7 @@ package com.godLife.project.mapper;
 import com.godLife.project.dto.datas.UserDTO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 @Mapper
@@ -20,5 +21,7 @@ public interface UserMapper {
     @Select("SELECT * FROM USER_TABLE WHERE USER_ID = #{username}")
     UserDTO findByUserid(String username);
 
-
+    // 관리자 권환 확인
+    @Select("SELECT authority_idx FROM users WHERE user_id = #{userId}")
+    Integer getUserAuthority(@Param("userId") Long userId);
 }

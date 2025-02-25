@@ -23,7 +23,7 @@ public class ChallengeServiceImpl implements ChallengeService {
     private UserService userService;
     private UserMapper userMapper;
 
-    public ChallengeServiceImpl(ChallengeMapper challengeMapper) {
+    public ChallengeServiceImpl(ChallengeMapper challengeMapper, ChallengeJoinMapper challengeJoinMapper,UserService userService, UserMapper userMapper) {
         this.challengeMapper = challengeMapper;
         this.challengeJoinMapper = challengeJoinMapper;
         this.userService = userService;

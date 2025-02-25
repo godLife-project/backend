@@ -4,7 +4,7 @@ import com.godLife.project.jwt.CustomLogoutFilter;
 import com.godLife.project.jwt.JWTFilter;
 import com.godLife.project.jwt.JWTUtil;
 import com.godLife.project.jwt.LoginFilter;
-import com.godLife.project.service.jwt.RefreshService;
+import com.godLife.project.service.jwtInterface.RefreshService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.NonNull;
 import org.springframework.context.annotation.Bean;
@@ -72,12 +72,13 @@ public class SecurityConfig {
         .requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**", "/favicon.ico")
         .permitAll()
         // 카테고리 관련
-        .requestMatchers("/api/categories/**").permitAll()
+        .requestMatchers("/api/categories/*").permitAll()
         // 추가 경로 제외
         .requestMatchers("/", "/api/user/join", "/api/user/checkId/*", "/api/test1").permitAll()
         // refresh 토큰 검증 api경로
         .requestMatchers("/api/reissue").permitAll()
         // 특정 권한만 접근 가능
+        .requestMatchers("/api/categories/auth/authority").hasAnyAuthority("2", "3", "4", "5", "6", "7")
         .requestMatchers("/admin").hasAuthority("7")
         .anyRequest().authenticated()
     );

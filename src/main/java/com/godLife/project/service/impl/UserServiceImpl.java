@@ -50,10 +50,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO findByUserId(String userId) { return userMapper.findByUserid(userId); }
 
-    // 권한 확인
-    @Override
-    public UserDTO getUserById(Long userId) {
-        return null;
-    }
+
+
 
 }

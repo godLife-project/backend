@@ -41,4 +41,10 @@ public class UserServiceImpl implements UserService {
         return userMapper.checkUserIdExist(userId);
     }
 
+    // 권한 확인
+    @Override
+    public UserDTO getUserById(Long userId) {
+        return null;
+    }
+
 }

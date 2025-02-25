@@ -7,4 +7,7 @@ public interface UserService {
     String insertUser(UserDTO joinUserDTO);
     // 아이디 중복 체크
     Boolean checkUserIdExist(String userId);
+
+    // userId로 사용자 권한 조회
+    UserDTO getUserById(Long userId);
 }

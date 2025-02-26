@@ -25,7 +25,7 @@ public class UserController {
   @Operation(summary = "회원가입 API", description = "유효성 검사 후 모두 통과시 정보 Insert")
   @PostMapping("/join")
   public ResponseEntity<Map<String, String>> join (@Valid @RequestBody UserDTO joinUserDTO, BindingResult result) {
-    System.out.println(joinUserDTO);
+    // System.out.println(joinUserDTO);
     // 유효성 검사
     if (result.hasErrors()) {
       Map<String, String> errors = new HashMap<>();

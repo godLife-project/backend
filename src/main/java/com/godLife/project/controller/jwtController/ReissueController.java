@@ -1,7 +1,7 @@
-package com.godLife.project.controller.jwt;
+package com.godLife.project.controller.jwtController;
 
 
-import com.godLife.project.service.impl.jwt.ReissueService;
+import com.godLife.project.service.impl.jwtImpl.ReissueService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;

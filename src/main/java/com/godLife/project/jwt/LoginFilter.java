@@ -2,7 +2,9 @@ package com.godLife.project.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.godLife.project.dto.datas.UserDTO;
-import com.godLife.project.service.jwt.RefreshService;
+import com.godLife.project.dto.response.LoginResponseDTO;
+import com.godLife.project.service.UserService;
+import com.godLife.project.service.jwtInterface.RefreshService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,12 +29,15 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
   private final RefreshService refreshService;
 
-  public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, RefreshService refreshService) {
+  private final UserService userService;
+
+  public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, RefreshService refreshService, UserService userService) {
 
     super.setFilterProcessesUrl("/api/user/login");
     this.authenticationManager = authenticationManager;
     this.jwtUtil = jwtUtil;
     this.refreshService = refreshService;
+    this.userService = userService;
   }
 
   @Override
@@ -74,7 +79,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
   //로그인 성공시 실행하는 메소드 (여기서 JWT를 발급하면 됨)
   @Override
-  protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) {
+  protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException{
 
 //    CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
 //
@@ -98,6 +103,21 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     GrantedAuthority auth = iterator.next();
     String role = auth.getAuthority();
 
+    // 유저 정보 조회
+    UserDTO tempUserDTO = userService.findByUserId(username);
+    // 전송할 데이터 DTO
+    LoginResponseDTO loginUserDTO = new LoginResponseDTO();
+    loginUserDTO.setUserIdx(tempUserDTO.getUserIdx());      // 유저 고유 인덱스
+    loginUserDTO.setUserName(tempUserDTO.getUserName());    // 유저 이름
+    loginUserDTO.setUserNick(tempUserDTO.getUserNick());    // 유저 닉네임
+    loginUserDTO.setNickTag(tempUserDTO.getNickTag());      // 닉네임 중복 태그
+    loginUserDTO.setJobIdx(tempUserDTO.getJobIdx());        // 유저 직업
+    loginUserDTO.setTargetIdx(tempUserDTO.getTargetIdx());  // 유저 관심사
+    if (tempUserDTO.getAuthorityIdx() >= 2) {
+      loginUserDTO.setRoleStatus(true);                     // 유저 권한이 아닐 경우 true
+    }
+
+
     Long accessExp = 600000L;     // 10분
     Long refreshExp = 86400000L;  // 24시간
 
@@ -112,6 +132,12 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     response.setHeader("Authorization", "Bearer " + access);
     response.addCookie(createCookie("refresh", refresh, request));
     response.setStatus(HttpStatus.OK.value());
+
+    // JSON 형태로 응답
+    response.setContentType("application/json");
+    response.setCharacterEncoding("UTF-8");
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.writeValue(response.getWriter(), loginUserDTO);
 
   }
 

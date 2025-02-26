@@ -1,8 +1,6 @@
 package com.godLife.project.mapper;
 
-import com.godLife.project.dto.categories.JobCateDTO;
-import com.godLife.project.dto.categories.TargetCateDTO;
-import com.godLife.project.dto.categories.TopCateDTO;
+import com.godLife.project.dto.categories.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
@@ -19,4 +17,13 @@ public interface CategoryMapper {
     // 관심사 카테고리 조회
     @Select("SELECT * FROM TARGET_CATEGORY")
     List<TargetCateDTO> getAllTargetCategories();
+    // 챌린지 카테고리 조회
+    @Select("SELECT * FROM CHALL_CATEGORY")
+    List<ChallengeCateDTO> getAllChallCategories();
+    // 숏컷 카테고리
+    @Select("SELECT * FROM SHORTCUT_CATEGORY")
+    List<ShortCutCateDTO> getAllShortCategories();
+    // 권한 카테고리
+    @Select("SELECT * FROM AUTHORITY_CATEGORY")
+    List<AuthorityCateDTO> getAllAuthorityCategories();
 }

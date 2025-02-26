@@ -12,6 +12,7 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class PlanDTO {
@@ -80,4 +81,7 @@ public class PlanDTO {
 
     @Schema(description = "완료 후기", example = "후기 작성입니다.")
     private String review;
+
+    @Schema(description = "활동 리스트", example = "활동들")
+    private List<ActivityDTO> activities;
 }

@@ -28,9 +28,9 @@ public class ActivityDTO {
   @JsonFormat(pattern = "HH:mm:ss")
   private LocalTime setTime;
 
-  @Schema(description = "루틴 작성일", example = "2025-02-14")
+  @Schema(description = "한줄 메모", example = "이렇게 할 생각")
   private String description;
 
-  @Schema(description = "루틴 작성일", example = "2025-02-14")
+  @Schema(description = "활동 중요도", example = "4")
   private int activityImp;
 }

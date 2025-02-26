@@ -159,10 +159,13 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     cookie.setMaxAge(24*60*60); // 생명 주기 : 24시간
     cookie.setPath("/");     // 쿠키 적용 범위
     cookie.setHttpOnly(true);
+    cookie.setSecure(true);
+    cookie.setAttribute("SameSite", "None");
 
     // 🔹 현재 요청이 HTTPS인지 확인하여 Secure 적용
     if (request.isSecure()) {
       cookie.setSecure(true);
+      cookie.setAttribute("SameSite", "None");
     }
 
     return cookie;

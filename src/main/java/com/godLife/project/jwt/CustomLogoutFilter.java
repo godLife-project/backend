@@ -52,7 +52,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
     //refresh null check
     if (refresh == null) {
 
-      sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Refresh 토큰이 없습니다.");
+      sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Refresh 토큰이 쿠키에 없습니다.");
       return;
     }
 
@@ -80,7 +80,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
     if (!isExist) {
 
       //response status code
-      sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "해당 Refresh 토큰이 존재하지 않습니다.");
+      sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "해당 Refresh 토큰이 DB에 존재하지 않습니다.");
       return;
     }
 
@@ -94,6 +94,8 @@ public class CustomLogoutFilter extends GenericFilterBean {
     cookie.setPath("/");
 
     // 성공 응답
+    System.out.println("refresh 토큰 삭제 로그아웃완료");
+
     response.setStatus(HttpServletResponse.SC_OK);
     response.setContentType("application/json");
     response.setCharacterEncoding("UTF-8");
@@ -104,9 +106,13 @@ public class CustomLogoutFilter extends GenericFilterBean {
 
   private String getRefreshTokenFromCookies(HttpServletRequest request) {
     Cookie[] cookies = request.getCookies();
-    if (cookies == null) return null;
+    if (cookies == null)  {
+      System.out.println("쿠키 없음");
+      return null;
+    }
 
     for (Cookie cookie : cookies) {
+      //System.out.println(cookie.getName());
       if ("refresh".equals(cookie.getName())) {
         return cookie.getValue();
       }

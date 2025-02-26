@@ -1,44 +1,45 @@
 package com.godLife.project.controller;
 
+
 import com.godLife.project.dto.datas.PlanDTO;
 import com.godLife.project.service.PlanService;
-import io.swagger.v3.oas.annotations.Operation;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/plan")
 public class PlanController {
-    private final PlanService planService;
 
-    @Autowired
-    public PlanController(PlanService planService) {this.planService = planService;}
+  private final PlanService planService;
 
-    // 계획작성
-    @Operation(summary = "루틴 작성", description = "루틴 작성 로직")
-    @PostMapping("/write") // POST /plans/write
-    public ResponseEntity<String> writePlan(@RequestBody PlanDTO plan) {
-        try {
-            planService.writePlan(plan);
-            return ResponseEntity.ok("Plan created successfully!");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
-        }
+  public PlanController(PlanService planService) {
+    this.planService = planService;
+  }
+
+  @PostMapping("/write")
+  public ResponseEntity<Map<String, Object>> write(@RequestBody PlanDTO planDTO) {
+
+    boolean result = planService.insertPlanWithAct(planDTO);
+
+    Map<String, Object> message = new HashMap<>();
+    if (result) {
+      message.put("status", "success");
+      message.put("message", "루틴 저장 완료");
+      message.put("code", 200);
+      return ResponseEntity.ok(message);
+    }
+    else {
+      message.put("status", "error");
+      message.put("message", "서버 내부적으로 오류가 발생하여 루틴을 저장하지 못했습니다");
+      message.put("code", 500);
+      return ResponseEntity.internalServerError().body(message);
     }
 
-    // 랭킹 순서대로 계획 반환
-    @GetMapping("/ranking")
-    public ResponseEntity<List<PlanDTO>> getRankingPlans() {
-        List<PlanDTO> plans = planService.getRankingPlans();
-        return ResponseEntity.ok(plans);
-    }
-    // 최신 순서대로 계획 반환
-    @GetMapping("/latest")
-    public ResponseEntity<List<PlanDTO>> getLatestPlans() {
-        List<PlanDTO> plans = planService.getLatestPlans();
-        return ResponseEntity.ok(plans);
-    }
+  }
 }

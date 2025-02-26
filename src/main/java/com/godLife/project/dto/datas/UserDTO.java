@@ -10,12 +10,9 @@ import com.godLife.project.valid.annotation.UniqueUserId;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.time.LocalDate;
-@Getter
-@Setter
+
 @Data
 public class UserDTO {
 

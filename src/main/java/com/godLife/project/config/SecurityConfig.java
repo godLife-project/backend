@@ -8,6 +8,7 @@ import com.godLife.project.service.UserService;
 import com.godLife.project.service.jwtInterface.RefreshService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.NonNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
@@ -25,12 +26,16 @@ import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+  @Value("${cors.allowed-origins}")
+  private String allowedOrigins;
 
   //AuthenticationManager가 인자로 받을 AuthenticationConfiguraion 객체 생성자 주입
   private final AuthenticationConfiguration authenticationConfiguration;
@@ -107,7 +112,7 @@ public class SecurityConfig {
 
             CorsConfiguration configuration = new CorsConfiguration();
 
-            configuration.setAllowedOrigins(List.of("http://localhost:3000", "https://3930-182-229-89-82.ngrok-free.app", "https://a762-219-240-4-144.ngrok-free.app"));
+            configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(", ")));
             configuration.setAllowedMethods(Collections.singletonList("*"));
             configuration.setAllowCredentials(true);
             configuration.setAllowedHeaders(Collections.singletonList("*"));

@@ -1,9 +1,14 @@
 package com.godLife.project.dto.infos;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 public class VerifyDTO {
@@ -11,7 +16,7 @@ public class VerifyDTO {
     private int verifyIdx;
 
     @Schema(description = "루틴 인덱스", example = "1 [루틴 인덱스 값이 들어오면 챌린지 인덱스 null]")
-    private int planIdx;
+    private int activityIdx;
 
     @Schema(description = "챌린지 인덱스", example = "1[챌린지 인덱스 값이 들어오면 루틴 인덱스 null]")
     private int challIdx;
@@ -20,11 +25,11 @@ public class VerifyDTO {
     private int userIdx;
 
     @Schema(description = "인증한 날짜", example = "2025/02/16 HH:mm:ss")
-    private LocalDate verifyDate;
+    @JsonSerialize(using = LocalDateTimeSerializer.class) // 직렬화
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class) // 역직렬화
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime verifyDate;
 
     @Schema(description = "경과 시간(챌린지용)", example = "120")
     private int elapsedTime;
-
-    @Schema(description = "사진 경로", example = "사진 경로")
-    private String imagePath;
 }

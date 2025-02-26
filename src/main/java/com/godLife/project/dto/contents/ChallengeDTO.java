@@ -1,5 +1,10 @@
 package com.godLife.project.dto.contents;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -29,13 +34,22 @@ public class ChallengeDTO {
     private int maxParticipants;
 
     @Schema(description = "챌린지 시작 시간", example = "2025-02-15 HH:mm:ss")
+    @JsonSerialize(using = LocalDateTimeSerializer.class) // 직렬화
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class) // 역직렬화
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime challStartTime;
 
     @Schema(description = "챌린지 종료 시간", example = "2025-02-16 HH:mm:ss")
+    @JsonSerialize(using = LocalDateTimeSerializer.class) // 직렬화
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class) // 역직렬화
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime challEndTime;
 
     @Schema(description = "챌린지 작성일", example = "2025-02-16 HH:mm:ss")
-    private LocalDateTime latestChallenges;
+    @JsonSerialize(using = LocalDateTimeSerializer.class) // 직렬화
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class) // 역직렬화
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime challCreatedAt;
 
     @Schema(description = "챌린지 상태", example = "게시중")
     private String challState;

@@ -4,11 +4,14 @@ import com.godLife.project.jwt.CustomLogoutFilter;
 import com.godLife.project.jwt.JWTFilter;
 import com.godLife.project.jwt.JWTUtil;
 import com.godLife.project.jwt.LoginFilter;
+import com.godLife.project.service.UserService;
 import com.godLife.project.service.jwtInterface.RefreshService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.NonNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,18 +19,23 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+  @Value("${cors.allowed-origins}")
+  private String allowedOrigins;
 
   //AuthenticationManager가 인자로 받을 AuthenticationConfiguraion 객체 생성자 주입
   private final AuthenticationConfiguration authenticationConfiguration;
@@ -36,11 +44,14 @@ public class SecurityConfig {
 
   private final RefreshService refreshService;
 
-  public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil, RefreshService refreshService) {
+  private final UserService userService;
+
+  public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil, RefreshService refreshService, @Lazy UserService userService) {
 
     this.authenticationConfiguration = authenticationConfiguration;
     this.jwtUtil = jwtUtil;
     this.refreshService = refreshService;
+    this.userService = userService;
   }
 
   //AuthenticationManager Bean 등록
@@ -85,7 +96,7 @@ public class SecurityConfig {
 
     // 필터 적용
     http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
-    http.addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshService), UsernamePasswordAuthenticationFilter.class);
+    http.addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshService, userService), UsernamePasswordAuthenticationFilter.class);
     http.addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshService), LogoutFilter.class);
 
     // 세션 비활성화
@@ -101,7 +112,7 @@ public class SecurityConfig {
 
             CorsConfiguration configuration = new CorsConfiguration();
 
-            configuration.setAllowedOrigins(List.of("http://localhost:3000", "https://4214-175-117-30-43.ngrok-free.app"));
+            configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(", ")));
             configuration.setAllowedMethods(Collections.singletonList("*"));
             configuration.setAllowCredentials(true);
             configuration.setAllowedHeaders(Collections.singletonList("*"));
@@ -115,6 +126,9 @@ public class SecurityConfig {
 
 
 
-    return http.build();
-  }
+        return http.build();
+    }
+
 }
+
+

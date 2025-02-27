@@ -1,8 +1,9 @@
 package com.godLife.project.service;
 
 import com.godLife.project.dto.contents.ChallengeDTO;
-import org.springframework.transaction.annotation.Transactional;
+import com.godLife.project.dto.infos.VerifyDTO;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ChallengeService {
@@ -12,6 +13,7 @@ public interface ChallengeService {
     // 챌린지 생성
     void createChallenge(ChallengeDTO challengeDTO) throws Exception;
 
-    @Transactional
-    void joinChallenge(Long userId, int challIdx) throws Exception;
+    void joinChallenge(Long challIdx, int userIdx, LocalDateTime challEndTime);
+
+    void verifyChallenge(VerifyDTO verifyDTO, ChallengeDTO challengeDTO);
 }

@@ -10,12 +10,44 @@
         VALUES (#{title}, #{description}, #{categoryIdx}, #{state}, SYSDATE)
     </insert>
 
-    <!-- 챌린지 시작 시간 및 종료 시간 업데이트 -->
-<update id="updateChallengeStartTime">
-    UPDATE CHALL_TABLE
-    SET chall_start_time = #{startTime}, chall_end_time = #{endTime}
-    WHERE chall_idx = #{challIdx}
-</update>
+    <!-- 챌린지 정보 조회 -->
+    <select id="getChallenge" resultType="com.godLife.project.dto.contents.ChallengeDTO">
+        SELECT
+        FROM CHALL_TABLE
+        WHERE CHALL_IDX= #{challidx}
+    </select>
+
+    <!-- 챌린지 시작 업데이트 (최초 참여 시) -->
+    <update id="startChallenge">
+        UPDATE CHALL_TABLE
+        SET CHALL_START_TIME = #{challStartTime},
+            CHALL_END_TIME = #{challEndTime},
+            CHALL_STATE = #{challState}
+        WHERE CHALL_IDX = #{challIdx}
+    </update>
+
+    <!-- 인증 기록 저장 -->
+    <insert id="insertVerifyRecord">
+    INSERT INTO VERIFY_TABLE (
+        VERIFY_IDX, CHALL_IDX, USER_IDX, VERIFY_DATE, ELAPSED_TIME)
+    VALUES (
+        VERIFY_SEQ.NEXTVAL, #{challIdx}, #{userIdx}, #{verifyDate}, #{elapsedTime}
+    )
+    </insert>
+
+    <!-- 남은 클리어 시간 차감 -->
+    <update id="updateClearTime">
+        UPDATE CHALL_TABLE
+        SET TOTAL_CLEAR_TIME = TOTAL_CLEAR_TIME - #{elapsedTime}
+        WHERE CHALL_IDX = #{challIdx}
+    </update>
+
+    <!-- 클리어 시간 0 이하 시 챌린지 종료 처리 -->
+    <update id="finishChallenge">
+        UPDATE CHALL_TABLE
+        SET CHALL_STATE = 'FINISHED'
+        WHERE CHALL_IDX = #{challIdx}
+    </update>
 
 <!-- 최신순 챌린지 리스트 조회 -->
 <select id="getLatestChallenges" resultType="com.godLife.project.dto.contents.ChallengeDTO">
@@ -32,10 +64,6 @@
     ORDER BY CHALL_CREATED_AT DESC
 </select>
 
-    <update id="updateChallengeStatus">
-        UPDATE challenge
-        SET chall_state = #{status}
-        WHERE chall_idx = #{challIdx};
-    </update>
+
 
 </mapper>

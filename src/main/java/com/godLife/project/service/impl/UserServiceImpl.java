@@ -25,6 +25,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public String insertUser(UserDTO joinUserDTO) {
         try {
+            // 닉네임 중복 시
+            int duplicate = userMapper.checkUserNickExist(joinUserDTO.getUserNick());
+            String tag = "#" + (duplicate + 1);
+            joinUserDTO.setNickTag(tag);
+
             String encryptedPassword = passwordEncoder.encode(joinUserDTO.getUserPw());
             joinUserDTO.setUserPw(encryptedPassword);
             //System.out.println(joinUserDTO);
@@ -41,10 +46,11 @@ public class UserServiceImpl implements UserService {
         return userMapper.checkUserIdExist(userId);
     }
 
-    // 권한 확인
+    // 유저 정보 조회
     @Override
-    public UserDTO getUserById(Long userId) {
-        return null;
-    }
+    public UserDTO findByUserId(String userId) { return userMapper.findByUserid(userId); }
+
+
+
 
 }

@@ -31,4 +31,5 @@ public interface ChallengeMapper {
     // 챌린지 ID로 특정 챌린지 조회
     @Select("SELECT * FROM CHALL_TABLE WHERE chall_idx = #{challIdx}")
     ChallengeDTO getChallengeById(@Param("challIdx") int challIdx);
+
     }

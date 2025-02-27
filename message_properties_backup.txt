@@ -25,3 +25,20 @@ joinUser.targetIdx.min=현재 관심사를 선택해주세요.
 joinUser.userGender.min=성별을 선택해주세요.
 
 joinUser.nickTag.pattern=닉네임 태그는 #으로 시작해야합니다.
+
+
+writePlan.planTitle.notBlank=루틴의 제목을 입력해 주세요.
+
+writePlan.endTo.min=루틴은 최소 일주일 이상 진행해 주세요.
+
+writePlan.targetIdx.min=루틴의 카테고리를 선택해 주세요.
+
+writePlan.planImp.min=루틴의 중요도는 1 부터 10 까지만 설정 가능합니다.
+writePlan.planImp.max=루틴의 중요도는 1 부터 10 까지만 설정 가능합니다.
+
+writePlan.activities.size=최소 한개 이상의 활동을 추가해 주세요.
+
+writeActivity.activityName.notBlank=어떤 활동을 하시나요?
+
+
+

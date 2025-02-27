@@ -47,26 +47,35 @@ public class JWTFilter extends OncePerRequestFilter {
       jwtUtil.isExpired(accessToken);
     } catch (ExpiredJwtException e) {
 
-      //response body
-      PrintWriter writer = response.getWriter();
-      writer.print("access token expired");
-
-      //response status code
+      // JSON 형식으로 응답 보내기
+      response.setContentType("application/json");
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      return;
+
+      // JSON 데이터
+      String jsonResponse = "{\"message\": \"access token expired\"}";
+
+      // PrintWriter로 JSON 응답 출력
+      PrintWriter writer = response.getWriter();
+      writer.print(jsonResponse);
+      writer.flush();  // 데이터를 전송
     }
 
     // 토큰이 access인지 확인 (발급시 페이로드에 명시)
     String category = jwtUtil.getCategory(accessToken);
 
     if (!category.equals("access")) {
-
-      //response body
-      PrintWriter writer = response.getWriter();
-      writer.print("invalid access token");
-
-      //response status code
+      // JSON 형식으로 응답 보내기
+      response.setContentType("application/json");
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+      // JSON 데이터
+      String jsonResponse = "{\"message\": \"invalid access token\"}";
+
+      // PrintWriter로 JSON 응답 출력
+      PrintWriter writer = response.getWriter();
+      writer.print(jsonResponse);
+      writer.flush();  // 데이터를 전송
+
       return;
     }
 

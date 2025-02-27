@@ -8,6 +8,11 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -23,18 +28,23 @@ public class PlanDTO {
     private int userIdx;
 
     @Schema(description = "루틴 제목", example = "루틴 제목입니다.")
+    @NotBlank(message = "{writePlan.planTitle.notBlank}")
     private String planTitle;
 
     @Schema(description = "목표 개월 수", example = "7 : 시작일로부터 7일 후가 종료일이 됨.")
+    @Min(value = 7, message = "{writePlan.endTo.min}")
     private int endTo;
 
     @Schema(description = "관심 카테고리", example = "1 : 목표 카테고리 인덱스")
+    @Min(value = 1, message = "{writePlan.targetIdx.min}")
     private int targetIdx;
 
     @Schema(description = "직업 카테고리", example = "1 : 직업 카테고리 인덱스")
     private int jobIdx;
 
     @Schema(description = "루틴 중요도", example = "1 : 최하단 혹은 제일 마지막에 배치")
+    @Min(value = 1, message = "{writePlan.planImp.min}")
+    @Max(value = 10, message = "{writePlan.planImp.max}")
     private int planImp;
 
     @Schema(description = "루틴 작성일", example = "2025-02-14")
@@ -83,5 +93,7 @@ public class PlanDTO {
     private String review;
 
     @Schema(description = "활동 리스트", example = "활동들")
+    @Size(min = 1, message = "{writePlan.activities.size}")
+    @Valid
     private List<ActivityDTO> activities;
 }

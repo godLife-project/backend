@@ -7,6 +7,7 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer;
 
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.time.LocalTime;
@@ -20,6 +21,7 @@ public class ActivityDTO {
   private int planIdx;
 
   @Schema(description = "활동명", example = "조깅 2시간")
+  @NotBlank(message = "{writeActivity.activityName.notBlank}")
   private String activityName;
 
   @Schema(description = "시작 시간", example = "08:00:00")

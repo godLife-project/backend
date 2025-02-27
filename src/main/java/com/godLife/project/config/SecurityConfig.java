@@ -86,6 +86,8 @@ public class SecurityConfig {
         .requestMatchers("/api/categories/*").permitAll()
         // 추가 경로 제외
         .requestMatchers("/", "/api/user/join", "/api/user/checkId/*", "/api/test1").permitAll()
+        // 추가 경로 제외
+        .requestMatchers("/api/plan/detail/*").permitAll()
         // refresh 토큰 검증 api경로
         .requestMatchers("/api/reissue").permitAll()
         // 특정 권한만 접근 가능

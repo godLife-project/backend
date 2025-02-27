@@ -3,16 +3,37 @@
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.godLife.project.mapper.PlanMapper">
+
+  <!-- 루틴 저장 쿼리 -->
   <insert id="insertPlan" parameterType="com.godLife.project.dto.datas.PlanDTO">
-    INSERT INTO PLAN_TABLE(PLAN_IDX, USER_IDX, PLAN_TITLE, END_TO, TARGET_IDX, IS_SHARED, PLAN_IMP, JOB_IDX)
-    VALUES (PLAN_SEQ.NEXTVAL, #{userIdx}, #{planTitle}, #{endTo}, #{targetIdx}, #{isShared}, #{planImp}, #{jobIdx})
+    INSERT INTO PLAN_TABLE(
+      PLAN_IDX, USER_IDX, PLAN_TITLE, END_TO, TARGET_IDX, IS_SHARED, PLAN_IMP, JOB_IDX
+      <if test="isActive != null and isActive == 1">
+        , IS_ACTIVE, PLAN_SUB_START, PLAN_SUB_END
+      </if>
+    )
+    VALUES (
+      PLAN_SEQ.NEXTVAL, #{userIdx}, #{planTitle}, #{endTo}, #{targetIdx}, #{isShared}, #{planImp}, #{jobIdx}
+      <if test="isActive != null and isActive == 1">
+        , #{isActive}, SYSDATE, SYSDATE + #{endTo}
+      </if>
+    )
     <selectKey keyProperty="planIdx" resultType="int" order="AFTER">
       SELECT PLAN_SEQ.CURRVAL FROM DUAL
     </selectKey>
   </insert>
 
+  <!-- 활동 저장 쿼리 -->
   <insert id="insertActivity" parameterType="com.godLife.project.dto.datas.ActivityDTO">
-    INSERT INTO PLAN_ACTIVITY
-    VALUES (ACTIVITY_SEQ.NEXTVAL, #{planIdx}, #{activityName}, #{setTime}, #{description}, #{activityImp})
+    <choose>
+      <when test="setTime != null ">
+        INSERT INTO PLAN_ACTIVITY
+        VALUES (ACTIVITY_SEQ.NEXTVAL, #{planIdx}, #{activityName}, #{setTime}, #{description}, #{activityImp})
+      </when>
+      <otherwise>
+        INSERT INTO PLAN_ACTIVITY (ACTIVITY_IDX, PLAN_IDX, ACTIVITY_NAME, DESCRIPTION, ACTIVITY_IMP)
+        VALUES (ACTIVITY_SEQ.NEXTVAL, #{planIdx}, #{activityName}, #{description}, #{activityImp})
+      </otherwise>
+    </choose>
   </insert>
 </mapper>

@@ -79,21 +79,20 @@ public class SecurityConfig {
 
     // 경로별 인가 작업
     http.authorizeHttpRequests(auth -> auth
-        // 스웨거 관련
-        .requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**", "/favicon.ico")
-        .permitAll()
-        // 카테고리 관련
-        .requestMatchers("/api/categories/*").permitAll()
-        // 추가 경로 제외
-        .requestMatchers("/", "/api/user/join", "/api/user/checkId/*", "/api/test1").permitAll()
-        // 추가 경로 제외
-        .requestMatchers("/api/plan/detail/*").permitAll()
-        // refresh 토큰 검증 api경로
-        .requestMatchers("/api/reissue").permitAll()
-        // 특정 권한만 접근 가능
+    // 지정한 엔드포인트는 로그인시 접근 가능 (로그인 유저)
+        // 테스트 용 (유저 권한)
+        .requestMatchers("/api/test2").authenticated()
+        // 루틴 관련
+        .requestMatchers("/api/plan/write").authenticated()
+
+    // 지정한 엔드포인트는 해당 권한 등급이 없으면 로그인을 해도 접근 못함 (관리자)
+        // 관리자 권한 카테고리 조회
         .requestMatchers("/api/categories/auth/authority").hasAnyAuthority("2", "3", "4", "5", "6", "7")
+        // 테스트 용 (관리자 권한)
         .requestMatchers("/admin").hasAuthority("7")
-        .anyRequest().authenticated()
+
+    // 그 외 모든 접근 허용 (비 로그인 접근)
+        .anyRequest().permitAll()
     );
 
     // 필터 적용

@@ -19,7 +19,7 @@ public class VerifyDTO {
     private int activityIdx;
 
     @Schema(description = "챌린지 인덱스", example = "1[챌린지 인덱스 값이 들어오면 루틴 인덱스 null]")
-    private int challIdx;
+    private Long challIdx;
 
     @Schema(description = "유저 인덱스", example = "1")
     private int userIdx;

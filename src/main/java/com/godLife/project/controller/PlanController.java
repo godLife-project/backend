@@ -4,6 +4,7 @@ package com.godLife.project.controller;
 import com.godLife.project.dto.datas.PlanDTO;
 import com.godLife.project.service.PlanService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
@@ -27,32 +28,23 @@ public class PlanController {
   public ResponseEntity<Map<String, Object>> write(@Valid @RequestBody PlanDTO writePlanDTO, BindingResult result) {
 
     if (result.hasErrors()) {
-      Map<String, Object> errors = new HashMap<>();
-      result.getFieldErrors().forEach(fieldError -> {
-        errors.put(fieldError.getField(), fieldError.getDefaultMessage());
-      });
-
-      return ResponseEntity.badRequest().body(errors);
+      return ResponseEntity.badRequest().body(getValidationErrors(result));
     }
-    else {
-      boolean insertResult = planService.insertPlanWithAct(writePlanDTO);
+    int insertResult = planService.insertPlanWithAct(writePlanDTO);
 
-      Map<String, Object> message = new HashMap<>();
-      if (insertResult) {
-        message.put("status", "success");
-        message.put("message", "루틴 저장 완료");
-        message.put("code", 200);
-        return ResponseEntity.ok(message);
-      }
-      else {
-        message.put("status", "error");
-        message.put("message", "서버 내부적으로 오류가 발생하여 루틴을 저장하지 못했습니다");
-        message.put("code", 500);
-        return ResponseEntity.internalServerError().body(message);
-      }
+    // 응답 메세지 세팅
+    String msg = "";
+    switch (insertResult) {
+      case 200 -> msg = "루틴 저장 완료";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 루틴을 저장하지 못했습니다.";
+      default -> msg = "알 수 없는 오류가 발생했습니다.";
     }
+
+    // 응답 메시지 설정
+    return ResponseEntity.status(getHttpStatus(insertResult)).body(createResponse(insertResult, msg));
   }
 
+  // 루틴 상세 보기 API
   @GetMapping("/detail/{planIdx}")
   public ResponseEntity<Map<String, Object>> detail(@PathVariable int planIdx) {
     Map<String, Object> message = new HashMap<>();
@@ -60,21 +52,54 @@ public class PlanController {
       // 해당 인덱스의 루틴 조회
       PlanDTO planDTO = planService.detailRoutine(planIdx);
 
-      message.put("status", "success");
-      message.put("message", "루틴 조회 완료");
-      message.put("routineDetails", planDTO);
-      message.put("code", 200);
-
-      return ResponseEntity.ok(message);
+      // 응답 메시지 설정
+      return ResponseEntity.ok().body(createResponse(200, planDTO));
     } catch (Exception e) {
-
-      message.put("status", "error");
-      message.put("message", "루틴 조회 실패,, 조회하려는 루틴이 존재하지 않습니다.");
-      message.put("code", 400);
-
-      return ResponseEntity.badRequest().body(message);
+      String msg = "루틴 조회 실패,, 조회하려는 루틴이 존재하지 않습니다.";
+      return ResponseEntity.status(getHttpStatus(404)).body(createResponse(404, msg));
     }
   }
+
+  // 루틴 수정 API
+  @PatchMapping("modify")
+  public ResponseEntity<Map<String, Object>> modify(@Valid @RequestBody PlanDTO modifyPlanDTO, BindingResult result) {
+    // 유효성 검사 실패 시 에러 반환
+    if (result.hasErrors()) {
+      return ResponseEntity.badRequest().body(getValidationErrors(result));
+    }
+
+    // 서비스 로직 실행
+    int modifyResult = planService.modifyPlanWithAct(modifyPlanDTO);
+    // 응답 메세지 세팅
+    String msg = "";
+    switch (modifyResult) {
+      case 200 -> msg = "루틴 수정 완료";
+      case 403 -> msg = "작성자가 아닙니다. 재로그인 해주세요.";
+      case 404 -> msg = "요청하신 루틴이 존재하지 않습니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 루틴을 수정하지 못했습니다.";
+      default -> msg = "알 수 없는 오류가 발생했습니다.";
+    }
+
+    // 응답 메시지 설정
+    return ResponseEntity.status(getHttpStatus(modifyResult))
+        .body(createResponse(modifyResult, msg));
+  }
+
+
+
+
+/*
+  @PatchMapping("/delete")
+  public ResponseEntity<Map<String, Object>> delete(@RequestBody int planIdx, ) {
+
+
+  }
+*/
+
+
+
+
+
 
   // JSON 파싱 오류 처리 메소드
   @ExceptionHandler(HttpMessageNotReadableException.class)
@@ -85,6 +110,41 @@ public class PlanController {
     errorResponse.put("code", 400);
 
     return ResponseEntity.badRequest().body(errorResponse);
+  }
+
+  // 유효성 검사 에러 처리
+  private Map<String, Object> getValidationErrors(BindingResult result) {
+    Map<String, Object> errors = new HashMap<>();
+    result.getFieldErrors().forEach(fieldError ->
+        errors.put(fieldError.getField(), fieldError.getDefaultMessage()));
+    return errors;
+  }
+
+  // HTTP 상태 코드 반환
+  private HttpStatus getHttpStatus(int result) {
+    return switch (result) {
+      case 200 -> HttpStatus.OK;
+      case 403 -> HttpStatus.FORBIDDEN;
+      case 404 -> HttpStatus.NOT_FOUND;
+      case 500 -> HttpStatus.INTERNAL_SERVER_ERROR;
+      default -> HttpStatus.BAD_REQUEST;
+    };
+  }
+
+  // 응답 메시지 생성
+  private Map<String, Object> createResponse(int result, Object msg) {
+    Map<String, Object> message = new HashMap<>();
+    message.put("status", result == 200 ? "success" : "error");
+    message.put("code", result);
+
+    switch (result) {
+      case 200 -> message.put("message", msg);
+      case 403 -> message.put("message", msg);
+      case 404 -> message.put("message", msg);
+      case 500 -> message.put("message", msg);
+      default -> message.put("message", msg);
+    }
+    return message;
   }
 
 }

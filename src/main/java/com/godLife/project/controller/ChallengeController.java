@@ -1,12 +1,15 @@
 package com.godLife.project.controller;
 
 import com.godLife.project.dto.contents.ChallengeDTO;
+import com.godLife.project.dto.infos.VerifyDTO;
 import com.godLife.project.service.ChallengeService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -28,18 +31,31 @@ public class ChallengeController {
         return ResponseEntity.ok(challenges);
     }
 
-    //  챌린지 참여 API (일반 사용자용)
-    @PostMapping("/join")
-    public ResponseEntity<String> joinChallenge(@RequestParam Long userId, @RequestParam int challIdx) {
+
+    // 챌린지 참여 (시작)
+    @PostMapping("/{challIdx}/join")
+    public ResponseEntity<?> joinChallenge(
+            @PathVariable Long challIdx,
+            @RequestParam int userIdx,
+            @RequestParam @NotNull LocalDateTime challEndTime) { // 종료시간 필수
         try {
-            challengeService.joinChallenge(userId, challIdx);
-            return ResponseEntity.ok("챌린지 참여 성공!");
-        } catch (IllegalStateException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            challengeService.joinChallenge(challIdx, userIdx, challEndTime);
+            return ResponseEntity.ok("챌린지 참여 완료");
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(404).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("챌린지 참여 중 오류가 발생했습니다.");
+            return ResponseEntity.badRequest().body("종료 시간을 지정해야 합니다.");
         }
+    }
+
+    // 챌린지 인증 (경과 시간 기록)
+    @PostMapping("/{challIdx}/verify")
+    public ResponseEntity<?> verifyChallenge(
+            @PathVariable Long challIdx,
+            @RequestParam int userIdx,
+            @RequestBody VerifyDTO verifyDTO,
+            @RequestBody ChallengeDTO challengeDTO) {
+        verifyDTO.setChallIdx((Long) challIdx);
+        verifyDTO.setUserIdx(userIdx);
+        challengeService.verifyChallenge(verifyDTO, challengeDTO);
+        return ResponseEntity.ok("챌린지 인증 완료");
     }
 }

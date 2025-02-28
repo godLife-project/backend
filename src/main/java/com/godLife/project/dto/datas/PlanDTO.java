@@ -48,16 +48,16 @@ public class PlanDTO {
     private int planImp;
 
     @Schema(description = "루틴 작성일", example = "2025-02-14")
-    @JsonSerialize(using = LocalDateSerializer.class) // 직렬화
-    @JsonDeserialize(using = LocalDateDeserializer.class) // 역직렬화
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate planSubDate;
+    @JsonSerialize(using = LocalDateTimeSerializer.class) // 직렬화
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class) // 역직렬화
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime planSubDate;
 
     @Schema(description = "루틴 수정일", example = "2025-02-14")
-    @JsonSerialize(using = LocalDateSerializer.class) // 직렬화
-    @JsonDeserialize(using = LocalDateDeserializer.class) // 역직렬화
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate planSubMod;
+    @JsonSerialize(using = LocalDateTimeSerializer.class) // 직렬화
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class) // 역직렬화
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime planSubMod;
 
     @Schema(description = "루틴 시작일", example = "2025-02-14 HH:mm:ss")
     @JsonSerialize(using = LocalDateTimeSerializer.class) // 직렬화
@@ -96,4 +96,7 @@ public class PlanDTO {
     @Size(min = 1, message = "{writePlan.activities.size}")
     @Valid
     private List<ActivityDTO> activities;
+
+    @Schema(description = "활동 삭제 인덱스", example = "1, 2, 3")
+    private List<Integer> deleteActivityIdx;
 }

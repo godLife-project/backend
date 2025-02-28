@@ -36,4 +36,39 @@
       </otherwise>
     </choose>
   </insert>
+
+  <!-- 루틴 수정 쿼리 -->
+  <update id="modifyPlan" parameterType="com.godLife.project.dto.datas.PlanDTO">
+    UPDATE PLAN_TABLE
+    SET PLAN_TITLE = #{planTitle},
+        END_TO = #{endTo},
+        TARGET_IDX = #{targetIdx},
+        JOB_IDX = #{jobIdx},
+        PLAN_IMP = #{planImp},
+        PLAN_SUB_MOD = SYSDATE,
+        IS_SHARED = #{isShared}
+    WHERE PLAN_IDX = #{planIdx} AND USER_IDX = #{userIdx}
+  </update>
+
+  <!-- 활동 수정 쿼리 -->
+  <update id="modifyActivity" parameterType="com.godLife.project.dto.datas.ActivityDTO">
+    UPDATE PLAN_ACTIVITY
+    SET ACTIVITY_NAME = #{activityName},
+        <if test="setTime != null">
+          SET_TIME = #{setTime},
+        </if>
+        <if test="setTime == null">
+          SET_TIME = NULL,
+        </if>
+        DESCRIPTION = #{description},
+        ACTIVITY_IMP = #{activityImp}
+    WHERE PLAN_IDX = #{planIdx} AND ACTIVITY_IDX = #{activityIdx}
+  </update>
+
+  <!-- 루틴 삭제 처리 -->
+  <update id="deletePlan" parameterType="map">
+    UPDATE PLAN_TABLE
+       SET IS_DELETED = 1
+     WHERE PLAN_IDX = #{planIdx} AND USER_IDX = #{userIdx}
+  </update>
 </mapper>

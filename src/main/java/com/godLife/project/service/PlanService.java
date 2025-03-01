@@ -8,10 +8,10 @@ public interface PlanService {
   int insertPlanWithAct(PlanDTO planDTO);
 
   // 루틴과 활동 상세 조회
-  PlanDTO detailRoutine(int planIdx);
+  PlanDTO detailRoutine(int planIdx, int isDeleted);
 
   // 루틴과 활동 수정
-  int modifyPlanWithAct(PlanDTO planDTO);
+  int modifyPlanWithAct(PlanDTO planDTO, int isDeleted);
 
   // 루틴 삭제 처리
   int deletePlan(int planIdx, int userIdx);

@@ -15,8 +15,8 @@ public interface PlanMapper {
   void insertActivity(ActivityDTO activityDTO);
 
   // 루틴 상세 보기
-  @Select("SELECT * FROM PLAN_TABLE WHERE PLAN_IDX = #{planIdx}")
-  PlanDTO detailPlanByPlanIdx(int planIdx);
+  @Select("SELECT * FROM PLAN_TABLE WHERE PLAN_IDX = #{planIdx} AND IS_DELETED = #{isDeleted}")
+  PlanDTO detailPlanByPlanIdx(int planIdx, int isDeleted);
   // 활동 상세 보기
   @Select("SELECT * FROM PLAN_ACTIVITY WHERE PLAN_IDX = #{planIdx}")
   List<ActivityDTO> detailActivityByPlanIdx(int planIdx);
@@ -26,8 +26,8 @@ public interface PlanMapper {
   int getUserIdxByPlanIDx(int planIdx);
 
   // 루틴 존재 여부 확인
-  @Select("SELECT COUNT(*) FROM PLAN_TABLE WHERE PLAN_IDX = #{planIdx}")
-  boolean checkPlanByPlanIdx(int planIdx);
+  @Select("SELECT COUNT(*) FROM PLAN_TABLE WHERE PLAN_IDX = #{planIdx} AND IS_DELETED = #{isDeleted}")
+  boolean checkPlanByPlanIdx(int planIdx, int isDeleted);
   // 활동 존재 여부 확인
   @Select("SELECT COUNT(*) FROM PLAN_ACTIVITY WHERE PLAN_IDX = #{planIdx} AND ACTIVITY_IDX = #{activityIdx}")
   boolean checkActByActivityIdx(int planIdx, int activityIdx);

@@ -2,6 +2,7 @@ package com.godLife.project.controller;
 
 
 import com.godLife.project.dto.datas.PlanDTO;
+import com.godLife.project.dto.request.PlanDeleteRequestDTO;
 import com.godLife.project.service.PlanService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/plan")
@@ -44,21 +46,35 @@ public class PlanController {
     return ResponseEntity.status(getHttpStatus(insertResult)).body(createResponse(insertResult, msg));
   }
 
+
   // 루틴 상세 보기 API
   @GetMapping("/detail/{planIdx}")
   public ResponseEntity<Map<String, Object>> detail(@PathVariable int planIdx) {
     Map<String, Object> message = new HashMap<>();
     try {
+      // 삭제 여부 설정   0: 삭제 X 1: 삭제 O
+      int isDeleted = 0;
       // 해당 인덱스의 루틴 조회
-      PlanDTO planDTO = planService.detailRoutine(planIdx);
+      PlanDTO planDTO = planService.detailRoutine(planIdx, isDeleted);
+
+      // planDTO가 null이면 예외 발생
+      if (planDTO == null) {
+        throw new NoSuchElementException("조회하려는 루틴이 존재하지 않습니다.");
+      }
 
       // 응답 메시지 설정
       return ResponseEntity.ok().body(createResponse(200, planDTO));
-    } catch (Exception e) {
+
+    } catch (NoSuchElementException e) {
       String msg = "루틴 조회 실패,, 조회하려는 루틴이 존재하지 않습니다.";
       return ResponseEntity.status(getHttpStatus(404)).body(createResponse(404, msg));
+
+    } catch (Exception e) {
+      String msg = "서버 내부 오류로 인해 루틴 조회에 실패했습니다.";
+      return ResponseEntity.status(getHttpStatus(500)).body(createResponse(500, msg));
     }
   }
+
 
   // 루틴 수정 API
   @PatchMapping("modify")
@@ -68,8 +84,11 @@ public class PlanController {
       return ResponseEntity.badRequest().body(getValidationErrors(result));
     }
 
+    // 삭제 여부 확인
+    int isDeleted = 0;
+
     // 서비스 로직 실행
-    int modifyResult = planService.modifyPlanWithAct(modifyPlanDTO);
+    int modifyResult = planService.modifyPlanWithAct(modifyPlanDTO, isDeleted);
     // 응답 메세지 세팅
     String msg = "";
     switch (modifyResult) {
@@ -86,15 +105,29 @@ public class PlanController {
   }
 
 
-
-
-/*
+  // 루틴 삭제 API
   @PatchMapping("/delete")
-  public ResponseEntity<Map<String, Object>> delete(@RequestBody int planIdx, ) {
+  public ResponseEntity<Map<String, Object>> delete(@RequestBody PlanDeleteRequestDTO requestDTO) {
+    int planIdx = requestDTO.getPlanIdx();
+    int userIdx = requestDTO.getUserIdx();
 
+    // 서비스 로직 실행
+    int deleteResult = planService.deletePlan(planIdx, userIdx);
 
+    // 응답 메세지 세팅
+    String msg = "";
+    switch (deleteResult) {
+      case 200 -> msg = "루틴 삭제 완료";
+      case 403 -> msg = "작성자가 아닙니다. 재로그인 해주세요.";
+      case 404 -> msg = "요청하신 루틴이 존재하지 않습니다.";
+      default -> msg = "알 수 없는 오류가 발생했습니다.";
+    }
+
+    // 응답 메시지 설정
+    return ResponseEntity.status(getHttpStatus(deleteResult))
+        .body(createResponse(deleteResult, msg));
   }
-*/
+
 
 
 

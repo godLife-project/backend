@@ -3,9 +3,7 @@ package com.godLife.project.dto.datas;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
@@ -15,7 +13,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -91,6 +88,9 @@ public class PlanDTO {
 
     @Schema(description = "완료 후기", example = "후기 작성입니다.")
     private String review;
+
+    @Schema(description = "삭제 상태", example = "0: 삭제안함 1: 삭제됨")
+    private int isDeleted;
 
     @Schema(description = "활동 리스트", example = "활동들")
     @Size(min = 1, message = "{writePlan.activities.size}")

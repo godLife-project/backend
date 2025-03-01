@@ -48,24 +48,26 @@ public class PlanServicelmpl implements PlanService {
   // 루틴 상세 보기 로직
   @Override
   @Transactional
-  public PlanDTO detailRoutine(int planIdx) {
+  public PlanDTO detailRoutine(int planIdx, int isDeleted) {
     // 루틴 조회
-    PlanDTO planDTO = planMapper.detailPlanByPlanIdx(planIdx);
-    // 활동 조회
-    planDTO.setActivities(planMapper.detailActivityByPlanIdx(planIdx));
-
-    return planDTO;
+    PlanDTO planDTO = planMapper.detailPlanByPlanIdx(planIdx, isDeleted);
+    if (planDTO != null) {
+      // 활동 조회
+      planDTO.setActivities(planMapper.detailActivityByPlanIdx(planIdx));
+      return planDTO;
+    }
+    return null;
   }
 
   // 루틴 수정 로직
   @Override
   @Transactional(rollbackFor = Exception.class)
-  public int modifyPlanWithAct(PlanDTO planDTO) {
+  public int modifyPlanWithAct(PlanDTO planDTO, int isDeleted) {
     int planIdx = planDTO.getPlanIdx();
     int userIdx = planDTO.getUserIdx();
 
     // 루틴 존재 여부 확인
-    if (!planMapper.checkPlanByPlanIdx(planIdx)) {
+    if (!planMapper.checkPlanByPlanIdx(planIdx, isDeleted)) {
       return 404; // Not Found
     }
     // 작성자만 수정 가능
@@ -110,7 +112,8 @@ public class PlanServicelmpl implements PlanService {
 
   @Override
   public int deletePlan(int planIdx, int userIdx) {
-    if (!planMapper.checkPlanByPlanIdx(planIdx)) {
+    int isDeleted = 0;
+    if (!planMapper.checkPlanByPlanIdx(planIdx, isDeleted)) {
       return 404; // not found
     }
     if (planMapper.getUserIdxByPlanIDx(planIdx) != userIdx) {

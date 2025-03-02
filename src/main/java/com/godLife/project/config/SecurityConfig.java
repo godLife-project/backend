@@ -19,7 +19,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
@@ -84,12 +83,18 @@ public class SecurityConfig {
         .requestMatchers("/api/test/test2").authenticated()
         // 루틴 관련
         .requestMatchers("/api/plan/write", "/api/plan/modify", "/api/plan/delete").authenticated()
+        .requestMatchers("/api/plan/write").authenticated()
+        // 챌린지 참여/인증
+        .requestMatchers("/api/{challIdx}/join", "/api/{challIdx}/verify").authenticated()
 
     // 지정한 엔드포인트는 해당 권한 등급이 없으면 로그인을 해도 접근 못함 (관리자)
         // 관리자 권한 카테고리 조회
         .requestMatchers("/api/categories/auth/authority").hasAnyAuthority("2", "3", "4", "5", "6", "7")
         // 테스트 용 (관리자 권한)
-        .requestMatchers("/admin").hasAuthority("7")
+        .requestMatchers("/api/admin").hasAuthority("7")
+        // 관리자 권한 챌린지 작성
+        .requestMatchers("api/admin/challenge/create").hasAnyAuthority("2", "3", "4", "5", "6", "7")
+
 
     // 그 외 모든 접근 허용 (비 로그인 접근)
         .anyRequest().permitAll()

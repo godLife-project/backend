@@ -80,8 +80,9 @@ public class SecurityConfig {
     http.authorizeHttpRequests(auth -> auth
     // 지정한 엔드포인트는 로그인시 접근 가능 (로그인 유저)
         // 테스트 용 (유저 권한)
-        .requestMatchers("/api/test2").authenticated()
+        .requestMatchers("/api/test/test2").authenticated()
         // 루틴 관련
+        .requestMatchers("/api/plan/write", "/api/plan/modify", "/api/plan/delete").authenticated()
         .requestMatchers("/api/plan/write").authenticated()
         // 챌린지 참여/인증
         .requestMatchers("/api/{challIdx}/join", "/api/{challIdx}/verify").authenticated()

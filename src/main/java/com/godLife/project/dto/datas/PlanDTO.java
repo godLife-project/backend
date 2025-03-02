@@ -3,9 +3,7 @@ package com.godLife.project.dto.datas;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
@@ -15,7 +13,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -48,16 +45,16 @@ public class PlanDTO {
     private int planImp;
 
     @Schema(description = "루틴 작성일", example = "2025-02-14")
-    @JsonSerialize(using = LocalDateSerializer.class) // 직렬화
-    @JsonDeserialize(using = LocalDateDeserializer.class) // 역직렬화
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate planSubDate;
+    @JsonSerialize(using = LocalDateTimeSerializer.class) // 직렬화
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class) // 역직렬화
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime planSubDate;
 
     @Schema(description = "루틴 수정일", example = "2025-02-14")
-    @JsonSerialize(using = LocalDateSerializer.class) // 직렬화
-    @JsonDeserialize(using = LocalDateDeserializer.class) // 역직렬화
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate planSubMod;
+    @JsonSerialize(using = LocalDateTimeSerializer.class) // 직렬화
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class) // 역직렬화
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime planSubMod;
 
     @Schema(description = "루틴 시작일", example = "2025-02-14 HH:mm:ss")
     @JsonSerialize(using = LocalDateTimeSerializer.class) // 직렬화
@@ -92,8 +89,14 @@ public class PlanDTO {
     @Schema(description = "완료 후기", example = "후기 작성입니다.")
     private String review;
 
+    @Schema(description = "삭제 상태", example = "0: 삭제안함 1: 삭제됨")
+    private int isDeleted;
+
     @Schema(description = "활동 리스트", example = "활동들")
     @Size(min = 1, message = "{writePlan.activities.size}")
     @Valid
     private List<ActivityDTO> activities;
+
+    @Schema(description = "활동 삭제 인덱스", example = "1, 2, 3")
+    private List<Integer> deleteActivityIdx;
 }

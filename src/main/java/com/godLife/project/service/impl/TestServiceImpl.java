@@ -1,7 +1,7 @@
 package com.godLife.project.service.impl;
 
-import com.godLife.project.dto.categories.JobCateDTO;
-import com.godLife.project.dto.datas.UserDTO;
+import com.godLife.project.dto.test.GetPlanIdxDTO;
+import com.godLife.project.dto.test.GetUserListDTO;
 import com.godLife.project.mapper.TestMapper;
 import com.godLife.project.service.TestService;
 import org.springframework.stereotype.Service;
@@ -19,22 +19,7 @@ public class TestServiceImpl implements TestService {
     }
 
     @Override
-    public UserDTO getUserById(int userIdx) {
-        return testMapper.findById(userIdx);
-    }
-
+    public List<GetPlanIdxDTO> findPlanIdx() { return testMapper.findPlanIdx(); }
     @Override
-    public List<String> getJobName() {
-        return testMapper.selectAll();
-    }
-
-    @Override
-    public List<UserDTO> getAllUsers() {
-        return testMapper.findAll();
-    }
-
-    @Override
-    public List<JobCateDTO> getJobAll() {
-        return testMapper.selectJobAll();
-    }
+    public List<GetUserListDTO> getUserList() { return testMapper.getUserList(); }
 }

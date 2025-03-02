@@ -3,15 +3,15 @@ package com.godLife.project.dto.datas;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.godLife.project.valid.annotation.UniqueUserEmail;
 import com.godLife.project.valid.annotation.UniqueUserId;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 public class UserDTO {
@@ -74,10 +74,10 @@ public class UserDTO {
     private int userGender;
 
     @Schema(description = "유저 가입일", example = "2025-02-14")
-    @JsonSerialize(using = LocalDateSerializer.class) // 직렬화
-    @JsonDeserialize(using = LocalDateDeserializer.class) // 역직렬화
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate userJoin;
+    @JsonSerialize(using = LocalDateTimeSerializer.class) // 직렬화
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class) // 역직렬화
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime userJoin;
 
     @Schema(description = "유저 최대 성취도", example = "3")
     private int maxFireIdx;

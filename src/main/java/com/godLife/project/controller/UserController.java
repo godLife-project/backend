@@ -57,7 +57,7 @@ public class UserController {
   @Operation(summary = "회원가입_아이디 체크 API", description = "중복 아이디 조회")
   @GetMapping("/checkId/{userId}")
   public ResponseEntity<Boolean> checkUserIdExist(@PathVariable String userId) {
-    System.out.println(userId + " : 아이디 체크 요청");
+    //System.out.println(userId + " : 아이디 체크 요청");
     Boolean isAvailable = userService.checkUserIdExist(userId);
     return ResponseEntity.ok(isAvailable);
   }

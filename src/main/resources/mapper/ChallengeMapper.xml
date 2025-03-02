@@ -64,6 +64,22 @@
     ORDER BY CHALL_CREATED_AT DESC
 </select>
 
+    <!-- 챌린지 수정 -->
+    <update id="modifyChallenge">
+    UPDATE CHALL_TABLE
+    SET CHALL_TITLE = #{challTitle},
+    CHALL_DESCRIPTION = #{challDescription},
+    CHALL_CATEGORY_IDX = #{challCategoryIdx},
+    MIN_PARTICIPATION_TIME = #{minParticipationTime},
+    MAX_PARTICIPANTS = #{maxParticipants}
+    WHERE CHALL_IDX=#{challIdx}
+    </update>
+
+    <!-- 챌린지 삭제 -->
+    <delete id="deleteChallenge">
+    DELETE FROM CHALL_TABLE
+    WHERE CHALL_IDX = #{challIdx}
+    </delete>
 
 
 </mapper>

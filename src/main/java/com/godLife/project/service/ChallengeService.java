@@ -10,6 +10,9 @@ public interface ChallengeService {
     // 최신 챌린지 리스트
     List<ChallengeDTO> getLatestChallenges();
 
+    // 카테고리별 챌린지 조회
+    List<ChallengeDTO> getChallengesByCategoryId(int categoryIdx);
+
     // 챌린지 생성
     void createChallenge(ChallengeDTO challengeDTO) throws Exception;
 

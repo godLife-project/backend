@@ -15,6 +15,9 @@ public interface ChallengeMapper {
     // 최신 챌린지 리스트 조회
     List<ChallengeDTO> getLatestChallenges();
 
+    // 카테고리별 챌린지 조회
+    List<ChallengeDTO> getChallengesByCategoryId(@Param("categoryIdx") int categoryIdx);
+
     // 챌린지 정보 조회
     ChallengeDTO getChallenge(Long challIdx);
     // 챌린지 시작 업데이트 (최초 참여시)

@@ -6,6 +6,7 @@ import com.godLife.project.service.ChallengeService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +32,23 @@ public class ChallengeController {
         return ResponseEntity.ok(challenges);
     }
 
+    // 카테고리 챌린지 조회 api
+    @GetMapping("/latest/{challCategoryIdx}")
+    public ResponseEntity<List<ChallengeDTO>> getChallengesByCategoryId(@PathVariable int challCategoryIdx){
+        try {
+            // 서비스에서 카테고리별 챌린지 조회
+            List<ChallengeDTO> challenges = challengeService.getChallengesByCategoryId(challCategoryIdx);
+
+            // 결과 반환
+            if (challenges.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(challenges); // 비어있을 경우
+            }
+            return ResponseEntity.ok(challenges); // 결과가 있으면 200 OK 반환
+        } catch (Exception e) {
+            // 예외 처리
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 
     // 챌린지 참여 (시작)
     @PostMapping("/{challIdx}/join")

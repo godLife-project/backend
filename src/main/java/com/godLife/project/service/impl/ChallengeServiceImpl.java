@@ -26,6 +26,10 @@ public class ChallengeServiceImpl implements ChallengeService {
         // 종료된 챌린지를 제외하고 최신 챌린지 리스트를 조회
         return challengeMapper.getLatestChallenges();
     }
+    // 카테고리별 챌린지 조회
+    public List<ChallengeDTO> getChallengesByCategoryId(int categoryIdx) {
+        return challengeMapper.getChallengesByCategoryId(categoryIdx);
+    }
 
     public void createChallenge(ChallengeDTO challengeDTO) throws Exception {
         // 챌린지 기본값 설정 (권한 체크 없음)

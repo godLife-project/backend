@@ -5,9 +5,10 @@
 <mapper namespace="com.godLife.project.mapper.ChallengeMapper">
 
     <!-- 챌린지 생성 (관리자 전용) -->
-    <insert id="createChallenge">
-        INSERT INTO CHALL_TABLE (title, description, category_idx, state, created_at)
-        VALUES (#{title}, #{description}, #{categoryIdx}, #{state}, SYSDATE)
+    <insert id="createChallenge" useGeneratedKeys="true" keyProperty="challIdx">
+        INSERT INTO CHALL_TABLE (
+        CHALL_TITLE, CHALL_DESCRIPTION, CHALL_CATEGORY_IDX, TOTAL_CLEAR_TIME, MAX_PARTICIPANTS,CHALL_CREATE_AT, CHALL_STATE)
+        VALUES (#{challTitle}, #{challDescription}, #{challCategoryIdx}, #{totalClearTime}, #{maxParticipants}, SYSDATE, #{challState})
     </insert>
 
     <!-- 챌린지 정보 조회 -->
@@ -15,6 +16,14 @@
         SELECT
         FROM CHALL_TABLE
         WHERE CHALL_IDX= #{challidx}
+    </select>
+
+    <!-- 챌린지 카테고리별 조회 -->
+    <select id="getChallengesByCategory" resultType="com.godLife.project.dto.contents.ChallengeDTO">
+        SELECT
+        FROM CHALL_TABEL
+        WHERE CHALL_CATEGORY_IDX =#{challCategoryIdx}
+        ORDER BY CHALL_CREATE_AT DESC
     </select>
 
     <!-- 챌린지 시작 업데이트 (최초 참여 시) -->

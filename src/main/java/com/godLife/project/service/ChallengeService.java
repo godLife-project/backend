@@ -16,4 +16,9 @@ public interface ChallengeService {
     void joinChallenge(Long challIdx, int userIdx, LocalDateTime challEndTime);
 
     void verifyChallenge(VerifyDTO verifyDTO, ChallengeDTO challengeDTO);
+
+    // 챌린지 수정
+    void modifyChallenge(ChallengeDTO challengeDTO);
+    // 챌린지 삭제
+    void deleteChallenge(Long challIdx);
 }

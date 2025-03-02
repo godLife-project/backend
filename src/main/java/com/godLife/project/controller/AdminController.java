@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/api/admin")
 public class AdminController {
   private UserService userService;
   private ChallengeService challengeService;
@@ -18,14 +19,8 @@ public class AdminController {
     this.challengeService = challengeService;
   }
 
-  @GetMapping("/admin")
-  public String adminP() {
-    return "Admin Controller";
-  }
-
-
-  // 챌린지 생성 API (관리자 전용)
-  @PostMapping("/create")
+  // 챌린지 생성 API
+  @PostMapping("/challenge/create")
   public ResponseEntity<String> createChallenge(@RequestBody ChallengeDTO challengeDTO) {
     try {
       challengeService.createChallenge(challengeDTO);

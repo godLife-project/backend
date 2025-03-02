@@ -58,4 +58,23 @@ public class ChallengeController {
         challengeService.verifyChallenge(verifyDTO, challengeDTO);
         return ResponseEntity.ok("챌린지 인증 완료");
     }
+
+    // 챌린지 수정
+    @PutMapping("/{challIdx}")
+    public ResponseEntity<?> modifyChallenge(
+            @PathVariable Long challIdx,
+            @RequestBody ChallengeDTO challengeDTO
+    ) {
+        challengeDTO.setChallIdx(challIdx);  // 경로에서 받은 ID를 DTO에 넣음
+        challengeService.modifyChallenge(challengeDTO);
+        return ResponseEntity.ok().build();
+    }
+
+    // 챌린지 삭제
+    @DeleteMapping("/{challIdx}")
+    public ResponseEntity<?> deleteChallenge(@PathVariable Long challIdx){
+        challengeService.deleteChallenge(challIdx);
+        return ResponseEntity.ok().build();
+    }
+
 }

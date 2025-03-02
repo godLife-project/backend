@@ -82,8 +82,22 @@ public class ChallengeServiceImpl implements ChallengeService {
             challengeMapper.finishChallenge(verifyDTO.getChallIdx());
         }
     }
+    // 챌린지 수정
+    public void modifyChallenge(ChallengeDTO challengeDTO) {
+        int updatedCount = challengeMapper.modifyChallenge(challengeDTO);
+        // 1건만 수정이 되는지 확인
+        if (updatedCount != 1) {
+            throw new IllegalArgumentException("챌린지 수정 실패");
+        }
+    }
 
-
+    // 챌린지 삭제
+    public void deleteChallenge(Long challIdx){
+        int deleteCount = challengeMapper.deleteChallenge(challIdx);
+        if (deleteCount != 1) {
+            throw new IllegalArgumentException("챌린지 삭제 실패");
+        }
+    }
 
 }
 

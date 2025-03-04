@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godLife.project.mapper.QnaMapper">
+
+    <!-- 특정 QnA를 Idx로 조회하는 select 쿼리 -->
+    <select id="selectQnaById" parameterType="int" resultMap="com.godLife.project.dto.contents.QnADTO">
+    SELECT * FROM QNA_TABLE WHERE QNA_IDX = #{qnaIdx}
+    </select>
+
+    <!-- 모든 QnA를 조회하는 select 쿼리 -->
+    <select id="selectAllQna" resultMap="com.godLife.project.dto.contents.QnADTO">
+        SELECT * FROM QNA_TABLE
+    </select>
+
+    <!-- QnA 작성 insert 쿼리 -->
+    <insert id="insertQna" parameterType="com.godLife.project.dto.contents.QnADTO">
+        INSERT INTO QNA_TABLE (QNA_IDX, Q_IDX, Q_TITLE, Q_SUB, Q_DATE,QNA_PRIV, PRIV_PW)
+        VALUES (#{qnaIdx}, #{qIdx}, #{qTitle}, #{qSub}, #{qDate},#{qnaPriv}, #{privPw})
+    </insert>
+
+    <!-- QnA 수정 update 쿼리 -->
+    <update id="updateQna" parameterType="com.godLife.project.dto.contents.QnADTO">
+        UPDATE QNA_TABLE
+        SET Q_IDX = #{qIdx},
+            Q_TITLE = #{qTitle},
+            Q_SUB = #{qSub},
+            Q_DATE = #{qDate},
+            QNA_PRIV = #{qnaPriv},
+            PRIV_PW = #{privPw}
+        WHERE QNA_IDX = #{qnaIdx}
+    </update>
+
+    <!-- 특정 QnA를 삭제하는 delete 쿼리 -->
+    <delete id="deleteQna" parameterType="int">
+        DELETE FROM QNA_TABLE WHERE QNA_IDX = #{qnaIdx}
+    </delete>
+
+    <!-- 제목 또는 내용에 검색어가 포함된 QnA를 검색하는 select 쿼리 -->
+    <select id="searchQna" parameterType="string" resultMap="com.godLife.project.dto.contents.QnADTO">
+        SELECT * FROM QNA_TABLE
+        WHERE LOWER(Q_TITLE) LIKE '%' || LOWER(#{query}) || '%'
+           OR LOWER(Q_SUB) LIKE '%' || LOWER(#{query}) || '%'
+    </select>
+</mapper>

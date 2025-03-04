@@ -32,13 +32,19 @@ writePlan.planTitle.notBlank=루틴의 제목을 입력해 주세요.
 writePlan.endTo.min=루틴은 최소 일주일 이상 진행해 주세요.
 
 writePlan.targetIdx.min=루틴의 카테고리를 선택해 주세요.
+writePlan.jobIdx.min=직업 카테고리를 선택해 주세요.
 
 writePlan.planImp.min=루틴의 중요도는 1 부터 10 까지만 설정 가능합니다.
 writePlan.planImp.max=루틴의 중요도는 1 부터 10 까지만 설정 가능합니다.
 
 writePlan.activities.size=최소 한개 이상의 활동을 추가해 주세요.
+writePlan.activities.notNull=활동 항목은 공백일 수 없습니다.
 
 writeActivity.activityName.notBlank=어떤 활동을 하시나요?
+
+writePlan.jobEtc.notNull=기타 직업을 선택한 경우, 직업 정보를 입력해야 합니다.
+writePlan.jobEtc.name.notBlank=기타 직업명을 입력해야 합니다.
+writePlan.jobEtc.iconKey.notBlank=기타 직업 아이콘을 선택해야 합니다.
 
 
 

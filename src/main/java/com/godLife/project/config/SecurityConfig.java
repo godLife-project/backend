@@ -82,8 +82,7 @@ public class SecurityConfig {
         // 테스트 용 (유저 권한)
         .requestMatchers("/api/test/test2").authenticated()
         // 루틴 관련
-        .requestMatchers("/api/plan/write", "/api/plan/modify", "/api/plan/delete").authenticated()
-        .requestMatchers("/api/plan/write").authenticated()
+        //.requestMatchers("/api/plan/write", "/api/plan/modify", "/api/plan/delete").authenticated()
         // 챌린지 참여/인증
         .requestMatchers("/api/{challIdx}/join", "/api/{challIdx}/verify").authenticated()
 

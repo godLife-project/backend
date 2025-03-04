@@ -5,18 +5,20 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.godLife.project.dto.categories.JobCateDTO;
+import com.godLife.project.dto.categories.JobEtcCateDTO;
+import com.godLife.project.dto.categories.TargetCateDTO;
+import com.godLife.project.valid.annotation.NotNullJobEtc;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
+@NotNullJobEtc // 기타 직업 선택 시 유효성 검사 : 인덱스가 999일 때, jobEtcCateDTO = null 이면 안됨.
 public class PlanDTO {
     @Schema(description = "루틴 인덱스", example = "1")
     private int planIdx;
@@ -32,11 +34,15 @@ public class PlanDTO {
     @Min(value = 7, message = "{writePlan.endTo.min}")
     private int endTo;
 
+    @Schema(description = "반복 요일", example = "'mon', 'tue")
+    private List<String> repeatDays;
+
     @Schema(description = "관심 카테고리", example = "1 : 목표 카테고리 인덱스")
     @Min(value = 1, message = "{writePlan.targetIdx.min}")
     private int targetIdx;
 
     @Schema(description = "직업 카테고리", example = "1 : 직업 카테고리 인덱스")
+    @Min(value = 1, message = "{writePlan.jobIdx.min}")
     private int jobIdx;
 
     @Schema(description = "루틴 중요도", example = "1 : 최하단 혹은 제일 마지막에 배치")
@@ -95,8 +101,18 @@ public class PlanDTO {
     @Schema(description = "활동 리스트", example = "활동들")
     @Size(min = 1, message = "{writePlan.activities.size}")
     @Valid
-    private List<ActivityDTO> activities;
+    private List<@NotNull(message = "{writePlan.activities.notNull}")ActivityDTO> activities;
 
     @Schema(description = "활동 삭제 인덱스", example = "1, 2, 3")
     private List<Integer> deleteActivityIdx;
+
+    @Schema(description = "직업 정보", example = "카테고리 이름과 아이콘키")
+    private JobCateDTO jobCateDTO;
+
+    @Schema(description = "관심사 정보", example = "카테고리 이름과 아이콘키")
+    private TargetCateDTO targetCateDTO;
+
+    @Schema(description = "기타 직업 정보", example = "카테고리 이름과 아이콘키 입력")
+    @Valid
+    private JobEtcCateDTO jobEtcCateDTO;
 }

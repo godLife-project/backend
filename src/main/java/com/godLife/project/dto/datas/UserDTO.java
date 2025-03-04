@@ -69,7 +69,7 @@ public class UserDTO {
     @NotBlank(message = "{joinUser.userPhone.notBlank}")
     private String userPhone;
 
-    @Schema(description = "유저 성별", example = "0")
+    @Schema(description = "유저 성별", example = "1")
     @Min(value = 1, message = "{joinUser.userGender.min}")
     private int userGender;
 

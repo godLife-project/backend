@@ -1,12 +1,10 @@
 package com.godLife.project.controller;
 
 import com.godLife.project.dto.categories.*;
+import com.godLife.project.dto.datas.IconDTO;
 import com.godLife.project.service.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -46,5 +44,14 @@ public class CategoryController {
     @Operation(summary = "카테고리 조회", description = "권한")
     @PostMapping("/auth/authority")
     public List<AuthorityCateDTO> authority() { return categoryService.getAllAuthorityCategories(); }
+    // 아이콘 카테고리
+    @Operation(summary = "카테고리 조회", description = "아이콘")
+    @GetMapping("/icon")
+    public List<IconDTO> icon() { return categoryService.getUserIconInfos(); }
+
+    // 아이콘 카테고리
+    @Operation(summary = "카테고리 조회", description = "아이콘 (관리자)")
+    @PostMapping("/auth/icon")
+    public List<IconDTO> iconAdmin() { return categoryService.getAllIconInfos(); }
 
 }

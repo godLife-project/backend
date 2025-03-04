@@ -1,6 +1,7 @@
 package com.godLife.project.service;
 
 import com.godLife.project.dto.categories.*;
+import com.godLife.project.dto.datas.IconDTO;
 
 import java.util.List;
 
@@ -17,6 +18,9 @@ public interface CategoryService {
     List<ShortCutCateDTO> getAllShortCategories();
     // 권한 카테고리
     List<AuthorityCateDTO> getAllAuthorityCategories();
-
+    // 아이콘 정보 조회
+    List<IconDTO> getUserIconInfos();
+    // 아이콘 정보 조회
+    List<IconDTO> getAllIconInfos();
 
 }

@@ -11,11 +11,17 @@
       <if test="isActive != null and isActive == 1">
         , IS_ACTIVE, PLAN_SUB_START, PLAN_SUB_END
       </if>
+      <if test="repeatDays != null">
+        , REPEAT_DAYS
+      </if>
     )
     VALUES (
       PLAN_SEQ.NEXTVAL, #{userIdx}, #{planTitle}, #{endTo}, #{targetIdx}, #{isShared}, #{planImp}, #{jobIdx}
       <if test="isActive != null and isActive == 1">
         , #{isActive}, SYSDATE, SYSDATE + #{endTo}
+      </if>
+      <if test="repeatDays != null">
+        , #{repeatDays, typeHandler=com.godLife.project.typehandler.ListStringTypeHandler}
       </if>
     )
     <selectKey keyProperty="planIdx" resultType="int" order="AFTER">
@@ -37,11 +43,56 @@
     </choose>
   </insert>
 
+  <!-- 기타 직업 추가 쿼리 -->
+  <insert id="insertJobEtc" parameterType="com.godLife.project.dto.categories.JobEtcCateDTO">
+    INSERT INTO JOB_ETC_CATEGORY
+    VALUES (JOB_ETC_SEQ.NEXTVAL, #{planIdx}, #{name}, #{iconKey}, SYSDATE)
+  </insert>
+
+  <!-- 직업 카테고리 조회 -->
+  <select id="getJOBCategoryByJobIdx" resultType="com.godLife.project.dto.categories.JobCateDTO" parameterType="int">
+    SELECT
+    JC.JOB_IDX AS IDX,
+    JC.JOB_NAME AS NAME,
+    JC.ICON_KEY,
+    IT.ICON,
+    IT.COLOR
+    FROM JOB_CATEGORY JC
+    LEFT JOIN ICON_TABLE IT ON JC.ICON_KEY = IT.ICON_KEY
+    WHERE JOB_IDX = #{jobIdx}
+  </select>
+
+  <!-- 관심사 카테고리 조회 -->
+  <select id="getTargetCategoryByTargetIdx" resultType="com.godLife.project.dto.categories.TargetCateDTO" parameterType="int">
+    SELECT
+    TC.TARGET_IDX AS IDX,
+    TC.TARGET_NAME AS NAME,
+    TC.ICON_KEY,
+    IT.ICON,
+    IT.COLOR
+    FROM TARGET_CATEGORY TC
+    LEFT JOIN ICON_TABLE IT ON TC.ICON_KEY = IT.ICON_KEY
+    WHERE TARGET_IDX = #{targetIdx}
+  </select>
+
+  <!-- 루틴 조회 시 기타 직업 조회 쿼리-->
+  <select id="getJobEtcInfoByPlanIdx" resultType="com.godLife.project.dto.categories.JobEtcCateDTO" parameterType="int">
+    SELECT
+    ETC.JOB_NAME AS NAME,
+    ETC.ICON_KEY,
+    IT.ICON,
+    IT.COLOR
+    FROM JOB_ETC_CATEGORY ETC
+    LEFT JOIN ICON_TABLE IT ON ETC.ICON_KEY = IT.ICON_KEY
+    WHERE PLAN_IDX = #{planIdx}
+  </select>
+
   <!-- 루틴 수정 쿼리 -->
   <update id="modifyPlan" parameterType="com.godLife.project.dto.datas.PlanDTO">
     UPDATE PLAN_TABLE
     SET PLAN_TITLE = #{planTitle},
         END_TO = #{endTo},
+        REPEAT_DAYS = #{repeatDays, typeHandler=com.godLife.project.typehandler.ListStringTypeHandler},
         TARGET_IDX = #{targetIdx},
         JOB_IDX = #{jobIdx},
         PLAN_IMP = #{planImp},
@@ -60,9 +111,23 @@
         <if test="setTime == null">
           SET_TIME = NULL,
         </if>
-        DESCRIPTION = #{description},
+        <if test="description != null">
+          DESCRIPTION = #{description},
+        </if>
+        <if test="description == null">
+          DESCRIPTION = NULL,
+        </if>
         ACTIVITY_IMP = #{activityImp}
     WHERE PLAN_IDX = #{planIdx} AND ACTIVITY_IDX = #{activityIdx}
+  </update>
+
+  <!-- 기타 직업 수정 쿼리 -->
+  <update id="modifyJobEtc" parameterType="com.godLife.project.dto.categories.JobEtcCateDTO">
+    UPDATE JOB_ETC_CATEGORY
+    SET JOB_NAME = #{name},
+        ICON_KEY = #{iconKey},
+        CREATED_AT = SYSDATE
+    WHERE PLAN_IDX = #{planIdx}
   </update>
 
   <!-- 루틴 삭제 처리 -->

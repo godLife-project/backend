@@ -34,23 +34,56 @@ public class QnaController {
   // QnA 작성
   @PostMapping
   public ResponseEntity<String> createQna(@RequestBody QnADTO qna) {
-    qnaService.createQna(qna);
-    return ResponseEntity.ok("QnA 등록 성공");
+    int result = qnaService.createQna(qna);
+    String msg;
+    switch (result) {
+      case 200 -> msg = "QnA 등록 성공";
+      case 500 -> msg = "서버 오류로 인해 QnA 등록 실패";
+      default -> msg = "알 수 없는 오류가 발생했습니다.";
+    }
+    return ResponseEntity.status(result).body(msg);
   }
 
-  // QnA 수정
+
+  // QnA 수정 API
   @PutMapping("/{qnaIdx}")
-  public ResponseEntity<String> updateQna(@PathVariable int qnaIdx, @RequestBody QnADTO qna) {
-    qna.setQnaIdx(qnaIdx);
-    qnaService.updateQna(qna);
-    return ResponseEntity.ok("QnA 수정 성공");
+  public ResponseEntity<String> updateQna(@PathVariable int qnaIdx, @RequestBody QnADTO qnaDTO) {
+    // qnaIdx를 DTO에 set하여 전달
+    qnaDTO.setQnaIdx(qnaIdx);
+
+    // 서비스 호출
+    int result = qnaService.updateQna(qnaDTO);
+
+    // 상태 코드 및 메시지 반환
+    switch (result) {
+      case 200:
+        return ResponseEntity.ok("QnA 수정 성공");
+      case 403:
+        return ResponseEntity.status(403).body("작성자가 아니므로 수정할 수 없습니다.");
+      case 500:
+        return ResponseEntity.status(500).body("서버 오류로 인해 QnA 수정에 실패했습니다.");
+      default:
+        return ResponseEntity.status(500).body("알 수 없는 오류가 발생했습니다.");
+    }
   }
 
-  // QnA 삭제
+  // QnA 삭제 API
   @DeleteMapping("/{qnaIdx}")
-  public ResponseEntity<String> deleteQna(@PathVariable int qnaIdx) {
-    qnaService.deleteQna(qnaIdx);
-    return ResponseEntity.ok("QnA 삭제 성공");
+  public ResponseEntity<String> deleteQna(@PathVariable int qnaIdx, @PathVariable int userIdx) {
+    // 서비스 호출
+    int result = qnaService.deleteQna(qnaIdx, userIdx);
+
+    // 상태 코드 및 메시지 반환
+    switch (result) {
+      case 200:
+        return ResponseEntity.ok("QnA 삭제 성공");
+      case 403:
+        return ResponseEntity.status(403).body("작성자가 아니므로 삭제할 수 없습니다.");
+      case 500:
+        return ResponseEntity.status(500).body("서버 오류로 인해 QnA 삭제에 실패했습니다.");
+      default:
+        return ResponseEntity.status(500).body("알 수 없는 오류가 발생했습니다.");
+    }
   }
 
   // QnA 검색
@@ -64,5 +97,13 @@ public class QnaController {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
               .body(Collections.emptyList());
     }
+  }
+
+  @PostMapping("/answer/{qnaIdx}")
+  public ResponseEntity<String> saveAnswer(@PathVariable int qnaIdx,
+                                           @RequestBody QnADTO qnADTO) {
+    // 답변 등록 API
+    qnaService.saveAnswer(qnaIdx, qnADTO.getAIdx(), qnADTO.getASub());
+    return ResponseEntity.ok("답변 등록 완료");
   }
 }

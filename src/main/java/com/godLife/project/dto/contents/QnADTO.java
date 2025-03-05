@@ -47,4 +47,7 @@ public class QnADTO {
 
     @Schema(description = "비공개시 사용 비번", example = "1234")
     private String privPw;
+
+    @Schema(description = "답변 상태확인", example = "N : 미답변")
+    private String isAnswered;
 }

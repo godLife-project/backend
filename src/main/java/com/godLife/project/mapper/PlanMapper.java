@@ -5,6 +5,7 @@ import com.godLife.project.dto.categories.JobEtcCateDTO;
 import com.godLife.project.dto.categories.TargetCateDTO;
 import com.godLife.project.dto.datas.ActivityDTO;
 import com.godLife.project.dto.datas.PlanDTO;
+import com.godLife.project.dto.request.PlanRequestDTO;
 import com.godLife.project.typehandler.ListStringTypeHandler;
 import org.apache.ibatis.annotations.*;
 
@@ -49,6 +50,9 @@ public interface PlanMapper {
   // 기타 직업 존재 여부 확인
   @Select("SELECT COUNT(*) FROM JOB_ETC_CATEGORY WHERE PLAN_IDX =#{planIdx}")
   boolean checkJobEtcByPlanIdx(int planIdx);
+  // 추천 존재 여부 확인
+  @Select("SELECT COUNT(*) FROM LIKE_TABLE WHERE PLAN_IDX = #{planIdx} AND USER_IDX = #{userIdx}")
+  boolean checkLikeByPlanIdxNUserIdx(PlanRequestDTO planRequestDTO);
 
   // 루틴 수정하기
   void modifyPlan(PlanDTO planDTO);
@@ -63,4 +67,10 @@ public interface PlanMapper {
 
   // 루틴 삭제 처리
   void deletePlan(@Param("planIdx") int planIdx,@Param("userIdx") int userIdx);
+
+  // 루틴 활성화 / 비활성화 하기
+  void goStopPlan(@Param("planIdx") int planIdx, @Param("userIdx") int userIdx, @Param("isActive") int isActive);
+
+  // 루틴 추천
+  void likePlan(PlanRequestDTO planRequestDTO);
 }

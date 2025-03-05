@@ -2,7 +2,7 @@ package com.godLife.project.controller;
 
 
 import com.godLife.project.dto.datas.PlanDTO;
-import com.godLife.project.dto.request.PlanDeleteRequestDTO;
+import com.godLife.project.dto.request.PlanRequestDTO;
 import com.godLife.project.service.PlanService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -37,7 +37,7 @@ public class PlanController {
     // 응답 메세지 세팅
     String msg = "";
     switch (insertResult) {
-      case 200 -> msg = "루틴 저장 완료";
+      case 201 -> msg = "루틴 저장 완료";
       case 500 -> msg = "서버 내부적으로 오류가 발생하여 루틴을 저장하지 못했습니다.";
       default -> msg = "알 수 없는 오류가 발생했습니다.";
     }
@@ -107,7 +107,7 @@ public class PlanController {
 
   // 루틴 삭제 API
   @PatchMapping("/delete")
-  public ResponseEntity<Map<String, Object>> delete(@RequestBody PlanDeleteRequestDTO requestDTO) {
+  public ResponseEntity<Map<String, Object>> delete(@RequestBody PlanRequestDTO requestDTO) {
     int planIdx = requestDTO.getPlanIdx();
     int userIdx = requestDTO.getUserIdx();
 
@@ -120,12 +120,71 @@ public class PlanController {
       case 200 -> msg = "루틴 삭제 완료";
       case 403 -> msg = "작성자가 아닙니다. 재로그인 해주세요.";
       case 404 -> msg = "요청하신 루틴이 존재하지 않습니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 루틴을 삭제하지 못했습니다.";
       default -> msg = "알 수 없는 오류가 발생했습니다.";
     }
 
     // 응답 메시지 설정
     return ResponseEntity.status(getHttpStatus(deleteResult))
         .body(createResponse(deleteResult, msg));
+  }
+
+  // 루틴 시작 API
+  @PatchMapping("/stopNgo")
+  public ResponseEntity<Map<String, Object>> stopNgo(@Valid @RequestBody PlanRequestDTO requestDTO, BindingResult bindingResult) {
+    // 유효성 검사 실패 시 에러 반환
+    if (bindingResult.hasErrors()) {
+      return ResponseEntity.badRequest().body(getValidationErrors(bindingResult));
+    }
+
+    int planIdx = requestDTO.getPlanIdx();
+    int userIdx = requestDTO.getUserIdx();
+    int isActive = requestDTO.getIsActive();
+    int isDeleted = 0;
+
+    int result = planService.goStopPlan(planIdx, userIdx, isActive, isDeleted);
+
+    // 응답 메세지 세팅
+    String msg = "";
+    switch (result) {
+      case 200 -> msg = "루틴을 활성화 합니다.";
+      case 403 -> msg = "작성자가 아닙니다. 재로그인 해주세요.";
+      case 404 -> msg = "요청하신 루틴이 존재하지 않습니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 루틴을 활성화 하지 못했습니다.";
+      default -> msg = "알 수 없는 오류가 발생했습니다.";
+    }
+    if (result == 200 && isActive == 0) {
+      msg = "루틴을 비활성화 합니다.";
+      // 응답 메시지 설정
+      return ResponseEntity.status(getHttpStatus(result))
+          .body(createResponse(result, msg));
+    }
+
+    // 응답 메시지 설정
+    return ResponseEntity.status(getHttpStatus(result))
+        .body(createResponse(result, msg));
+  }
+
+  // 루틴 추천하기
+  @PostMapping("/likePlan")
+  public ResponseEntity<Map<String, Object>> likePlan(@RequestBody PlanRequestDTO requestDTO) {
+    int isDeleted = 0;
+
+    int result = planService.likePlan(requestDTO, isDeleted);
+
+    // 응답 메세지 세팅
+    String msg = "";
+    switch (result) {
+      case 200 -> msg = "루틴을 추천합니다.";
+      case 404 -> msg = "요청하신 루틴이 존재하지 않습니다.";
+      case 409 -> msg = "이미 추천한 루틴입니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 루틴을 추천 하지 못했습니다.";
+      default -> msg = "알 수 없는 오류가 발생했습니다.";
+    }
+
+    // 응답 메시지 설정
+    return ResponseEntity.status(getHttpStatus(result))
+        .body(createResponse(result, msg));
   }
 
 
@@ -157,8 +216,10 @@ public class PlanController {
   private HttpStatus getHttpStatus(int result) {
     return switch (result) {
       case 200 -> HttpStatus.OK;
+      case 201 -> HttpStatus.CREATED;
       case 403 -> HttpStatus.FORBIDDEN;
       case 404 -> HttpStatus.NOT_FOUND;
+      case 409 -> HttpStatus.CONFLICT;
       case 500 -> HttpStatus.INTERNAL_SERVER_ERROR;
       default -> HttpStatus.BAD_REQUEST;
     };
@@ -167,13 +228,15 @@ public class PlanController {
   // 응답 메시지 생성
   private Map<String, Object> createResponse(int result, Object msg) {
     Map<String, Object> message = new HashMap<>();
-    message.put("status", result == 200 ? "success" : "error");
+    message.put("status", (result == 200 || result == 201) ? "success" : "error");
     message.put("code", result);
 
     switch (result) {
       case 200 -> message.put("message", msg);
+      case 201 -> message.put("message", msg);
       case 403 -> message.put("message", msg);
       case 404 -> message.put("message", msg);
+      case 409 -> message.put("message", msg);
       case 500 -> message.put("message", msg);
       default -> message.put("message", msg);
     }

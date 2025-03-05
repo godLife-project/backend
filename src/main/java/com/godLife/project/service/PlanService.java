@@ -1,6 +1,7 @@
 package com.godLife.project.service;
 
 import com.godLife.project.dto.datas.PlanDTO;
+import com.godLife.project.dto.request.PlanRequestDTO;
 
 public interface PlanService {
 
@@ -15,4 +16,10 @@ public interface PlanService {
 
   // 루틴 삭제 처리
   int deletePlan(int planIdx, int userIdx);
+
+  // 루틴 비/활성화
+  int goStopPlan(int planIdx, int userIdx, int isActive, int isDeleted);
+
+  // 루틴 추천
+  int likePlan(PlanRequestDTO planRequestDTO, int isDeleted);
 }

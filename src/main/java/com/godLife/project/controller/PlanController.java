@@ -4,6 +4,8 @@ package com.godLife.project.controller;
 import com.godLife.project.dto.datas.PlanDTO;
 import com.godLife.project.dto.request.PlanRequestDTO;
 import com.godLife.project.service.PlanService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +28,7 @@ public class PlanController {
   }
 
   // 루틴 작성 API
-  @PostMapping("/write")
+  @PostMapping("/auth/write")
   public ResponseEntity<Map<String, Object>> write(@Valid @RequestBody PlanDTO writePlanDTO, BindingResult result) {
 
     if (result.hasErrors()) {
@@ -38,6 +40,7 @@ public class PlanController {
     String msg = "";
     switch (insertResult) {
       case 201 -> msg = "루틴 저장 완료";
+      case 412 -> msg = "루틴 작성은 최대 5개만 가능합니다. 현재 작성한 루틴을 지우거나, 목표치 까지 완료해주세요.";
       case 500 -> msg = "서버 내부적으로 오류가 발생하여 루틴을 저장하지 못했습니다.";
       default -> msg = "알 수 없는 오류가 발생했습니다.";
     }
@@ -49,9 +52,24 @@ public class PlanController {
 
   // 루틴 상세 보기 API
   @GetMapping("/detail/{planIdx}")
-  public ResponseEntity<Map<String, Object>> detail(@PathVariable int planIdx) {
+  public ResponseEntity<Map<String, Object>> detail(@PathVariable int planIdx,
+                                                    @CookieValue(value = "viewed_plans", required = false) String viewedPlans,
+                                                    HttpServletResponse response) {
     Map<String, Object> message = new HashMap<>();
     try {
+      // 조회수 증가 여부 체크
+      boolean isFirstView = (viewedPlans == null || !viewedPlans.contains(String.valueOf(planIdx)));
+      if (isFirstView) {
+        // 조회수 증가
+        planService.increaseView(planIdx);
+
+        // 쿠키 추가
+        String updatedViewedPlans = (viewedPlans == null ? "" : viewedPlans + ",") + planIdx;
+        Cookie cookie = new Cookie("viewed_plans", updatedViewedPlans);
+        cookie.setMaxAge(60 * 60); // 1시간 유지
+        response.addCookie(cookie);
+      }
+
       // 삭제 여부 설정   0: 삭제 X 1: 삭제 O
       int isDeleted = 0;
       // 해당 인덱스의 루틴 조회
@@ -77,7 +95,7 @@ public class PlanController {
 
 
   // 루틴 수정 API
-  @PatchMapping("modify")
+  @PatchMapping("/auth/modify")
   public ResponseEntity<Map<String, Object>> modify(@Valid @RequestBody PlanDTO modifyPlanDTO, BindingResult result) {
     // 유효성 검사 실패 시 에러 반환
     if (result.hasErrors()) {
@@ -106,7 +124,7 @@ public class PlanController {
 
 
   // 루틴 삭제 API
-  @PatchMapping("/delete")
+  @PatchMapping("/auth/delete")
   public ResponseEntity<Map<String, Object>> delete(@RequestBody PlanRequestDTO requestDTO) {
     int planIdx = requestDTO.getPlanIdx();
     int userIdx = requestDTO.getUserIdx();
@@ -130,7 +148,7 @@ public class PlanController {
   }
 
   // 루틴 시작 API
-  @PatchMapping("/stopNgo")
+  @PatchMapping("/auth/stopNgo")
   public ResponseEntity<Map<String, Object>> stopNgo(@Valid @RequestBody PlanRequestDTO requestDTO, BindingResult bindingResult) {
     // 유효성 검사 실패 시 에러 반환
     if (bindingResult.hasErrors()) {
@@ -166,7 +184,7 @@ public class PlanController {
   }
 
   // 루틴 추천하기
-  @PostMapping("/likePlan")
+  @PostMapping("/auth/likePlan")
   public ResponseEntity<Map<String, Object>> likePlan(@RequestBody PlanRequestDTO requestDTO) {
     int isDeleted = 0;
 
@@ -179,6 +197,34 @@ public class PlanController {
       case 404 -> msg = "요청하신 루틴이 존재하지 않습니다.";
       case 409 -> msg = "이미 추천한 루틴입니다.";
       case 500 -> msg = "서버 내부적으로 오류가 발생하여 루틴을 추천 하지 못했습니다.";
+      default -> msg = "알 수 없는 오류가 발생했습니다.";
+    }
+
+    // 응답 메시지 설정
+    return ResponseEntity.status(getHttpStatus(result))
+        .body(createResponse(result, msg));
+  }
+
+  // 추천 여부 조회
+  @GetMapping("/checkLike")
+  public ResponseEntity<Map<String, Object>> checkLike(@RequestBody PlanRequestDTO requestDTO) {
+    boolean result = planService.checkLike(requestDTO);
+
+    return ResponseEntity.status(getHttpStatus(200))
+        .body(createResponse(200, result));
+  }
+
+  // 루틴 추천 취소
+  @DeleteMapping("/auth/unLikePlan")
+  public ResponseEntity<Map<String, Object>> unLikePlan(@RequestBody PlanRequestDTO requestDTO) {
+    int result = planService.unLikePlan(requestDTO);
+
+    // 응답 메세지 세팅
+    String msg = "";
+    switch (result) {
+      case 200 -> msg = "루틴 추천을 취소 합니다.";
+      case 404 -> msg = "루틴이 존재하지 않거나, 이미 추천을 취소 했습니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 루틴을 추천을 취소 하지 못했습니다.";
       default -> msg = "알 수 없는 오류가 발생했습니다.";
     }
 
@@ -220,6 +266,7 @@ public class PlanController {
       case 403 -> HttpStatus.FORBIDDEN;
       case 404 -> HttpStatus.NOT_FOUND;
       case 409 -> HttpStatus.CONFLICT;
+      case 412 -> HttpStatus.PRECONDITION_FAILED;
       case 500 -> HttpStatus.INTERNAL_SERVER_ERROR;
       default -> HttpStatus.BAD_REQUEST;
     };
@@ -237,6 +284,7 @@ public class PlanController {
       case 403 -> message.put("message", msg);
       case 404 -> message.put("message", msg);
       case 409 -> message.put("message", msg);
+      case 412 -> message.put("message", msg);
       case 500 -> message.put("message", msg);
       default -> message.put("message", msg);
     }

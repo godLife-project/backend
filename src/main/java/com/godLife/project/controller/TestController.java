@@ -32,7 +32,7 @@ public class TestController {
     return ResponseEntity.ok(response);
   }
 
-  @GetMapping("/test2")
+  @GetMapping("/auth/test2")
   public ResponseEntity<Map<String, String>> TestP() {
     Map<String, String> response = new HashMap<>();
     response.put("message", "You have JWT access Token");

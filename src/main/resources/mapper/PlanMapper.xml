@@ -130,10 +130,23 @@
     WHERE PLAN_IDX = #{planIdx}
   </update>
 
+  <!-- 루틴 추천 횟수 업데이트 -->
+  <update id="modifyLikeCount" parameterType="int">
+    UPDATE PLAN_TABLE
+    SET LIKE_COUNT = (SELECT COUNT(*) FROM LIKE_TABLE WHERE PLAN_IDX = #{planIdx})
+    WHERE PLAN_IDX = #{planIdx}
+  </update>
+  <!-- 루틴 조회수 증가 -->
+  <update id="increaseView" parameterType="int">
+    UPDATE PLAN_TABLE
+    SET VIEW_COUNT = VIEW_COUNT + 1
+    WHERE PLAN_IDX = #{planIdx}
+  </update>
+
   <!-- 루틴 삭제 처리 -->
   <update id="deletePlan" parameterType="map">
     UPDATE PLAN_TABLE
-       SET IS_DELETED = 1
+       SET IS_DELETED = 1, IS_ACTIVE = 0, PLAN_SUB_START = NULL, PLAN_SUB_END = NULL
      WHERE PLAN_IDX = #{planIdx} AND USER_IDX = #{userIdx}
   </update>
 

@@ -3,6 +3,7 @@ package com.godLife.project.service.impl;
 import com.godLife.project.dto.categories.JobEtcCateDTO;
 import com.godLife.project.dto.datas.ActivityDTO;
 import com.godLife.project.dto.datas.PlanDTO;
+import com.godLife.project.dto.request.PlanRequestDTO;
 import com.godLife.project.mapper.PlanMapper;
 import com.godLife.project.service.PlanService;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +47,7 @@ public class PlanServicelmpl implements PlanService {
 
         planMapper.insertJobEtc(jobEtcCateDTO);
       }
-      return 200;
+      return 201;
     } catch (Exception e) {
       log.error("e: ", e);
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly(); // 수동 롤백
@@ -144,18 +145,61 @@ public class PlanServicelmpl implements PlanService {
     }
   }
 
-
+  // 루틴 삭제 처리
   @Override
   public int deletePlan(int planIdx, int userIdx) {
     int isDeleted = 0;
-    if (!planMapper.checkPlanByPlanIdx(planIdx, isDeleted)) {
-      return 404; // not found
+    try {
+      if (!planMapper.checkPlanByPlanIdx(planIdx, isDeleted)) {
+        return 404; // not found
+      }
+      if (planMapper.getUserIdxByPlanIDx(planIdx) != userIdx) {
+        return 403; // another
+      }
+      planMapper.deletePlan(planIdx, userIdx);
+      return 200; // ok
+    } catch (Exception e) {
+      log.error("Error modifying plan: ", e);
+      return 500;
     }
-    if (planMapper.getUserIdxByPlanIDx(planIdx) != userIdx) {
-      return 403; // another
+
+  }
+
+  // 루틴 활성화/비활성화 처리
+  @Override
+  public int goStopPlan(int planIdx, int userIdx, int isActive, int isDeleted) {
+    try {
+      if (!planMapper.checkPlanByPlanIdx(planIdx, isDeleted)) {
+        return 404; // not found
+      }
+      if (planMapper.getUserIdxByPlanIDx(planIdx) != userIdx) {
+        return 403; // another
+      }
+      planMapper.goStopPlan(planIdx, userIdx, isActive);
+      return 200; // ok
+    } catch (Exception e) {
+      log.error("Error modifying plan: ", e);
+      return 500;
     }
-    planMapper.deletePlan(planIdx, userIdx);
-    return 200; // ok
+
+  }
+
+  // 루틴 추천
+  @Override
+  public int likePlan(PlanRequestDTO planRequestDTO, int isDeleted) {
+    try {
+      if (!planMapper.checkPlanByPlanIdx(planRequestDTO.getPlanIdx(), isDeleted)) {
+        return 404; // not found
+      }
+      if (planMapper.checkLikeByPlanIdxNUserIdx(planRequestDTO)) {
+        return 409; // exist
+      }
+      planMapper.likePlan(planRequestDTO);
+      return 200; // ok
+    } catch (Exception e) {
+      log.error("Error modifying plan: ", e);
+      return 500;
+    }
   }
 
 }

@@ -136,4 +136,24 @@
        SET IS_DELETED = 1
      WHERE PLAN_IDX = #{planIdx} AND USER_IDX = #{userIdx}
   </update>
+
+  <!-- 루틴 시작/정지 -->
+  <update id="goStopPlan" parameterType="map">
+    UPDATE PLAN_TABLE
+       SET IS_ACTIVE = #{isActive},
+           <if test="isActive == 1">
+             PLAN_SUB_START = SYSDATE,
+             PLAN_SUB_END = SYSDATE + END_TO
+           </if>
+           <if test="isActive == 0">
+             PLAN_SUB_START = NULL,
+             PLAN_SUB_END = NULL
+           </if>
+     WHERE PLAN_IDX = #{planIdx} AND USER_IDX = #{userIdx}
+  </update>
+
+  <!-- 추천 하기 -->
+  <insert id="likePlan" parameterType="com.godLife.project.dto.request.PlanRequestDTO">
+    INSERT INTO LIKE_TABLE VALUES (#{userIdx}, #{planIdx}, SYSDATE)
+  </insert>
 </mapper>

@@ -4,5 +4,29 @@
 
 <mapper namespace="com.godLife.project.mapper.CategoryMapper">
 
+  <!-- 직업 카테고리 조회 -->
+  <select id="getAllJOBCategories" resultType="com.godLife.project.dto.categories.JobCateDTO">
+    SELECT
+    JC.JOB_IDX AS IDX,
+    JC.JOB_NAME AS NAME,
+    JC.ICON_KEY,
+    IT.ICON,
+    IT.COLOR
+    FROM JOB_CATEGORY JC
+    LEFT JOIN ICON_TABLE IT ON JC.ICON_KEY = IT.ICON_KEY
+    WHERE JC.VISIBLE = 1
+  </select>
+
+  <!-- 관심사 카테고리 조회 -->
+  <select id="getAllTargetCategories" resultType="com.godLife.project.dto.categories.TargetCateDTO">
+    SELECT
+    TC.TARGET_IDX AS IDX,
+    TC.TARGET_NAME AS NAME,
+    TC.ICON_KEY,
+    IT.ICON,
+    IT.COLOR
+    FROM TARGET_CATEGORY TC
+    LEFT JOIN ICON_TABLE IT ON TC.ICON_KEY = IT.ICON_KEY
+  </select>
 
 </mapper>

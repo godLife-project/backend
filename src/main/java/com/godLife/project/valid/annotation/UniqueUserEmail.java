@@ -11,7 +11,7 @@ import java.lang.annotation.*;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UniqueUserEmail {
-  String message() default "이메일이 중복되는지 확인해주세요.";
+  String message() default "이미 가입된 이메일 입니다.";
   Class<?>[] groups() default {};
   Class<? extends Payload>[] payload() default {};
 }

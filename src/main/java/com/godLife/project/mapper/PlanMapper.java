@@ -40,6 +40,9 @@ public interface PlanMapper {
   // 작성자 인덱스 조회
   @Select("SELECT USER_IDX FROM PLAN_TABLE WHERE PLAN_IDX = #{planIdx}")
   int getUserIdxByPlanIDx(int planIdx);
+  // 루틴 횟수 조회
+  @Select("SELECT COUNT(*) FROM PLAN_TABLE WHERE USER_IDX = #{userIdx} AND IS_COMPLETED = #{isCompleted} AND IS_DELETED = #{isDeleted}")
+  int getCntOfPlanByUserIdxNIsCompleted(int userIdx, int isCompleted, int isDeleted);
 
   // 루틴 존재 여부 확인
   @Select("SELECT COUNT(*) FROM PLAN_TABLE WHERE PLAN_IDX = #{planIdx} AND IS_DELETED = #{isDeleted}")
@@ -60,6 +63,10 @@ public interface PlanMapper {
   void modifyActivity(ActivityDTO activityDTO);
   // 기타 직업 수정하기
   void modifyJobEtc(JobEtcCateDTO jobEtcCateDTO);
+  // 추천 횟수 업데이트
+  void modifyLikeCount(int planIdx);
+  // 조회수 업데이트
+  void increaseView(int planIdx);
 
   // 루틴 수정 시 활동 삭제
   @Delete("DELETE FROM PLAN_ACTIVITY WHERE ACTIVITY_IDX = #{activityIdx}")
@@ -73,4 +80,7 @@ public interface PlanMapper {
 
   // 루틴 추천
   void likePlan(PlanRequestDTO planRequestDTO);
+  // 추천 취소
+  @Delete("DELETE FROM LIKE_TABLE WHERE PLAN_IDX = #{planIdx} AND USER_IDX = #{userIdx}")
+  void unLikePlan(PlanRequestDTO planRequestDTO);
 }

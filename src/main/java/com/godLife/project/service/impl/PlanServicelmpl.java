@@ -28,6 +28,12 @@ public class PlanServicelmpl implements PlanService {
   @Transactional(rollbackFor = Exception.class)
   public int insertPlanWithAct(PlanDTO planDTO) {
     try {
+      int userIdx = planDTO.getUserIdx();
+      int isCompleted = planDTO.getIsCompleted();
+      int isDeleted = planDTO.getIsDeleted();
+      if (planMapper.getCntOfPlanByUserIdxNIsCompleted(userIdx, isCompleted, isDeleted) > 5) {
+        return 412;
+      }
       //System.out.println(planDTO);
       // 루틴 삽입하기
       planMapper.insertPlan(planDTO);
@@ -186,20 +192,57 @@ public class PlanServicelmpl implements PlanService {
 
   // 루틴 추천
   @Override
+  @Transactional(rollbackFor = Exception.class)
   public int likePlan(PlanRequestDTO planRequestDTO, int isDeleted) {
     try {
-      if (!planMapper.checkPlanByPlanIdx(planRequestDTO.getPlanIdx(), isDeleted)) {
+      int planIdx = planRequestDTO.getPlanIdx();
+      if (!planMapper.checkPlanByPlanIdx(planIdx, isDeleted)) {
         return 404; // not found
       }
       if (planMapper.checkLikeByPlanIdxNUserIdx(planRequestDTO)) {
         return 409; // exist
       }
       planMapper.likePlan(planRequestDTO);
+      planMapper.modifyLikeCount(planIdx);
       return 200; // ok
     } catch (Exception e) {
       log.error("Error modifying plan: ", e);
+      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly(); // 롤백
       return 500;
     }
+  }
+
+  // 추천 여부 확인
+  @Override
+  public boolean checkLike(PlanRequestDTO planRequestDTO) {
+    return planMapper.checkLikeByPlanIdxNUserIdx(planRequestDTO);
+  }
+
+  // 추천 취소
+  @Override
+  @Transactional(rollbackFor = Exception.class)
+  public int unLikePlan(PlanRequestDTO planRequestDTO) {
+    int planIdx = planRequestDTO.getPlanIdx();
+    try {
+      if (!planMapper.checkPlanByPlanIdx(planIdx, 0) && !planMapper.checkPlanByPlanIdx(planIdx, 1)) {
+        return 404; // not found
+      }
+      if (!planMapper.checkLikeByPlanIdxNUserIdx(planRequestDTO)) {
+        return 404; // not found
+      }
+      planMapper.unLikePlan(planRequestDTO);
+      planMapper.modifyLikeCount(planIdx);
+      return 200; // ok
+    } catch (Exception e) {
+      log.error("Error modifying plan: ", e);
+      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly(); // 롤백
+      return 500;
+    }
+  }
+
+  @Override
+  public void increaseView(int planIdx) {
+    planMapper.increaseView(planIdx);
   }
 
 }

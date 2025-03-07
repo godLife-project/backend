@@ -6,14 +6,23 @@ public enum ChallengeState {
     COMPLETED("완료됨"),
     FAILED("실패");
 
-    private final String description;
+    private final String state;
 
-    ChallengeState(String description) {
-        this.description = description;
+    ChallengeState(String state) {
+        this.state = state;
     }
 
-    public String getDescription() {
-        return description;
+    public String getState() {
+        return state;
+    }
+
+    public static ChallengeState fromString(String state) {
+        for (ChallengeState challengeState : ChallengeState.values()) {
+            if (challengeState.state.equalsIgnoreCase(state)) {
+                return challengeState;
+            }
+        }
+        throw new IllegalArgumentException("Invalid state: " + state);
     }
 }
 

@@ -5,18 +5,49 @@
 <mapper namespace="com.godLife.project.mapper.ChallengeMapper">
 
     <!-- 챌린지 생성 (관리자 전용) -->
-    <insert id="createChallenge" useGeneratedKeys="true" keyProperty="challIdx">
+    <insert id="createChallenge">
+        <selectKey keyProperty="challIdx" resultType="java.lang.Long" order="AFTER">
+            SELECT CHALL_SEQ.CURRVAL FROM DUAL
+        </selectKey>
         INSERT INTO CHALL_TABLE (
-        CHALL_TITLE, CHALL_DESCRIPTION, CHALL_CATEGORY_IDX, TOTAL_CLEAR_TIME, MAX_PARTICIPANTS,CHALL_CREATE_AT, CHALL_STATE)
-        VALUES (#{challTitle}, #{challDescription}, #{challCategoryIdx}, #{totalClearTime}, #{maxParticipants}, SYSDATE, #{challState})
+        CHALL_IDX, CHALL_TITLE, CHALL_DESCRIPTION, CHALL_CATEGORY_IDX, TOTAL_CLEAR_TIME, MAX_PARTICIPANTS,CHALL_CREATED_AT, CHALL_STATE,
+         CHALL_START_TIME, CHALL_END_TIME, USER_JOIN)
+        VALUES (CHALL_SEQ.NEXTVAL, #{challTitle}, #{challDescription}, #{challCategoryIdx}, #{totalClearTime}, #{maxParticipants},
+        SYSDATE, #{challState}, #{challStartTime, jdbcType=TIMESTAMP},#{challEndTime, jdbcType=TIMESTAMP}, #{userJoin})
     </insert>
 
-    <!-- 챌린지 정보 조회 -->
-    <select id="getChallenge" resultType="com.godLife.project.dto.contents.ChallengeDTO">
+
+    <!-- 챌린지 상세정보 조회 -->
+    <select id="ChallengeDetail" resultType="com.godLife.project.dto.contents.ChallengeDTO">
         SELECT
-        FROM CHALL_TABLE
-        WHERE CHALL_IDX= #{challidx}
+            CHALL_TITLE, CHALL_DESCRIPTION, CHALL_CATEGORY_IDX,
+            MIN_PARTICIPATION_TIME, TOTAL_CLEAR_TIME, MAX_PARTICIPANTS,
+            CHALL_START_TIME, CHALL_END_TIME, CHALL_CREATED_AT, CHALL_STATE
+        FROM Chall_table
+        WHERE CHALL_IDX = #{challIdx}
     </select>
+
+    <!-- 현재 참여자 수 조회 (user_idx COUNT) -->
+    <select id="countParticipants" resultType="int">
+        SELECT COUNT(user_idx)
+        FROM Chall_join
+        WHERE chall_idx = #{challIdx}
+    </select>
+
+    <!-- 유저 참여형 챌린지 최초 참여 시 정보 업데이트 -->
+    <update id="updateChallengeStartTimeAndState">
+        UPDATE CHALL_TABLE
+        SET CHALL_START_TIME = #{challStartTime},
+            CHALL_END_TIME = #{challEndTime},
+            CHALL_STATE = #{challState}
+        WHERE CHALL_IDX = #{challIdx}
+    </update>
+
+    <!-- 유저 참여 기록 -->
+    <insert id="addUserToChallenge">
+        INSERT INTO CHALL_JOIN (chall_idx, user_idx)
+        VALUES (#{challIdx}, #{userIdx})
+    </insert>
 
     <!-- 챌린지 카테고리별 조회 -->
     <select id="getChallengesByCategory" resultType="com.godLife.project.dto.contents.ChallengeDTO">
@@ -25,15 +56,6 @@
         WHERE CHALL_CATEGORY_IDX =#{challCategoryIdx}
         ORDER BY CHALL_CREATE_AT DESC
     </select>
-
-    <!-- 챌린지 시작 업데이트 (최초 참여 시) -->
-    <update id="startChallenge">
-        UPDATE CHALL_TABLE
-        SET CHALL_START_TIME = #{challStartTime},
-            CHALL_END_TIME = #{challEndTime},
-            CHALL_STATE = #{challState}
-        WHERE CHALL_IDX = #{challIdx}
-    </update>
 
     <!-- 인증 기록 저장 -->
     <insert id="insertVerifyRecord">

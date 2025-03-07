@@ -4,13 +4,11 @@ import com.godLife.project.dto.contents.ChallengeDTO;
 import com.godLife.project.dto.infos.VerifyDTO;
 import com.godLife.project.service.ChallengeService;
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -32,6 +30,15 @@ public class ChallengeController {
         return ResponseEntity.ok(challenges);
     }
 
+    // 챌린지 상세 조회
+    @GetMapping("/detail")
+    public ChallengeDTO getChallengeDetail(@RequestParam Long challIdx,
+                                           @RequestParam int userJoin,
+                                           @RequestParam Integer duration) {
+        // ChallengeService를 호출하여 챌린지 상세정보 조회
+        return challengeService.getChallnegeDetail(challIdx, userJoin, duration);
+    }
+
     // 카테고리 챌린지 조회 api
     @GetMapping("/latest/{challCategoryIdx}")
     public ResponseEntity<List<ChallengeDTO>> getChallengesByCategoryId(@PathVariable int challCategoryIdx){
@@ -50,17 +57,16 @@ public class ChallengeController {
         }
     }
 
-    // 챌린지 참여 (시작)
-    @PostMapping("/{challIdx}/join")
-    public ResponseEntity<?> joinChallenge(
-            @PathVariable Long challIdx,
-            @RequestParam int userIdx,
-            @RequestParam @NotNull LocalDateTime challEndTime) { // 종료시간 필수
+    // 챌린지 참여 API
+    @PostMapping("/join")
+    public ResponseEntity<ChallengeDTO> joinChallenge(@RequestParam Long challIdx,
+                                                      @RequestParam int userIdx,
+                                                      @RequestParam Integer duration) {
         try {
-            challengeService.joinChallenge(challIdx, userIdx, challEndTime);
-            return ResponseEntity.ok("챌린지 참여 완료");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("종료 시간을 지정해야 합니다.");
+            ChallengeDTO challenge = challengeService.joinChallenge(challIdx, userIdx, duration);
+            return ResponseEntity.ok(challenge); // 참여 후 챌린지 상세 정보 반환
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); // 에러 처리
         }
     }
 

@@ -36,21 +36,29 @@ public class ChallengeDTO {
     @Schema(description = "챌린지 시작 시간", example = "2025-02-15 HH:mm:ss")
     @JsonSerialize(using = LocalDateTimeSerializer.class) // 직렬화
     @JsonDeserialize(using = LocalDateTimeDeserializer.class) // 역직렬화
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime challStartTime;
 
     @Schema(description = "챌린지 종료 시간", example = "2025-02-16 HH:mm:ss")
     @JsonSerialize(using = LocalDateTimeSerializer.class) // 직렬화
     @JsonDeserialize(using = LocalDateTimeDeserializer.class) // 역직렬화
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime challEndTime;
 
     @Schema(description = "챌린지 작성일", example = "2025-02-16 HH:mm:ss")
     @JsonSerialize(using = LocalDateTimeSerializer.class) // 직렬화
     @JsonDeserialize(using = LocalDateTimeDeserializer.class) // 역직렬화
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime challCreatedAt;
 
     @Schema(description = "챌린지 상태", example = "게시중")
     private String challState;
+
+    @Schema(description = "챌린지 형태", example = "관리자 개입형")
+    private int userJoin;
+
+    @Schema(description = "클라이언트에서 받는 유지시간", example = "7일")
+    private Integer duration;
+
+    private int currentParticipants; // 현재 참여자 수
 }

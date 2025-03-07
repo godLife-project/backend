@@ -23,7 +23,7 @@
     </update>
 
     <!-- 모든 QnA를 조회하는 select 쿼리 -->
-    <select id="selectAllQna" resultMap="com.godLife.project.dto.contents.QnADTO">
+    <select id="selectAllQna" resultType="com.godLife.project.dto.contents.QnADTO">
         SELECT * FROM QNA_TABLE
     </select>
 
@@ -47,7 +47,7 @@
 
 
     <!-- 제목 또는 내용에 검색어가 포함된 QnA를 검색하는 select 쿼리 -->
-    <select id="searchQna" parameterType="string" resultMap="com.godLife.project.dto.contents.QnADTO">
+    <select id="searchQna" parameterType="java.lang.String" resultType="com.godLife.project.dto.contents.QnADTO">
         SELECT * FROM QNA_TABLE
         WHERE LOWER(Q_TITLE) LIKE '%' || LOWER(#{query}) || '%'
            OR LOWER(Q_SUB) LIKE '%' || LOWER(#{query}) || '%'

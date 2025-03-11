@@ -39,7 +39,7 @@ public class RefreshServiceImpl implements RefreshService {
     RefreshDTO refreshDTO = new RefreshDTO();
     refreshDTO.setUsername(username);
     refreshDTO.setRefresh(refresh);
-    refreshDTO.setExpiration(date.toString());
+    refreshDTO.setExpiration(date);
 
     refreshMapper.addRefreshToken(refreshDTO);
   }

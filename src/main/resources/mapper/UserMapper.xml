@@ -4,5 +4,12 @@
 
 <mapper namespace="com.godLife.project.mapper.UserMapper">
 
+  <!-- 로그인 정보 조회 -->
+  <select id="findByUserid" parameterType="String">
+    SELECT U.*, L.LV_IDX AS USER_LV
+    FROM USER_TABLE U
+    JOIN USER_LEVEL L ON U.USER_EXP <![CDATA[ >= ]]> L.MIN_EXP AND U.USER_EXP <![CDATA[ < ]]> L.MAX_EXP
+    WHERE USER_ID = #{username}
+  </select>
 
 </mapper>

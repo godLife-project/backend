@@ -29,9 +29,9 @@ public class PlanServicelmpl implements PlanService {
   public int insertPlanWithAct(PlanDTO planDTO) {
     try {
       int userIdx = planDTO.getUserIdx();
-      int isCompleted = planDTO.getIsCompleted();
-      int isDeleted = planDTO.getIsDeleted();
-      if (planMapper.getCntOfPlanByUserIdxNIsCompleted(userIdx, isCompleted, isDeleted) > 5) {
+      int isCompleted = planDTO.getIsCompleted(); // 0
+      int isDeleted = planDTO.getIsDeleted();     // 0
+      if (planMapper.getCntOfPlanByUserIdxNIsCompleted(userIdx, isCompleted, isDeleted) > 4) {
         return 412;
       }
       //System.out.println(planDTO);
@@ -53,6 +53,12 @@ public class PlanServicelmpl implements PlanService {
 
         planMapper.insertJobEtc(jobEtcCateDTO);
       }
+
+      if (planDTO.isForked()) {
+        int forkIdx = planDTO.getForkIdx();
+        planMapper.modifyForkCount(forkIdx, isDeleted); // fork 하여 루틴 작성시 원본 루틴의 포크수 증가
+      }
+
       return 201;
     } catch (Exception e) {
       log.error("e: ", e);
@@ -72,6 +78,8 @@ public class PlanServicelmpl implements PlanService {
       planDTO.setActivities(planMapper.detailActivityByPlanIdx(planIdx));
       // 관심사 정보 조회
       planDTO.setTargetCateDTO(planMapper.getTargetCategoryByTargetIdx(planDTO.getTargetIdx()));
+      // 불꽃 정보 조회
+      planDTO.setFireInfo(planMapper.detailFireByPlanIdx(planIdx));
 
       if (planDTO.getJobIdx() == 999) {
         planDTO.setJobEtcCateDTO(planMapper.getJobEtcInfoByPlanIdx(planIdx));
@@ -96,7 +104,7 @@ public class PlanServicelmpl implements PlanService {
       return 404; // Not Found
     }
     // 작성자만 수정 가능
-    if (userIdx != planMapper.getUserIdxByPlanIDx(planIdx)) {
+    if (userIdx != planMapper.getUserIdxByPlanIdx(planIdx)) {
       return 403; // Forbidden
     }
 
@@ -153,19 +161,25 @@ public class PlanServicelmpl implements PlanService {
 
   // 루틴 삭제 처리
   @Override
+  @Transactional(rollbackFor = Exception.class)
   public int deletePlan(int planIdx, int userIdx) {
     int isDeleted = 0;
     try {
       if (!planMapper.checkPlanByPlanIdx(planIdx, isDeleted)) {
         return 404; // not found
       }
-      if (planMapper.getUserIdxByPlanIDx(planIdx) != userIdx) {
+      if (planMapper.getUserIdxByPlanIdx(planIdx) != userIdx) {
         return 403; // another
       }
       planMapper.deletePlan(planIdx, userIdx);
+      Integer forkIdx = planMapper.getForkIdxByPlanIdx(planIdx);
+      if (forkIdx != null) {
+        planMapper.modifyForkCount(forkIdx, isDeleted);
+      }
       return 200; // ok
     } catch (Exception e) {
       log.error("Error modifying plan: ", e);
+      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly(); // 롤백
       return 500;
     }
 
@@ -178,7 +192,7 @@ public class PlanServicelmpl implements PlanService {
       if (!planMapper.checkPlanByPlanIdx(planIdx, isDeleted)) {
         return 404; // not found
       }
-      if (planMapper.getUserIdxByPlanIDx(planIdx) != userIdx) {
+      if (planMapper.getUserIdxByPlanIdx(planIdx) != userIdx) {
         return 403; // another
       }
       planMapper.goStopPlan(planIdx, userIdx, isActive);
@@ -240,9 +254,77 @@ public class PlanServicelmpl implements PlanService {
     }
   }
 
+  // 조회수 증가
   @Override
   public void increaseView(int planIdx) {
     planMapper.increaseView(planIdx);
+  }
+
+  @Override
+  public int updateEarlyComplete(PlanRequestDTO planRequestDTO) {
+    try {
+      int planIdx = planRequestDTO.getPlanIdx();
+      int userIdx = planRequestDTO.getUserIdx();
+      int isDeleted = planRequestDTO.getIsDeleted();
+      if (!planMapper.checkPlanByPlanIdx(planIdx, isDeleted)) {
+        return 404; // not found
+      }
+      if (planMapper.getUserIdxByPlanIdx(planIdx) != userIdx) {
+        return 403; // another
+      }
+      if (!planMapper.checkActiveByPlanIdx(planIdx)) {
+        return 412; // preCondition
+      }
+      if (planMapper.checkCompleteByPlanIdx(planRequestDTO)) {
+        return 409; // conflict
+      }
+      planMapper.updateEarlyComplete(planRequestDTO);
+      return 200; // ok
+    } catch (Exception e) {
+      log.error("Error modifying plan: ", e);
+      return 500;
+    }
+  }
+
+  @Override
+  public int addReview(PlanRequestDTO planRequestDTO) {
+    try {
+      int planIdx = planRequestDTO.getPlanIdx();
+      int userIdx = planRequestDTO.getUserIdx();
+      int isDeleted = planRequestDTO.getIsDeleted();
+
+      if (!planMapper.checkPlanByPlanIdx(planIdx, isDeleted)) { return 404; } // not found
+      if (!planMapper.checkCompleteByPlanIdx(planRequestDTO)) { return 412; } // preCondition
+      if (planMapper.getUserIdxByPlanIdx(planIdx) != userIdx) { return 403; } // another
+      if (planMapper.getReviewExist(planIdx) != null) { return 409; } // conflict
+
+      planMapper.addReview(planRequestDTO);
+      return 200;
+
+    } catch (Exception e) {
+      log.error("e: ", e);
+      return 500;
+    }
+  }
+
+  @Override
+  public int modifyReview(PlanRequestDTO planRequestDTO) {
+    try {
+      int planIdx = planRequestDTO.getPlanIdx();
+      int userIdx = planRequestDTO.getUserIdx();
+      int isDeleted = planRequestDTO.getIsDeleted();
+
+      if (!planMapper.checkPlanByPlanIdx(planIdx, isDeleted)) { return 404; } // not found
+      if ((!planMapper.checkCompleteByPlanIdx(planRequestDTO)) || (planMapper.getReviewExist(planIdx) == null)) { return 412; } // preCondition
+      if (planMapper.getUserIdxByPlanIdx(planIdx) != userIdx) { return 403; } // another
+
+      planMapper.modifyReview(planRequestDTO);
+      return 200;
+
+    } catch (Exception e) {
+      log.error("e: ", e);
+      return 500;
+    }
   }
 
 }

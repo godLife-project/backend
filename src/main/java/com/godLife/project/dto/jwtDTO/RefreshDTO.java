@@ -2,6 +2,8 @@ package com.godLife.project.dto.jwtDTO;
 
 import lombok.Data;
 
+import java.util.Date;
+
 @Data
 public class RefreshDTO {
 
@@ -9,5 +11,5 @@ public class RefreshDTO {
 
   private String username;
   private String refresh;
-  private String expiration;
+  private Date expiration;
 }

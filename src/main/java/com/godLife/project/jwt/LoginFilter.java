@@ -113,6 +113,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     loginUserDTO.setNickTag(tempUserDTO.getNickTag());      // 닉네임 중복 태그
     loginUserDTO.setJobIdx(tempUserDTO.getJobIdx());        // 유저 직업
     loginUserDTO.setTargetIdx(tempUserDTO.getTargetIdx());  // 유저 관심사
+    loginUserDTO.setCombo(tempUserDTO.getCombo());          // 유저 콤보
+    loginUserDTO.setUserExp(tempUserDTO.getUserExp());      // 유저 경험치
+    loginUserDTO.setUserLv(tempUserDTO.getUserLv());        // 유저 레벨
     if (tempUserDTO.getAuthorityIdx() >= 2) {
       loginUserDTO.setRoleStatus(true);                     // 유저 권한이 아닐 경우 true
     }

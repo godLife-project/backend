@@ -11,4 +11,8 @@ public class PlanRequestDTO {
   @Min(0)
   @Max(1)
   private int isActive;
+  private int isCompleted;
+  private int isDeleted;
+
+  private String review;
 }

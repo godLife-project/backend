@@ -35,4 +35,7 @@ public class ActivityDTO {
 
   @Schema(description = "활동 중요도", example = "4")
   private int activityImp;
+
+  @Schema(description = "활동 인증 여부", example = "false")
+  private boolean verified;
 }

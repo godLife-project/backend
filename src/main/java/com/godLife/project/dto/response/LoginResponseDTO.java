@@ -10,8 +10,10 @@ public class LoginResponseDTO {
   private String nickTag;
   private int jobIdx;
   private int targetIdx;
-  //private int userGender;    // 필요시 사용
-  //private int maxFireIdx;   // 필요시 사용
-  //private int authorityIdx; // 필요시 사용
+  private int combo;
+  private double userExp;
+  private int userLv;
+  // private int userGender;    // 필요시 사용
+  // private int authorityIdx; // 필요시 사용
   private boolean roleStatus;
 }

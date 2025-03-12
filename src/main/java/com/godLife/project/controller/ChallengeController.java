@@ -2,7 +2,7 @@ package com.godLife.project.controller;
 
 import com.godLife.project.dto.contents.ChallengeDTO;
 import com.godLife.project.dto.infos.VerifyDTO;
-import com.godLife.project.service.ChallengeService;
+import com.godLife.project.service.interfaces.ChallengeService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;

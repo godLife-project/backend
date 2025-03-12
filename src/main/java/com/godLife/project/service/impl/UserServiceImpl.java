@@ -3,7 +3,7 @@ package com.godLife.project.service.impl;
 
 import com.godLife.project.dto.datas.UserDTO;
 import com.godLife.project.mapper.UserMapper;
-import com.godLife.project.service.UserService;
+import com.godLife.project.service.interfaces.UserService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

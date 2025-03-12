@@ -1,11 +1,10 @@
 package com.godLife.project.controller;
 
 import com.godLife.project.dto.request.VerifyRequestDTO;
-import com.godLife.project.service.VerifyService;
+import com.godLife.project.service.interfaces.VerifyService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;

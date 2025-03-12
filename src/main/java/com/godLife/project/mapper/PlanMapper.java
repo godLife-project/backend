@@ -114,7 +114,7 @@ public interface PlanMapper {
   void unLikePlan(PlanRequestDTO planRequestDTO);
 
   // 루틴 완료 처리
-  void updateAllComplete();
+  void updateCompleteByPlanIdx(int planIdx);
   // 루틴 조기 완료 처리
   void updateEarlyComplete(PlanRequestDTO planRequestDTO);
 }

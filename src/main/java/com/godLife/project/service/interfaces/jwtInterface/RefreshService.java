@@ -1,4 +1,4 @@
-package com.godLife.project.service.jwtInterface;
+package com.godLife.project.service.interfaces.jwtInterface;
 
 public interface RefreshService {
 

@@ -1,10 +1,13 @@
 package com.godLife.project.mapper;
 
 import com.godLife.project.dto.request.VerifyRequestDTO;
+import com.godLife.project.dto.verify.CheckAllFireActivateDTO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
+
+import java.util.List;
 
 @Mapper
 public interface VerifyMapper {
@@ -24,7 +27,7 @@ public interface VerifyMapper {
   void setLastEXP(VerifyRequestDTO verifyRequestDTO);
 
   // 루틴 인증율 계산
-  long getVerifyRate(int planIdx);
+  double getVerifyRate(int planIdx);
 
   // 불꽃 활성화 처리
   @Update("UPDATE PLAN_TABLE SET FIRE_STATE = 1 WHERE PLAN_IDX = #{planIdx} AND USER_IDX = #{userIdx}")
@@ -34,7 +37,7 @@ public interface VerifyMapper {
   boolean checkFireState(int planIdx);
 
   // 불꽃을 모두 활성화 했는지 확인
-  boolean checkAllFireIsActivateByUserIdx(int userIdx);
+  List<CheckAllFireActivateDTO> checkAllFireIsActivateByUserIdx(int userIdx);
 
   // 유저 테이블 콤보 증가
   @Update("UPDATE USER_TABLE SET COMBO = COMBO + 1 WHERE USER_IDX = #{userIdx}")

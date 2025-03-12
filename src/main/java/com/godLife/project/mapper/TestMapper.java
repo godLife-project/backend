@@ -4,6 +4,7 @@ import com.godLife.project.dto.test.GetPlanIdxDTO;
 import com.godLife.project.dto.test.GetUserListDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
@@ -13,4 +14,6 @@ public interface TestMapper {
     List<GetPlanIdxDTO> findPlanIdx();
     @Select("SELECT USER_IDX, USER_NAME, USER_ID, USER_JOIN, AUTHORITY_IDX, USER_NICK, NICK_TAG FROM USER_TABLE")
     List<GetUserListDTO> getUserList();
+    @Update("UPDATE PLAN_TABLE SET REVIEW = NULL WHERE PLAN_IDX = #{planIdx}")
+    void deleteReview(int planIdx);
 }

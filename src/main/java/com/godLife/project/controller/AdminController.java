@@ -2,8 +2,8 @@ package com.godLife.project.controller;
 
 import com.godLife.project.dto.contents.ChallengeDTO;
 import com.godLife.project.exception.UnauthorizedException;
-import com.godLife.project.service.ChallengeService;
-import com.godLife.project.service.UserService;
+import com.godLife.project.service.interfaces.ChallengeService;
+import com.godLife.project.service.interfaces.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

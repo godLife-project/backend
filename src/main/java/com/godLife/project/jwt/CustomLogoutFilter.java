@@ -1,6 +1,6 @@
 package com.godLife.project.jwt;
 
-import com.godLife.project.service.jwtInterface.RefreshService;
+import com.godLife.project.service.interfaces.jwtInterface.RefreshService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

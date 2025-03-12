@@ -5,7 +5,7 @@ import com.godLife.project.dto.datas.ActivityDTO;
 import com.godLife.project.dto.datas.PlanDTO;
 import com.godLife.project.dto.request.PlanRequestDTO;
 import com.godLife.project.mapper.PlanMapper;
-import com.godLife.project.service.PlanService;
+import com.godLife.project.service.interfaces.PlanService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -71,6 +71,9 @@ public class PlanServicelmpl implements PlanService {
   @Override
   @Transactional
   public PlanDTO detailRoutine(int planIdx, int isDeleted) {
+    // 루틴 완료 처리
+    planMapper.updateCompleteByPlanIdx(planIdx);
+
     // 루틴 조회
     PlanDTO planDTO = planMapper.detailPlanByPlanIdx(planIdx, isDeleted);
     if (planDTO != null) {
@@ -286,6 +289,7 @@ public class PlanServicelmpl implements PlanService {
     }
   }
 
+  // 후기 추가
   @Override
   public int addReview(PlanRequestDTO planRequestDTO) {
     try {
@@ -307,6 +311,7 @@ public class PlanServicelmpl implements PlanService {
     }
   }
 
+  // 후기 수정
   @Override
   public int modifyReview(PlanRequestDTO planRequestDTO) {
     try {

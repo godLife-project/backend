@@ -1,4 +1,4 @@
-package com.godLife.project.service;
+package com.godLife.project.service.interfaces;
 
 import com.godLife.project.dto.contents.ChallengeDTO;
 import com.godLife.project.dto.infos.VerifyDTO;

@@ -1,6 +1,6 @@
 package com.godLife.project.controller;
 
-import com.godLife.project.service.TestService;
+import com.godLife.project.service.interfaces.TestService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;

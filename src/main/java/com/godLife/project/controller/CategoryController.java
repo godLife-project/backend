@@ -1,8 +1,10 @@
 package com.godLife.project.controller;
 
 import com.godLife.project.dto.categories.*;
+import com.godLife.project.dto.datas.FireDTO;
 import com.godLife.project.dto.datas.IconDTO;
-import com.godLife.project.service.CategoryService;
+import com.godLife.project.dto.datas.UserLevelDTO;
+import com.godLife.project.service.interfaces.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,7 +42,7 @@ public class CategoryController {
     public List<ShortCutCateDTO> shortcut() { return categoryService.getAllShortCategories(); }
     // 권한 카테고리
     @Operation(summary = "카테고리 조회", description = "권한")
-    @PostMapping("/admin/authority")
+    @GetMapping("/admin/authority")
     public List<AuthorityCateDTO> authority() { return categoryService.getAllAuthorityCategories(); }
     // 아이콘 카테고리
     @Operation(summary = "카테고리 조회", description = "아이콘")
@@ -49,7 +51,15 @@ public class CategoryController {
 
     // 아이콘 카테고리
     @Operation(summary = "카테고리 조회", description = "아이콘 (관리자)")
-    @PostMapping("/admin/icon")
+    @GetMapping("/admin/icon")
     public List<IconDTO> iconAdmin() { return categoryService.getAllIconInfos(); }
+
+    // 불꽃 정보 조회
+    @GetMapping("/admin/fireInfos")
+    public List<FireDTO> fireInfos() { return categoryService.getAllFireInfos(); }
+
+    // 유저 레벨 정보 조회
+    @GetMapping("/admin/userLevelInfos")
+    public List<UserLevelDTO> userLevelInfos() {return categoryService.getAllUserLevelInfos(); }
 
 }

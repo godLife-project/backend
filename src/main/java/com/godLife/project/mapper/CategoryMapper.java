@@ -1,7 +1,9 @@
 package com.godLife.project.mapper;
 
 import com.godLife.project.dto.categories.*;
+import com.godLife.project.dto.datas.FireDTO;
 import com.godLife.project.dto.datas.IconDTO;
+import com.godLife.project.dto.datas.UserLevelDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
@@ -34,4 +36,11 @@ public interface CategoryMapper {
     // 아이콘 테이블 조회 ( 관리자용 )
     @Select("SELECT * FROM ICON_TABLE")
     List<IconDTO> getAllIconInfos();
+
+    // 불꽃 테이블 조회
+    @Select("SELECT * FROM FIRE_TABLE")
+    List<FireDTO> getAllFireInfos();
+    // 유저 레벨 테이블 조회
+    @Select("SELECT * FROM USER_LEVEL")
+    List<UserLevelDTO> getAllUserLevelInfos();
 }

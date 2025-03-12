@@ -248,10 +248,10 @@
   </update>
 
   <!-- 모든 루틴 완료 상태 최신화 -->
-  <update id="updateAllComplete">
+  <update id="updateCompleteByPlanIdx" parameterType="int">
     UPDATE PLAN_TABLE
     SET IS_COMPLETED = 1, IS_ACTIVE = 0
-    WHERE (IS_ACTIVE = 1 AND IS_COMPLETED = 0 AND IS_DELETED = 0) AND PLAN_SUB_END <![CDATA[ <= ]]> SYSDATE
+    WHERE PLAN_IDX = #{planIdx} AND ((IS_ACTIVE = 1 AND IS_COMPLETED = 0 AND IS_DELETED = 0) AND PLAN_SUB_END <![CDATA[ <= ]]> SYSDATE)
   </update>
   <!-- 루틴 조기 완료 처리 -->
   <update id="updateEarlyComplete" parameterType="com.godLife.project.dto.request.PlanRequestDTO">

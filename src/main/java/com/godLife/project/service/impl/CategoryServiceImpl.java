@@ -1,9 +1,11 @@
 package com.godLife.project.service.impl;
 
 import com.godLife.project.dto.categories.*;
+import com.godLife.project.dto.datas.FireDTO;
 import com.godLife.project.dto.datas.IconDTO;
+import com.godLife.project.dto.datas.UserLevelDTO;
 import com.godLife.project.mapper.CategoryMapper;
-import com.godLife.project.service.CategoryService;
+import com.godLife.project.service.interfaces.CategoryService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -43,4 +45,11 @@ public class CategoryServiceImpl implements CategoryService {
     // 아이콘 정보 조회 ( 관리자 용 )
     @Override
     public List<IconDTO> getAllIconInfos() { return categoryMapper.getAllIconInfos(); }
+
+    // 아이콘 정보 조회
+    @Override
+    public List<FireDTO> getAllFireInfos() { return categoryMapper.getAllFireInfos(); }
+    // 아이콘 정보 조회 ( 관리자 용 )
+    @Override
+    public List<UserLevelDTO> getAllUserLevelInfos() { return categoryMapper.getAllUserLevelInfos(); }
 }

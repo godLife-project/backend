@@ -2,7 +2,7 @@ package com.godLife.project.service.impl.jwtImpl;
 
 import com.godLife.project.dto.jwtDTO.RefreshDTO;
 import com.godLife.project.mapper.jwtMapper.RefreshMapper;
-import com.godLife.project.service.jwtInterface.RefreshService;
+import com.godLife.project.service.interfaces.jwtInterface.RefreshService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

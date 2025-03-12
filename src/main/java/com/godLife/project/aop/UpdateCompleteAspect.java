@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class UpdateCompleteAspect {
 
+  /*
   private final PlanMapper planMapper;
 
   public UpdateCompleteAspect(PlanMapper planMapper) {
@@ -23,5 +24,7 @@ public class UpdateCompleteAspect {
     //System.out.println("루틴 완료 처리 로직 활성화..");
     planMapper.updateAllComplete();
   }
+
+   */
 }
 

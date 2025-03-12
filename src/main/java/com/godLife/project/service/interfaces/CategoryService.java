@@ -1,7 +1,9 @@
-package com.godLife.project.service;
+package com.godLife.project.service.interfaces;
 
 import com.godLife.project.dto.categories.*;
+import com.godLife.project.dto.datas.FireDTO;
 import com.godLife.project.dto.datas.IconDTO;
+import com.godLife.project.dto.datas.UserLevelDTO;
 
 import java.util.List;
 
@@ -22,5 +24,10 @@ public interface CategoryService {
     List<IconDTO> getUserIconInfos();
     // 아이콘 정보 조회
     List<IconDTO> getAllIconInfos();
+
+    // 불꽃 정보 조회
+    List<FireDTO> getAllFireInfos();
+    // 유저 레벨 정보 조회
+    List<UserLevelDTO> getAllUserLevelInfos();
 
 }

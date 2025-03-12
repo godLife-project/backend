@@ -3,7 +3,7 @@ package com.godLife.project.controller;
 
 import com.godLife.project.dto.datas.PlanDTO;
 import com.godLife.project.dto.request.PlanRequestDTO;
-import com.godLife.project.service.PlanService;
+import com.godLife.project.service.interfaces.PlanService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;

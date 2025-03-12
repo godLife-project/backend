@@ -4,7 +4,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 @Mapper
-public interface ChallengeJoinMapper {
+public interface ChallJoinMapper {
     // 챌린지 참여 여부 확인
     boolean isUserJoined(@Param("userId") Long userId, @Param("challIdx") int challIdx);
 
@@ -13,4 +13,5 @@ public interface ChallengeJoinMapper {
 
     // 챌린지 참여 추가
     void insertChallengeJoin(@Param("userId") Long userId, @Param("challIdx") int challIdx);
+
 }

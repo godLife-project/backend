@@ -10,9 +10,9 @@
             SELECT CHALL_SEQ.CURRVAL FROM DUAL
         </selectKey>
         INSERT INTO CHALL_TABLE (
-        CHALL_IDX, CHALL_TITLE, CHALL_DESCRIPTION, CHALL_CATEGORY_IDX, TOTAL_CLEAR_TIME, MAX_PARTICIPANTS,CHALL_CREATED_AT, CHALL_STATE,
+        CHALL_IDX, CHALL_TITLE, CHALL_DESCRIPTION, CHALL_CATEGORY_IDX, MIN_PARTICIPATION_TIME, TOTAL_CLEAR_TIME, MAX_PARTICIPANTS,CHALL_CREATED_AT, CHALL_STATE,
          CHALL_START_TIME, CHALL_END_TIME, USER_JOIN)
-        VALUES (CHALL_SEQ.NEXTVAL, #{challTitle}, #{challDescription}, #{challCategoryIdx}, #{totalClearTime}, #{maxParticipants},
+        VALUES (CHALL_SEQ.NEXTVAL, #{challTitle}, #{challDescription}, #{challCategoryIdx}, #{minParticipationTime}, #{totalClearTime}, #{maxParticipants},
         SYSDATE, #{challState}, #{challStartTime, jdbcType=TIMESTAMP},#{challEndTime, jdbcType=TIMESTAMP}, #{userJoin})
     </insert>
 
@@ -35,7 +35,7 @@
     </select>
 
     <!-- 유저 참여형 챌린지 최초 참여 시 정보 업데이트 -->
-    <update id="updateChallengeStartTimeAndState">
+    <update id="updateChallengeStartTime">
         UPDATE CHALL_TABLE
         SET CHALL_START_TIME = #{challStartTime},
             CHALL_END_TIME = #{challEndTime},
@@ -45,8 +45,8 @@
 
     <!-- 유저 참여 기록 -->
     <insert id="addUserToChallenge">
-        INSERT INTO CHALL_JOIN (chall_idx, user_idx)
-        VALUES (#{challIdx}, #{userIdx})
+        INSERT INTO CHALL_JOIN (chall_idx, user_idx, startTime, endTime, activity)
+        VALUES (#{challIdx}, #{userIdx}, #{startTime}, #{endTime}, #{activity})
     </insert>
 
     <!-- 챌린지 카테고리별 조회 -->

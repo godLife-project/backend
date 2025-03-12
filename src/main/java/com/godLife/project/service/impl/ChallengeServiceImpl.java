@@ -1,9 +1,10 @@
 package com.godLife.project.service.impl;
 
 import com.godLife.project.dto.contents.ChallengeDTO;
+import com.godLife.project.dto.infos.ChallengeJoinDTO;
 import com.godLife.project.dto.infos.VerifyDTO;
 import com.godLife.project.enums.ChallengeState;
-import com.godLife.project.mapper.ChallengeJoinMapper;
+import com.godLife.project.mapper.ChallJoinMapper;
 import com.godLife.project.mapper.ChallengeMapper;
 import com.godLife.project.service.ChallengeService;
 import org.springframework.stereotype.Service;
@@ -14,11 +15,11 @@ import java.util.List;
 @Service
 public class ChallengeServiceImpl implements ChallengeService {
     private ChallengeMapper challengeMapper;
-    private ChallengeJoinMapper challengeJoinMapper;
+    private ChallJoinMapper challJoinMapper;
 
-    public ChallengeServiceImpl(ChallengeMapper challengeMapper, ChallengeJoinMapper challengeJoinMapper) {
+    public ChallengeServiceImpl(ChallengeMapper challengeMapper, ChallJoinMapper challengeJoinMapper) {
         this.challengeMapper = challengeMapper;
-        this.challengeJoinMapper = challengeJoinMapper;
+        this.challJoinMapper = challengeJoinMapper;
     }
 
     // 최신 챌린지 가져오기
@@ -36,33 +37,42 @@ public class ChallengeServiceImpl implements ChallengeService {
         // 챌린지 기본값 설정 (권한 체크 없음)
         challengeDTO.setChallState(ChallengeState.PUBLISHED.name());
 
-        // 관리자 개입형 / 유저 친화적 구분
-        if (challengeDTO.getUserJoin() == 0) {  // 관리자 개입형
-            if (challengeDTO.getChallStartTime() != null && challengeDTO.getDuration() != null) {
-                LocalDateTime startTime = challengeDTO.getChallStartTime(); // 시작시간
-                Integer duration = challengeDTO.getDuration(); // 유지시간 (일 단위)
-                LocalDateTime endTime = startTime.plusDays(duration); // 종료시간 계산
-                challengeDTO.setChallEndTime(endTime); // 종료시간 설정
-            }
-        } else if (challengeDTO.getUserJoin() == 1) {  // 유저 친화적
-            // 유저 참여형에서는 시작시간을 지정할 수 없도록 체크
-            if (challengeDTO.getChallStartTime() != null) {
-                throw new IllegalArgumentException("유저 참여형 챌린지는 시작 시간을 지정할 수 없습니다.");
+        // 관리자 개입형 (시작, 종료시간 설정)
+        if (challengeDTO.getUserJoin() == 0) {
+            if (challengeDTO.getChallStartTime() == null || challengeDTO.getDuration() == null) {
+                throw new IllegalArgumentException("관리자 개입형 챌린지는 시작 시간과 기간(Duration)이 필요합니다.");
             }
 
-            // 시작시간이 null일 경우 최초 참여자 시점으로 시작시간 설정
-            if (challengeDTO.getChallStartTime() == null) {
-                LocalDateTime startTime = LocalDateTime.now(); // 현재 시점으로 시작시간 설정
-                challengeDTO.setChallStartTime(startTime); // 시작시간 설정
-            }
+            // 종료 시간 설정
+            LocalDateTime startTime = challengeDTO.getChallStartTime();
+            Integer duration = challengeDTO.getDuration();
+            LocalDateTime endTime = startTime.plusDays(duration);
 
-            // 종료시간은 유저가 참여하면서 결정되므로 별도로 설정하지 않음
-            challengeDTO.setChallEndTime(null);  // 종료시간은 null로 설정 (나중에 결정)
+            challengeDTO.setChallEndTime(endTime);
+
+
+        } // 유저 참여형 (시작, 종료시간을 null로 유지)
+        else if (challengeDTO.getUserJoin() == 1) {
+            challengeDTO.setChallStartTime(null); // 참가자가 생길 때 설정
+            challengeDTO.setChallEndTime(null);
         }
 
         // 챌린지 생성
         challengeMapper.createChallenge(challengeDTO);
     }
+
+    public void updateChallengeStartTime(Long challIdx, Integer duration) throws Exception {
+        ChallengeDTO challengeDTO = challengeMapper.ChallengeDetail(challIdx);
+        // 시작시간이 설정되지 않은 경우에만 업데이트
+        if (challengeDTO.getChallStartTime() != null) {
+            LocalDateTime startTime = LocalDateTime.now(); // 첫 참가자 시점으로 시작시간 업데이트
+            LocalDateTime endTime = startTime.plusDays(duration); // 시작시간 + 유지시간으로 종료시간 업데이트
+            ChallengeState newState = ChallengeState.IN_PROGRESS; // 챌린지 상태 업데이트
+            challengeMapper.updateChallengeStartTime(challIdx, startTime, endTime, newState.name());
+        }
+    }
+
+
 
 
     // 클라이언트에서 받는 값을 일수로 계산
@@ -105,7 +115,7 @@ public class ChallengeServiceImpl implements ChallengeService {
         }
 
         // DB 상태 업데이트 (최소화된 한 번의 업데이트)
-        challengeMapper.updateChallengeStartTimeAndState(
+        challengeMapper.updateChallengeStartTime(
                 challIdx,
                 challenge.getChallStartTime(),
                 challenge.getChallEndTime(),
@@ -115,10 +125,13 @@ public class ChallengeServiceImpl implements ChallengeService {
         return challenge;
     }
 
+    public void enterChallenge(ChallengeJoinDTO challengeJoinDTO) {
+
+    }
 
 
     @Override
-    public ChallengeDTO joinChallenge(Long challIdx, int userIdx, Integer duration) {
+    public ChallengeDTO joinChallenge(Long challIdx, int userIdx, Integer duration, LocalDateTime startTime, LocalDateTime endTime, String activity) {
         // 챌린지 기본 정보 조회
         ChallengeDTO challenge = challengeMapper.ChallengeDetail(challIdx);
 
@@ -136,15 +149,15 @@ public class ChallengeServiceImpl implements ChallengeService {
         challenge.setChallEndTime(calculateEndTime(now, duration));
 
         // DB에 시작시간과 종료시간, 상태 업데이트
-        challengeMapper.updateChallengeStartTimeAndState(
+        challengeMapper.updateChallengeStartTime(
                 challIdx,
                 challenge.getChallStartTime(),
                 challenge.getChallEndTime(),
                 challenge.getChallState()
         );
 
-        // 사용자 참여 정보 기록 (CHALL_JOIN 테이블에)
-        challengeMapper.addUserToChallenge(challIdx, userIdx);
+        // 사용자 참여 기록 저장 (챌린지/유저 인덱스, 활동명)
+        challengeMapper.addUserToChallenge(challIdx, userIdx, startTime, endTime, activity);
         return challenge;
     }
 

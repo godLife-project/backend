@@ -17,4 +17,19 @@
         FROM NOTICE_TABLE
         WHERE NOTICE_IDX = #{noticeIdx}
     </select>
+
+    <!-- 수정 쿼리문 -->
+    <update id="modifyNotice">
+        UPDATE NOTICE_TABLE
+        SET NOTICE_TITLE = #{noticeTitle},
+            NOTICE_SUB = #{noticeSub},
+            NOTICE_MODIFY = #{noticeModify}
+        WHERE NOTICE_IDX = #{noticeIdx}
+    </update>
+
+    <!-- 삭제 쿼리문 -->
+    <delete id="deleteNotice">
+        DELETE FROM NOTICE_TABLE
+        WHERE NOTICE_IDX = #{noticeIdx}
+    </delete>
 </mapper>

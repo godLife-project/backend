@@ -12,4 +12,10 @@ public interface NoticeMapper {
 
   // 공지 상세 조회
   NoticeDTO getNoticeDetail(int noticeIdx);
+
+  // 수정
+  int modifyNotice(NoticeDTO noticeDTO);
+  // 삭제
+  int deleteNotice(int noticeIdx);
+
 }

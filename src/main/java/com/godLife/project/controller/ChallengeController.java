@@ -25,7 +25,7 @@ public class ChallengeController {
     }
 
     // 챌린지 생성 API
-    @PostMapping("/admin/challenge/create")
+    @PostMapping("/admin/create")
     public ResponseEntity<String> createChallenge(@RequestBody ChallengeDTO challengeDTO) {
         try {
             challengeService.createChallenge(challengeDTO);

@@ -92,7 +92,7 @@ public class SecurityConfig {
         // 테스트 용 (관리자 권한)
         .requestMatchers("/api/admin").hasAuthority("7")
         // 관리자 권한 챌린지 작성
-        .requestMatchers("api/challenge/admin/create").hasAnyAuthority("2", "3", "4", "5", "6", "7")
+        .requestMatchers("/api/challenges/admin/create").hasAnyAuthority("2", "3", "4", "5", "6", "7")
 
 
     // 그 외 모든 접근 허용 (비 로그인 접근)

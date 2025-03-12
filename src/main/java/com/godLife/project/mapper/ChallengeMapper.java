@@ -26,13 +26,18 @@ public interface ChallengeMapper {
     int countParticipants(Long challIdx);
 
     // 유저 참여형 챌린지 최초 참여시 시작/종료시간, 상태 업데이트
-    void updateChallengeStartTimeAndState(@Param("challIdx") Long challIdx,
+    void updateChallengeStartTime(@Param("challIdx") Long challIdx,
                                           @Param("startTime") LocalDateTime challStartTime,
                                           @Param("endTime") LocalDateTime challEndTime,
                                           @Param("state") String state);
 
+
     // 챌린지에 유저 추가 (사용자 참여 기록)
-    void addUserToChallenge(@Param("challIdx") Long challIdx, @Param("userIdx") int userIdx);
+    void addUserToChallenge(@Param("challIdx") Long challIdx,
+                            @Param("userIdx") int userIdx,
+                            @Param("startTime") LocalDateTime startTime,
+                            @Param("endTime") LocalDateTime endTime,
+                            @Param("activity")  String activity);
     // 인증 기록 저장
     void insertVerifyRecord(VerifyDTO verifyDTO);
     // 남은 클리어시간 차감

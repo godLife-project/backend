@@ -21,4 +21,21 @@ public class NoticeServiceImpl implements NoticeService {
   public NoticeDTO getNoticeDetail(int noticeIdx){
     return noticeMapper.getNoticeDetail(noticeIdx);
   }
+
+  // 공지 수정
+  public void modifyNotice(NoticeDTO noticeDTO){
+    int  updateCount = noticeMapper.modifyNotice(noticeDTO);
+    // 1건만 수정 되는지 확인
+    if (updateCount != 1) {
+      throw new IllegalArgumentException("챌린지 수정 실패");
+    }
+  }
+
+  // 공지 삭제
+  public void deleteNotice(int noticeIdx){
+    int deleteCount =  noticeMapper.deleteNotice(noticeIdx);
+    if (deleteCount != 1) {
+      throw new IllegalArgumentException("챌린지 삭제 실패");
+    }
+  }
  }

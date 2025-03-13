@@ -1,7 +1,7 @@
 package com.godLife.project.controller;
 
 import com.godLife.project.dto.datas.UserDTO;
-import com.godLife.project.service.UserService;
+import com.godLife.project.service.interfaces.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;

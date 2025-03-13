@@ -24,10 +24,10 @@ public class ActivityDTO {
   @NotBlank(message = "{writeActivity.activityName.notBlank}")
   private String activityName;
 
-  @Schema(description = "시작 시간", example = "08:00:00")
+  @Schema(description = "시작 시간", example = "08:00")
   @JsonSerialize(using = LocalTimeSerializer.class) // 직렬화
   @JsonDeserialize(using = LocalTimeDeserializer.class) // 역직렬화
-  @JsonFormat(pattern = "HH:mm:ss")
+  @JsonFormat(pattern = "HH:mm")
   private LocalTime setTime;
 
   @Schema(description = "한줄 메모", example = "이렇게 할 생각")
@@ -35,4 +35,7 @@ public class ActivityDTO {
 
   @Schema(description = "활동 중요도", example = "4")
   private int activityImp;
+
+  @Schema(description = "활동 인증 여부", example = "false")
+  private boolean verified;
 }

@@ -1,4 +1,4 @@
-package com.godLife.project.service;
+package com.godLife.project.service.interfaces;
 
 import com.godLife.project.dto.datas.PlanDTO;
 import com.godLife.project.dto.request.PlanRequestDTO;
@@ -22,4 +22,22 @@ public interface PlanService {
 
   // 루틴 추천
   int likePlan(PlanRequestDTO planRequestDTO, int isDeleted);
+
+  // 루틴 추천 여부 조회
+  boolean checkLike(PlanRequestDTO planRequestDTO);
+
+  // 루틴 추천 취소
+  int unLikePlan(PlanRequestDTO planRequestDTO);
+
+  // 루틴 조회수 상승
+  void increaseView(int planIdx);
+
+  // 루틴 조기 완료
+  int updateEarlyComplete(PlanRequestDTO planRequestDTO);
+
+  // 후기 작성
+  int addReview(PlanRequestDTO planRequestDTO);
+
+  // 후기 작성
+  int modifyReview(PlanRequestDTO planRequestDTO);
 }

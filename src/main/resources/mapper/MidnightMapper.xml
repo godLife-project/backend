@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godLife.project.mapper.MidnightMapper">
+
+    <!-- 전체 조회 -->
+    <select id="getPlanIdxIfVerifyRateIsUnder90" resultType="com.godLife.project.dto.scheduler.VerifyUnder90DTO">
+        SELECT P.PLAN_IDX, P.CERT_EXP, P.LAST_EXP,
+        CASE
+        WHEN COUNT(DISTINCT A.ACTIVITY_IDX) = 0 THEN 0
+        ELSE ROUND(
+        (COUNT(DISTINCT V.ACTIVITY_IDX) / COUNT(DISTINCT A.ACTIVITY_IDX)) * 100, 2
+        )
+        END AS VERIFY_RATE
+        FROM PLAN_TABLE P
+        LEFT JOIN PLAN_ACTIVITY A ON P.PLAN_IDX = A.PLAN_IDX
+        LEFT JOIN VERIFY_TABLE V ON A.ACTIVITY_IDX = V.ACTIVITY_IDX AND V.VERIFY_DATE = TRUNC(SYSDATE)
+        WHERE (P.IS_ACTIVE = 1 AND P.IS_COMPLETED = 0) AND P.IS_DELETED = 0
+        GROUP BY P.PLAN_IDX, P.CERT_EXP, P.LAST_EXP
+        HAVING ROUND((COUNT(DISTINCT V.ACTIVITY_IDX) / COUNT(DISTINCT A.ACTIVITY_IDX)) * 100, 2) <![CDATA[ < ]]> 90
+    </select>
+
+    <update id="decreaseCertExp" parameterType="com.godLife.project.dto.scheduler.VerifyUnder90DTO">
+        UPDATE PLAN_TABLE
+        SET CERT_EXP = CERT_EXP - #{minusExp}
+        WHERE PLAN_IDX = #{planIdx}
+        AND LAST_EXP - (CERT_EXP - #{minusExp}) <![CDATA[ <= ]]> #{expLimit}
+    </update>
+
+</mapper>

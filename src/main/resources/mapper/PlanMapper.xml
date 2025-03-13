@@ -24,7 +24,7 @@
         , #{isActive}, SYSDATE, SYSDATE + #{endTo}
       </if>
       <if test="repeatDays != null">
-        , #{repeatDays, typeHandler=com.godLife.project.typehandler.ListStringTypeHandler}
+        , #{repeatDays, typeHandler=com.godLife.project.handler.typehandler.ListStringTypeHandler}
       </if>
       <if test="forked == true">
         , #{forkIdx}
@@ -79,7 +79,6 @@
            A.SET_TIME,
            A.DESCRIPTION,
            A.ACTIVITY_IMP,
-           A.IS_DELETED,
            COALESCE(V.VERIFIED, 0) AS VERIFIED
     FROM PLAN_ACTIVITY A
     LEFT JOIN (
@@ -90,17 +89,16 @@
       ) V ON A.ACTIVITY_IDX = V.ACTIVITY_IDX
     WHERE A.PLAN_IDX = #{planIdx}
     AND A.IS_DELETED = 0
-    ORDER BY
-    CASE
-    WHEN A.SET_TIME IS NOT NULL THEN 1
-    ELSE 2
-    END,
-    A.SET_TIME,
-    A.ACTIVITY_IMP DESC,
-    CASE
-    WHEN A.SET_TIME IS NULL THEN A.ACTIVITY_IMP
-    ELSE NULL
-    END DESC
+    ORDER BY A.ACTIVITY_IDX
+  </select>
+
+  <!-- 루틴 인증 횟수 조회 -->
+  <select id="getVerifyCountByPlanIdx" parameterType="int" resultType="int">
+    SELECT COUNT(V.ACTIVITY_IDX)
+    FROM PLAN_TABLE P
+    INNER JOIN PLAN_ACTIVITY A ON P.PLAN_IDX = A.PLAN_IDX
+    INNER JOIN VERIFY_TABLE V ON A.ACTIVITY_IDX = V.ACTIVITY_IDX
+    WHERE P.PLAN_IDX = #{planIdx}
   </select>
 
   <!-- 불꽃 정보 조회 -->
@@ -154,7 +152,7 @@
     UPDATE PLAN_TABLE
     SET PLAN_TITLE = #{planTitle},
         END_TO = #{endTo},
-        REPEAT_DAYS = #{repeatDays, typeHandler=com.godLife.project.typehandler.ListStringTypeHandler},
+        REPEAT_DAYS = #{repeatDays, typeHandler=com.godLife.project.handler.typehandler.ListStringTypeHandler},
         TARGET_IDX = #{targetIdx},
         JOB_IDX = #{jobIdx},
         PLAN_IMP = #{planImp},
@@ -215,7 +213,7 @@
   <!-- 루틴 삭제 처리 -->
   <update id="deletePlan" parameterType="map">
     UPDATE PLAN_TABLE
-       SET IS_DELETED = 1, IS_ACTIVE = 0, PLAN_SUB_START = NULL, PLAN_SUB_END = NULL
+       SET IS_DELETED = 1, IS_ACTIVE = 0, IS_COMPLETED = 0, PLAN_SUB_START = NULL, PLAN_SUB_END = NULL
      WHERE PLAN_IDX = #{planIdx} AND USER_IDX = #{userIdx}
   </update>
 

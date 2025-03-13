@@ -1,4 +1,4 @@
-package com.godLife.project.typehandler;
+package com.godLife.project.handler.typehandler;
 
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;

@@ -85,6 +85,8 @@ public class SecurityConfig {
         .requestMatchers("/api/plan/auth/**").authenticated()
         // 인증 관련
         .requestMatchers("/api/verify/auth/**").authenticated()
+        // 리스트 관련
+            .requestMatchers("/api/list/auth/**").authenticated()
         // 챌린지 참여/인증
         //.requestMatchers("/api/{challIdx}/join", "/api/{challIdx}/verify").authenticated()
 

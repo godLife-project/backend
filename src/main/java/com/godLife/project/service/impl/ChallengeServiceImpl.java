@@ -6,7 +6,7 @@ import com.godLife.project.dto.infos.VerifyDTO;
 import com.godLife.project.enums.ChallengeState;
 import com.godLife.project.mapper.ChallJoinMapper;
 import com.godLife.project.mapper.ChallengeMapper;
-import com.godLife.project.service.ChallengeService;
+import com.godLife.project.service.interfaces.ChallengeService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

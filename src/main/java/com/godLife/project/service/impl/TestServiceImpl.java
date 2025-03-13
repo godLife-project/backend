@@ -3,7 +3,7 @@ package com.godLife.project.service.impl;
 import com.godLife.project.dto.test.GetPlanIdxDTO;
 import com.godLife.project.dto.test.GetUserListDTO;
 import com.godLife.project.mapper.TestMapper;
-import com.godLife.project.service.TestService;
+import com.godLife.project.service.interfaces.TestService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,4 +22,7 @@ public class TestServiceImpl implements TestService {
     public List<GetPlanIdxDTO> findPlanIdx() { return testMapper.findPlanIdx(); }
     @Override
     public List<GetUserListDTO> getUserList() { return testMapper.getUserList(); }
+
+    @Override
+    public void deleteReview(int planIdx) { testMapper.deleteReview(planIdx); }
 }

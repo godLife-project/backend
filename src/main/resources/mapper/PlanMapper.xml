@@ -14,6 +14,9 @@
       <if test="repeatDays != null">
         , REPEAT_DAYS
       </if>
+      <if test="forked == true">
+        , FORK_IDX
+      </if>
     )
     VALUES (
       PLAN_SEQ.NEXTVAL, #{userIdx}, #{planTitle}, #{endTo}, #{targetIdx}, #{isShared}, #{planImp}, #{jobIdx}
@@ -22,6 +25,9 @@
       </if>
       <if test="repeatDays != null">
         , #{repeatDays, typeHandler=com.godLife.project.typehandler.ListStringTypeHandler}
+      </if>
+      <if test="forked == true">
+        , #{forkIdx}
       </if>
     )
     <selectKey keyProperty="planIdx" resultType="int" order="AFTER">
@@ -33,12 +39,28 @@
   <insert id="insertActivity" parameterType="com.godLife.project.dto.datas.ActivityDTO">
     <choose>
       <when test="setTime != null ">
-        INSERT INTO PLAN_ACTIVITY
-        VALUES (ACTIVITY_SEQ.NEXTVAL, #{planIdx}, #{activityName}, #{setTime}, #{description}, #{activityImp})
+        INSERT INTO PLAN_ACTIVITY (ACTIVITY_IDX, PLAN_IDX, ACTIVITY_NAME, SET_TIME,
+        <if test="description != null">
+          DESCRIPTION,
+        </if>
+         ACTIVITY_IMP)
+        VALUES (ACTIVITY_SEQ.NEXTVAL, #{planIdx}, #{activityName}, #{setTime},
+        <if test="description != null">
+          #{description},
+        </if>
+         #{activityImp})
       </when>
       <otherwise>
-        INSERT INTO PLAN_ACTIVITY (ACTIVITY_IDX, PLAN_IDX, ACTIVITY_NAME, DESCRIPTION, ACTIVITY_IMP)
-        VALUES (ACTIVITY_SEQ.NEXTVAL, #{planIdx}, #{activityName}, #{description}, #{activityImp})
+        INSERT INTO PLAN_ACTIVITY (ACTIVITY_IDX, PLAN_IDX, ACTIVITY_NAME,
+        <if test="description != null">
+          DESCRIPTION,
+        </if>
+         ACTIVITY_IMP)
+        VALUES (ACTIVITY_SEQ.NEXTVAL, #{planIdx}, #{activityName},
+        <if test="description != null">
+          #{description},
+        </if>
+        #{activityImp})
       </otherwise>
     </choose>
   </insert>
@@ -48,6 +70,46 @@
     INSERT INTO JOB_ETC_CATEGORY
     VALUES (JOB_ETC_SEQ.NEXTVAL, #{planIdx}, #{name}, #{iconKey}, SYSDATE)
   </insert>
+
+  <!-- 활동 상세 보기 -->
+  <select id="detailActivityByPlanIdx" parameterType="int">
+    SELECT A.ACTIVITY_IDX,
+           A.PLAN_IDX,
+           A.ACTIVITY_NAME,
+           A.SET_TIME,
+           A.DESCRIPTION,
+           A.ACTIVITY_IMP,
+           A.IS_DELETED,
+           COALESCE(V.VERIFIED, 0) AS VERIFIED
+    FROM PLAN_ACTIVITY A
+    LEFT JOIN (
+        SELECT V.ACTIVITY_IDX, COUNT(V.ACTIVITY_IDX) AS VERIFIED
+        FROM VERIFY_TABLE V
+        WHERE V.VERIFY_DATE = TRUNC(SYSDATE)
+        GROUP BY V.ACTIVITY_IDX
+      ) V ON A.ACTIVITY_IDX = V.ACTIVITY_IDX
+    WHERE A.PLAN_IDX = #{planIdx}
+    AND A.IS_DELETED = 0
+    ORDER BY
+    CASE
+    WHEN A.SET_TIME IS NOT NULL THEN 1
+    ELSE 2
+    END,
+    A.SET_TIME,
+    A.ACTIVITY_IMP DESC,
+    CASE
+    WHEN A.SET_TIME IS NULL THEN A.ACTIVITY_IMP
+    ELSE NULL
+    END DESC
+  </select>
+
+  <!-- 불꽃 정보 조회 -->
+  <select id="detailFireByPlanIdx" parameterType="int">
+    SELECT F.LV_IDX, F.FIRE_NAME, F.FIRE_COLOR, F.FIRE_EFFECT
+    FROM PLAN_TABLE P
+    JOIN FIRE_TABLE F ON P.CERT_EXP <![CDATA[ >= ]]> F.MIN_EXP AND P.CERT_EXP <![CDATA[ <= ]]> F.MAX_EXP
+    WHERE PLAN_IDX = #{planIdx}
+  </select>
 
   <!-- 직업 카테고리 조회 -->
   <select id="getJOBCategoryByJobIdx" resultType="com.godLife.project.dto.categories.JobCateDTO" parameterType="int">
@@ -130,10 +192,30 @@
     WHERE PLAN_IDX = #{planIdx}
   </update>
 
+  <!-- 루틴 추천 횟수 업데이트 -->
+  <update id="modifyLikeCount" parameterType="int">
+    UPDATE PLAN_TABLE
+    SET LIKE_COUNT = (SELECT COUNT(*) FROM LIKE_TABLE WHERE PLAN_IDX = #{planIdx})
+    WHERE PLAN_IDX = #{planIdx}
+  </update>
+  <!-- 루틴 조회수 증가 -->
+  <update id="increaseView" parameterType="int">
+    UPDATE PLAN_TABLE
+    SET VIEW_COUNT = VIEW_COUNT + 1
+    WHERE PLAN_IDX = #{planIdx}
+  </update>
+
+  <!-- 루틴 포크수 증가 -->
+  <update id="modifyForkCount" parameterType="map">
+    UPDATE PLAN_TABLE
+    SET FORK_COUNT = (SELECT COUNT(*) FROM PLAN_TABLE WHERE FORK_IDX = #{planIdx} AND IS_DELETED = #{isDeleted})
+    WHERE PLAN_IDX = #{planIdx}
+  </update>
+
   <!-- 루틴 삭제 처리 -->
   <update id="deletePlan" parameterType="map">
     UPDATE PLAN_TABLE
-       SET IS_DELETED = 1
+       SET IS_DELETED = 1, IS_ACTIVE = 0, PLAN_SUB_START = NULL, PLAN_SUB_END = NULL
      WHERE PLAN_IDX = #{planIdx} AND USER_IDX = #{userIdx}
   </update>
 
@@ -150,6 +232,32 @@
              PLAN_SUB_END = NULL
            </if>
      WHERE PLAN_IDX = #{planIdx} AND USER_IDX = #{userIdx}
+  </update>
+
+  <!-- 후기 작성 -->
+  <update id="addReview" parameterType="com.godLife.project.dto.request.PlanRequestDTO">
+    UPDATE PLAN_TABLE
+    SET REVIEW = #{review}
+    WHERE (PLAN_IDX = #{planIdx} AND USER_IDX = #{userIdx}) AND IS_COMPLETED = 1 AND REVIEW IS NULL
+  </update>
+  <!-- 후기 수정 -->
+  <update id="modifyReview" parameterType="com.godLife.project.dto.request.PlanRequestDTO">
+    UPDATE PLAN_TABLE
+    SET REVIEW = #{review}
+    WHERE (PLAN_IDX = #{planIdx} AND USER_IDX = #{userIdx}) AND IS_COMPLETED = 1 AND REVIEW IS NOT NULL
+  </update>
+
+  <!-- 모든 루틴 완료 상태 최신화 -->
+  <update id="updateCompleteByPlanIdx" parameterType="int">
+    UPDATE PLAN_TABLE
+    SET IS_COMPLETED = 1, IS_ACTIVE = 0
+    WHERE PLAN_IDX = #{planIdx} AND ((IS_ACTIVE = 1 AND IS_COMPLETED = 0 AND IS_DELETED = 0) AND PLAN_SUB_END <![CDATA[ <= ]]> SYSDATE)
+  </update>
+  <!-- 루틴 조기 완료 처리 -->
+  <update id="updateEarlyComplete" parameterType="com.godLife.project.dto.request.PlanRequestDTO">
+    UPDATE PLAN_TABLE
+    SET IS_COMPLETED = 1
+    WHERE (PLAN_IDX = #{planIdx} AND USER_IDX = #{userIdx}) AND (IS_COMPLETED = 0 AND IS_DELETED = 0 AND IS_ACTIVE = 1)
   </update>
 
   <!-- 추천 하기 -->

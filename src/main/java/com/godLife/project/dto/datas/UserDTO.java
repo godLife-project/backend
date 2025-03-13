@@ -85,6 +85,15 @@ public class UserDTO {
     @Schema(description = "유저 권한", example = "1")
     private int authorityIdx;
 
+    @Schema(description = "유저 콤보", example = "1")
+    private int combo;
+
+    @Schema(description = "유저 경험치", example = "1")
+    private double userExp;
+
+    @Schema(description = "유저 레벨", example = "1")
+    private int userLv;
+
     @Schema(description = "관리자 여부", example = "false")
     private boolean roleStatus = false;
 }

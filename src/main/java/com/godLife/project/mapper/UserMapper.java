@@ -26,7 +26,6 @@ public interface UserMapper {
     int checkUserNickExist(String userNick);
 
     // 로그인
-    @Select("SELECT * FROM USER_TABLE WHERE USER_ID = #{username}")
     UserDTO findByUserid(String username);
 
     // 관리자 권환 확인

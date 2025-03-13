@@ -4,8 +4,8 @@ import com.godLife.project.jwt.CustomLogoutFilter;
 import com.godLife.project.jwt.JWTFilter;
 import com.godLife.project.jwt.JWTUtil;
 import com.godLife.project.jwt.LoginFilter;
-import com.godLife.project.service.UserService;
-import com.godLife.project.service.jwtInterface.RefreshService;
+import com.godLife.project.service.interfaces.UserService;
+import com.godLife.project.service.interfaces.jwtInterface.RefreshService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Value;
@@ -78,17 +78,20 @@ public class SecurityConfig {
 
     // 경로별 인가 작업
     http.authorizeHttpRequests(auth -> auth
-    // 지정한 엔드포인트는 로그인시 접근 가능 (로그인 유저)
+    // 지정한 엔드포인트는 로그인시 접근 가능 (유저 권한)
         // 테스트 용 (유저 권한)
-        .requestMatchers("/api/test/test2").authenticated()
+        .requestMatchers("/api/test/auth/**").authenticated()
         // 루틴 관련
-        //.requestMatchers("/api/plan/write", "/api/plan/modify", "/api/plan/delete").authenticated()
+        .requestMatchers("/api/plan/auth/**").authenticated()
+        // 인증 관련
+        .requestMatchers("/api/verify/auth/**").authenticated()
         // 챌린지 참여/인증
+        //.requestMatchers("/api/{challIdx}/join", "/api/{challIdx}/verify").authenticated()
         .requestMatchers("/api/join/{challIdx}", "/api/verify/{challIdx}").authenticated()
 
     // 지정한 엔드포인트는 해당 권한 등급이 없으면 로그인을 해도 접근 못함 (관리자)
         // 관리자 권한 카테고리 조회
-        .requestMatchers("/api/categories/auth/authority").hasAnyAuthority("2", "3", "4", "5", "6", "7")
+        .requestMatchers("/api/categories/admin/**").hasAnyAuthority("2", "3", "4", "5", "6", "7")
         // 테스트 용 (관리자 권한)
         .requestMatchers("/api/admin").hasAuthority("7")
         // 관리자 권한 챌린지 작성
@@ -118,7 +121,7 @@ public class SecurityConfig {
             CorsConfiguration configuration = new CorsConfiguration();
 
             configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(", ")));
-            configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+            configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH"));
             configuration.setAllowCredentials(true);
             configuration.setAllowedHeaders(Collections.singletonList("*"));
             configuration.setMaxAge(3600L);

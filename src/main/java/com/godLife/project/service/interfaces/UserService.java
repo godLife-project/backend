@@ -1,4 +1,4 @@
-package com.godLife.project.service;
+package com.godLife.project.service.interfaces;
 
 import com.godLife.project.dto.datas.UserDTO;
 

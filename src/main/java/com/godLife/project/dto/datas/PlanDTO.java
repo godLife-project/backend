@@ -30,6 +30,11 @@ public class PlanDTO {
     @NotBlank(message = "{writePlan.planTitle.notBlank}")
     private String planTitle;
 
+    @Schema(description =  "원본 인덱스", example = "1")
+    private Integer forkIdx;
+    @Schema(description =  "원본 제목", example = "원본 루틴 제목입니다.")
+    private String forkTitle;
+
     @Schema(description = "목표 개월 수", example = "7 : 시작일로부터 7일 후가 종료일이 됨.")
     @Min(value = 7, message = "{writePlan.endTo.min}")
     private int endTo;
@@ -80,8 +85,14 @@ public class PlanDTO {
     @Schema(description = "인증 경험치", example = "1")
     private int certExp;
 
+    @Schema(description = "마지막 경험치", example = "0")
+    private int lastExp;
+
     @Schema(description = "추천 수", example = "1")
     private int likeCount;
+
+    @Schema(description = "포크 수", example = "1")
+    private int forkCount;
 
     @Schema(description = "공개 여부", example = "1 : 공개")
     private int isShared;
@@ -103,7 +114,7 @@ public class PlanDTO {
     @Valid
     private List<@NotNull(message = "{writePlan.activities.notNull}")ActivityDTO> activities;
 
-    @Schema(description = "활동 삭제 인덱스", example = "1, 2, 3")
+    @Schema(description = "활동 삭제 인덱스", example = "[1, 2, 3]")
     private List<Integer> deleteActivityIdx;
 
     @Schema(description = "직업 정보", example = "카테고리 이름과 아이콘키")
@@ -115,4 +126,13 @@ public class PlanDTO {
     @Schema(description = "기타 직업 정보", example = "카테고리 이름과 아이콘키 입력")
     @Valid
     private JobEtcCateDTO jobEtcCateDTO;
+
+    @Schema(description = "불꽃 등급", example = "불꽃의 정보가 나옴")
+    private FireDTO fireInfo;
+
+    @Schema(description = "포크 여부", example = "false")
+    private boolean forked;
+
+    @Schema(description = "불꽃 활성 여부", example = "false")
+    private boolean fireState;
 }

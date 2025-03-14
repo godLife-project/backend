@@ -82,6 +82,9 @@ public class PlanDTO {
     @Schema(description = "조회 수", example = "1")
     private int viewCount;
 
+    @Schema(description = "인증 수", example = "1")
+    private int verifyCount;
+
     @Schema(description = "인증 경험치", example = "1")
     private int certExp;
 

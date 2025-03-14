@@ -83,6 +83,8 @@ public class PlanServicelmpl implements PlanService {
       planDTO.setTargetCateDTO(planMapper.getTargetCategoryByTargetIdx(planDTO.getTargetIdx()));
       // 불꽃 정보 조회
       planDTO.setFireInfo(planMapper.detailFireByPlanIdx(planIdx));
+      // 루틴 인증 횟수 조회
+      planDTO.setVerifyCount(planMapper.getVerifyCountByPlanIdx(planIdx));
 
       if (planDTO.getJobIdx() == 999) {
         planDTO.setJobEtcCateDTO(planMapper.getJobEtcInfoByPlanIdx(planIdx));

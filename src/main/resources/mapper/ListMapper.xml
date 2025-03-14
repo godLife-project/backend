@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godLife.project.mapper.ListMapper">
+
+    <!-- 전체 조회 -->
+    <select id="getMyPlansByUserIdx" parameterType="int" resultType="com.godLife.project.dto.list.customDTOs.CustomPlanDTO">
+        SELECT PLAN_IDX, PLAN_TITLE, END_TO, PLAN_SUB_END,
+        IS_SHARED, IS_ACTIVE, PLAN_IMP, CERT_EXP,
+        REPEAT_DAYS, FIRE_STATE
+        FROM PLAN_TABLE
+        WHERE USER_IDX = #{userIdx} AND IS_DELETED = 0 AND IS_COMPLETED = 0
+        ORDER BY IS_ACTIVE DESC, PLAN_IMP DESC, PLAN_SUB_START DESC NULLS LAST
+    </select>
+
+</mapper>

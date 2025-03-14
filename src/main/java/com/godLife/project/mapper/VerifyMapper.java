@@ -11,6 +11,10 @@ import java.util.List;
 
 @Mapper
 public interface VerifyMapper {
+  // 유저 아이디로 유저 인덱스 조회
+  @Select("SELECT USER_IDX FROM USER_TABLE WHERE USER_ID = #{username}")
+  int getUserIdxByUsername(String username);
+
   // 활동 인증 처리
   @Insert("INSERT INTO VERIFY_TABLE(VERIFY_IDX, ACTIVITY_IDX, USER_IDX) VALUES (VERIFY_SEQ.NEXTVAL, #{activityIdx}, #{userIdx})")
   void verifyActivity(VerifyRequestDTO verifyRequestDTO);

@@ -1,6 +1,7 @@
 package com.godLife.project.mapper;
 
 import com.godLife.project.dto.scheduler.VerifyUnder90DTO;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Update;
 
@@ -22,4 +23,8 @@ public interface MidnightMapper {
   // 불꽃 활성화 상태 초기화 로직
   @Update("UPDATE PLAN_TABLE SET FIRE_STATE = 0 WHERE IS_ACTIVE = 1 AND IS_COMPLETED = 0 AND FIRE_STATE = 1")
   void clearFireState();
+
+  // 만료된 재발급 토큰 삭제 로직
+  @Delete("DELETE FROM REFRESH_TOKEN WHERE TO_DATE(EXPIRATION, 'YYYY-MM-DD HH24:MI:SS') < SYSDATE")
+  void deleteExpiredRefreshTokens();
 }

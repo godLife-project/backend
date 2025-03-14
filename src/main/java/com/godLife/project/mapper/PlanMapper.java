@@ -7,7 +7,7 @@ import com.godLife.project.dto.datas.ActivityDTO;
 import com.godLife.project.dto.datas.FireDTO;
 import com.godLife.project.dto.datas.PlanDTO;
 import com.godLife.project.dto.request.PlanRequestDTO;
-import com.godLife.project.typehandler.ListStringTypeHandler;
+import com.godLife.project.handler.typehandler.ListStringTypeHandler;
 import org.apache.ibatis.annotations.*;
 import org.apache.ibatis.mapping.FetchType;
 
@@ -47,6 +47,9 @@ public interface PlanMapper {
   JobCateDTO getJOBCategoryByJobIdx(int jobIdx);
   // 관심사 조회
   TargetCateDTO getTargetCategoryByTargetIdx(int targetIdx);
+
+  // 루틴 인증 횟수 조회
+  int getVerifyCountByPlanIdx(int planIdx);
 
   // 작성자 인덱스 조회
   @Select("SELECT USER_IDX FROM PLAN_TABLE WHERE PLAN_IDX = #{planIdx}")

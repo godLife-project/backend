@@ -52,8 +52,11 @@ public class RoutineScheduleServiceImpl {
     midnightMapper.clearFireState();
   }
 
+  // 만료된 재발급 토큰 삭제 로직
+  public void deleteExpiredRefreshTokens() { midnightMapper.deleteExpiredRefreshTokens(); }
 
-/* -----------------------------------------// 함수 구현 //------------------------------------------------------- */
+
+  /* -----------------------------------------// 함수 구현 //------------------------------------------------------- */
   public void expDecreaseProcedure(VerifyUnder90DTO dto, int defaultMinusExp) {
     // 현재 경험치가 0 이면 감소 안 함.
     if (dto.getCertExp() <= 0) { return; }

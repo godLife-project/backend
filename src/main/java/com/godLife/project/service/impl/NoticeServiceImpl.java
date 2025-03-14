@@ -2,7 +2,7 @@ package com.godLife.project.service.impl;
 
 import com.godLife.project.dto.contents.NoticeDTO;
 import com.godLife.project.mapper.NoticeMapper;
-import com.godLife.project.service.NoticeService;
+import com.godLife.project.service.interfaces.NoticeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +20,11 @@ public class NoticeServiceImpl implements NoticeService {
   // 상세 조회
   public NoticeDTO getNoticeDetail(int noticeIdx){
     return noticeMapper.getNoticeDetail(noticeIdx);
+  }
+
+  // 공지 작성
+  public void createNotice(NoticeDTO noticeDTO){
+  noticeMapper.createNotice(noticeDTO);
   }
 
   // 공지 수정

@@ -12,7 +12,8 @@ public interface NoticeMapper {
 
   // 공지 상세 조회
   NoticeDTO getNoticeDetail(int noticeIdx);
-
+  // 공지 작성
+  void createNotice(NoticeDTO noticeDTO);
   // 수정
   int modifyNotice(NoticeDTO noticeDTO);
   // 삭제

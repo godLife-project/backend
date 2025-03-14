@@ -86,8 +86,8 @@ public class SecurityConfig {
         // 인증 관련
         .requestMatchers("/api/verify/auth/**").authenticated()
         // 챌린지 참여/인증
-        //.requestMatchers("/api/{challIdx}/join", "/api/{challIdx}/verify").authenticated()
-        .requestMatchers("/api/join/{challIdx}", "/api/verify/{challIdx}").authenticated()
+        //.requestMatchers("/api/join/{challIdx}", "/api/verify/{challIdx}").authenticated()
+
 
     // 지정한 엔드포인트는 해당 권한 등급이 없으면 로그인을 해도 접근 못함 (관리자)
         // 관리자 권한 카테고리 조회

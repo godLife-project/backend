@@ -3,11 +3,8 @@ package com.godLife.project.controller;
 import com.godLife.project.dto.contents.ChallengeDTO;
 import com.godLife.project.dto.infos.VerifyDTO;
 import com.godLife.project.exception.UnauthorizedException;
-import com.godLife.project.service.ChallengeService;
 import com.godLife.project.service.interfaces.ChallengeService;
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.validation.constraints.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,12 +16,12 @@ import java.util.List;
 @RequestMapping("/api/challenges")
 public class ChallengeController {
 
-    private ChallengeService challengeService;
+    private final ChallengeService challengeService;
 
-    @Autowired
-    public void ChallengeService(ChallengeService challengeService) {
-        this.challengeService = challengeService;
-    }
+  public ChallengeController(ChallengeService challengeService) {
+    this.challengeService = challengeService;
+  }
+
 
     // 챌린지 생성 API
     @PostMapping("/admin/create")

@@ -2,7 +2,7 @@ package com.godLife.project.service.impl;
 
 import com.godLife.project.dto.contents.QnADTO;
 import com.godLife.project.mapper.QnaMapper;
-import com.godLife.project.service.QnaService;
+import com.godLife.project.service.interfaces.QnaService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import java.util.Collections;

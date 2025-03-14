@@ -1,7 +1,7 @@
 package com.godLife.project.controller;
 
 import com.godLife.project.dto.contents.QnADTO;
-import com.godLife.project.service.QnaService;
+import com.godLife.project.service.interfaces.QnaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

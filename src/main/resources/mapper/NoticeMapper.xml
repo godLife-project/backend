@@ -18,6 +18,13 @@
         WHERE NOTICE_IDX = #{noticeIdx}
     </select>
 
+    <!-- 공지사항 작성 -->
+    <insert id="createNotice" parameterType="com.godLife.project.dto.contents.NoticeDTO">
+        INSERT INTO notice (notice_title, notice_sub, notice_date)
+        VALUES (#{noticeTitle}, #{noticeSub}, SYSDATE)
+    </insert>
+
+
     <!-- 수정 쿼리문 -->
     <update id="modifyNotice">
         UPDATE NOTICE_TABLE

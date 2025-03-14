@@ -44,9 +44,11 @@ public interface ChallengeMapper {
     void updateClearTime(@Param("challIdx") Long challIdx, @Param("elapsedTime") int elapsedTime);
     // 클리어 시간 0 이하 시 챌린지 종료
     void finishChallenge(Long challIdx);
+    // 챌린지 존재 여부 확인
+    boolean existsById(@Param("challIdx") Long challIdx);
     // 챌린지 수정
     int modifyChallenge(ChallengeDTO challengeDTO);
     // 챌린지 삭제
-    int deleteChallenge(Long challIdx);
+    int deleteChallenge(ChallengeDTO challengeDTO);
 
 }

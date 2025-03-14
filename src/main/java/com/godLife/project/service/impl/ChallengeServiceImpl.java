@@ -7,11 +7,15 @@ import com.godLife.project.enums.ChallengeState;
 import com.godLife.project.mapper.ChallJoinMapper;
 import com.godLife.project.mapper.ChallengeMapper;
 import com.godLife.project.service.interfaces.ChallengeService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 public class ChallengeServiceImpl implements ChallengeService {
     private ChallengeMapper challengeMapper;
@@ -33,33 +37,44 @@ public class ChallengeServiceImpl implements ChallengeService {
     }
 
     // 챌린지 작성
-    public void createChallenge(ChallengeDTO challengeDTO) throws Exception {
-        // 챌린지 기본값 설정 (권한 체크 없음)
-        challengeDTO.setChallState(ChallengeState.PUBLISHED.name());
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int createChallenge(ChallengeDTO challengeDTO) {
+        try {
+            // 챌린지 기본값 설정 (권한 체크 없음)
+            challengeDTO.setChallState(ChallengeState.PUBLISHED.name());
 
-        // 관리자 개입형 (시작, 종료시간 설정)
-        if (challengeDTO.getUserJoin() == 0) {
-            if (challengeDTO.getChallStartTime() == null || challengeDTO.getDuration() == null) {
-                throw new IllegalArgumentException("관리자 개입형 챌린지는 시작 시간과 기간(Duration)이 필요합니다.");
+            // 관리자 개입형 (시작, 종료시간 설정)
+            if (challengeDTO.getUserJoin() == 0) {
+                if (challengeDTO.getChallStartTime() == null || challengeDTO.getDuration() == null) {
+                    throw new IllegalArgumentException("관리자 개입형 챌린지는 시작 시간과 기간(Duration)이 필요합니다.");
+                }
+
+                // 종료 시간 설정
+                LocalDateTime startTime = challengeDTO.getChallStartTime();
+                Integer duration = challengeDTO.getDuration();
+                LocalDateTime endTime = startTime.plusDays(duration);
+
+                challengeDTO.setChallEndTime(endTime);
+
+
+            } // 유저 참여형 (시작, 종료시간을 null로 유지)
+            else if (challengeDTO.getUserJoin() == 1) {
+                challengeDTO.setChallStartTime(null); // 참가자가 생길 때 설정
+                challengeDTO.setChallEndTime(null);
             }
 
-            // 종료 시간 설정
-            LocalDateTime startTime = challengeDTO.getChallStartTime();
-            Integer duration = challengeDTO.getDuration();
-            LocalDateTime endTime = startTime.plusDays(duration);
-
-            challengeDTO.setChallEndTime(endTime);
-
-
-        } // 유저 참여형 (시작, 종료시간을 null로 유지)
-        else if (challengeDTO.getUserJoin() == 1) {
-            challengeDTO.setChallStartTime(null); // 참가자가 생길 때 설정
-            challengeDTO.setChallEndTime(null);
+            // 챌린지 생성
+            challengeMapper.createChallenge(challengeDTO);
+            return 201;
+        } catch (Exception e) {
+            log.error("e: ", e);
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly(); // 수동 롤백
+            return 500;
         }
-
-        // 챌린지 생성
-        challengeMapper.createChallenge(challengeDTO);
     }
+
+
 
     public void updateChallengeStartTime(Long challIdx, Integer duration) throws Exception {
         ChallengeDTO challengeDTO = challengeMapper.ChallengeDetail(challIdx);
@@ -188,22 +203,31 @@ public class ChallengeServiceImpl implements ChallengeService {
             challengeMapper.finishChallenge(verifyDTO.getChallIdx());
         }
     }
+    // 챌린지 존재 여부 확인
+    @Override
+    public boolean existsById(Long challIdx) {
+        return challengeMapper.existsById(challIdx);  // 0보다 크면 존재하는 챌린지
+    }
+
     // 챌린지 수정
-    public void modifyChallenge(ChallengeDTO challengeDTO) {
+    public int modifyChallenge(ChallengeDTO challengeDTO) {
         int updatedCount = challengeMapper.modifyChallenge(challengeDTO);
         // 1건만 수정이 되는지 확인
         if (updatedCount != 1) {
             throw new IllegalArgumentException("챌린지 수정 실패");
         }
+        return updatedCount;
     }
 
     // 챌린지 삭제
-    public void deleteChallenge(Long challIdx){
-        int deleteCount = challengeMapper.deleteChallenge(challIdx);
-        if (deleteCount != 1) {
-            throw new IllegalArgumentException("챌린지 삭제 실패");
+    public int deleteChallenge(ChallengeDTO challengeDTO) {
+        // 삭제 수행
+        int result = challengeMapper.deleteChallenge(challengeDTO);
+        if (result == 0) {
+            return 500;
         }
-    }
+        return 200; // 삭제 성공
 
+    }
 }
 

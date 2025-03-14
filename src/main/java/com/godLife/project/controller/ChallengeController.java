@@ -2,19 +2,27 @@ package com.godLife.project.controller;
 
 import com.godLife.project.dto.contents.ChallengeDTO;
 import com.godLife.project.dto.infos.VerifyDTO;
-import com.godLife.project.exception.UnauthorizedException;
+import com.godLife.project.handler.GlobalExceptionHandler;
 import com.godLife.project.service.interfaces.ChallengeService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/challenges")
 public class ChallengeController {
+
+  @Autowired
+  private GlobalExceptionHandler handler;
+
 
     private final ChallengeService challengeService;
 
@@ -25,17 +33,23 @@ public class ChallengeController {
 
     // 챌린지 생성 API
     @PostMapping("/admin/create")
-    public ResponseEntity<String> createChallenge(@RequestBody ChallengeDTO challengeDTO) {
-        try {
-            challengeService.createChallenge(challengeDTO);
-            return ResponseEntity.ok("챌린지가 성공적으로 생성되었습니다.");
-        } catch (UnauthorizedException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
+    public ResponseEntity<Map<String, Object>> createChallenge(@Valid @RequestBody ChallengeDTO challengeDTO,
+                                                  BindingResult result) {
+      if (result.hasErrors()) {
+        return ResponseEntity.badRequest().body(handler.getValidationErrors(result));
+      }
+      int insertResult = challengeService.createChallenge(challengeDTO);
+
+      // 응답 메세지 세팅
+      String msg = "";
+      switch (insertResult) {
+        case 201 -> msg = "챌린지 작성 완료";
+        case 500 -> msg = "서버 내부적으로 오류가 발생하여 챌린지를 저장하지 못했습니다.";
+        default -> msg = "알 수 없는 오류가 발생했습니다.";
+      }
+
+      // 응답 메시지 설정
+      return ResponseEntity.status(handler.getHttpStatus(insertResult)).body(handler.createResponse(insertResult, msg));
     }
 
     @PutMapping("/auth/{challIdx}/start")
@@ -113,22 +127,71 @@ public class ChallengeController {
         return ResponseEntity.ok("챌린지 인증 완료");
     }
 
+
     // 챌린지 수정
-    @PutMapping("/admin/{challIdx}")
-    public ResponseEntity<?> modifyChallenge(
-            @PathVariable Long challIdx,
-            @RequestBody ChallengeDTO challengeDTO
+    @PatchMapping("/admin/modify")
+    public ResponseEntity<Map<String, Object>> modifyChallenge(
+            @Valid @RequestBody ChallengeDTO challengeDTO,
+            BindingResult result
     ) {
-        challengeDTO.setChallIdx(challIdx);  // 경로에서 받은 ID를 DTO에 넣음
-        challengeService.modifyChallenge(challengeDTO);
-        return ResponseEntity.ok().build();
+      // 유효성 검사 실패 시 에러 반환
+      if (result.hasErrors()) {
+        return ResponseEntity.badRequest().body(handler.getValidationErrors(result));
+      }
+
+      // 챌린지 존재 여부 확인
+      if (!challengeService.existsById(challengeDTO.getChallIdx())) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(handler.createResponse(404, "요청하신 챌린지가 존재하지 않습니다."));
+      }
+
+      // 수정 로직 실행
+      int modifyResult = challengeService.modifyChallenge(challengeDTO);
+
+      // 응답 메시지 세팅
+      String msg = switch (modifyResult) {
+        case 200 -> "챌린지 수정 완료";
+        case 403 -> "작성자가 아닙니다. 재로그인 해주세요.";
+        case 404 -> "요청하신 챌린지가 존재하지 않습니다.";
+        case 500 -> "서버 내부적으로 오류가 발생하여 챌린지를 수정하지 못했습니다.";
+        default -> "알 수 없는 오류가 발생했습니다.";
+      };
+
+      return ResponseEntity.status(handler.getHttpStatus(modifyResult))
+              .body(handler.createResponse(modifyResult, msg));
     }
 
-    // 챌린지 삭제
-    @DeleteMapping("/admin/{challIdx}")
-    public ResponseEntity<?> deleteChallenge(@PathVariable Long challIdx){
-        challengeService.deleteChallenge(challIdx);
-        return ResponseEntity.ok().build();
+
+  @PatchMapping("/admin/delete")
+  public ResponseEntity<Map<String, Object>> deleteChallenge(
+          @Valid @RequestBody ChallengeDTO challengeDTO,
+          BindingResult result)
+  {
+    // 유효성 검사 실패 시 에러 반환
+    if (result.hasErrors()) {
+      return ResponseEntity.badRequest().body(handler.getValidationErrors(result));
     }
+
+    // 챌린지 존재 여부 확인
+    if (!challengeService.existsById(challengeDTO.getChallIdx())) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+              .body(handler.createResponse(404, "요청하신 챌린지가 존재하지 않습니다."));
+    }
+
+    // 삭제 서비스 실행
+    int deleteResult = challengeService.deleteChallenge(challengeDTO); // 관리자 권한 체크 후 삭제
+
+    // 응답 메시지 설정
+    String msg = switch (deleteResult) {
+      case 200 -> "챌린지 삭제 완료";
+      case 403 -> "관리자 권한이 없습니다.";
+      case 404 -> "요청하신 챌린지가 존재하지 않습니다.";
+      case 500 -> "서버 내부 오류로 챌린지를 삭제하지 못했습니다.";
+      default -> "알 수 없는 오류가 발생했습니다.";
+    };
+
+    return ResponseEntity.status(handler.getHttpStatus(deleteResult))
+            .body(handler.createResponse(deleteResult, msg));
+  }
 
 }

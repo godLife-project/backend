@@ -95,6 +95,11 @@
     ORDER BY CHALL_CREATED_AT DESC
 </select>
 
+    <!-- 챌린지 존재 확인 -->
+    <select id="existsById" resultType="int">
+        SELECT COUNT(*) FROM challenge WHERE chall_idx = #{challIdx}
+    </select>
+
     <!-- 챌린지 수정 -->
     <update id="modifyChallenge">
     UPDATE CHALL_TABLE

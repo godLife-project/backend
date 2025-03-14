@@ -16,7 +16,7 @@ public interface ChallengeService {
     List<ChallengeDTO> getChallengesByCategoryId(int categoryIdx);
 
     // 챌린지 생성
-    void createChallenge(ChallengeDTO challengeDTO) throws Exception;
+    int createChallenge(ChallengeDTO challengeDTO);
     // 유저 참여형 / 시작시간 업데이트
     void updateChallengeStartTime(Long challIndx, Integer duration) throws Exception;
 
@@ -29,10 +29,12 @@ public interface ChallengeService {
 
     void verifyChallenge(VerifyDTO verifyDTO, ChallengeDTO challengeDTO);
 
+    // 챌린지 존재 여부
+    boolean existsById(Long challIdx);
     // 챌린지 수정
-    void modifyChallenge(ChallengeDTO challengeDTO);
+    int modifyChallenge(ChallengeDTO challengeDTO);
     // 챌린지 삭제
-    void deleteChallenge(Long challIdx);
+    int deleteChallenge(ChallengeDTO challengeDTO);
 
 
 }

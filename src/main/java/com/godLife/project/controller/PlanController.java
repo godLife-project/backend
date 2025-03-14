@@ -3,10 +3,13 @@ package com.godLife.project.controller;
 
 import com.godLife.project.dto.datas.PlanDTO;
 import com.godLife.project.dto.request.PlanRequestDTO;
+import com.godLife.project.handler.GlobalExceptionHandler;
 import com.godLife.project.service.interfaces.PlanService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -18,21 +21,21 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/plan")
 public class PlanController {
 
-  private final PlanService planService;
+  @Autowired
+  private GlobalExceptionHandler handler;
 
-  public PlanController(PlanService planService) {
-    this.planService = planService;
-  }
+  private final PlanService planService;
 
   // 루틴 작성 API
   @PostMapping("/auth/write")
   public ResponseEntity<Map<String, Object>> write(@Valid @RequestBody PlanDTO writePlanDTO, BindingResult result) {
 
     if (result.hasErrors()) {
-      return ResponseEntity.badRequest().body(getValidationErrors(result));
+      return ResponseEntity.badRequest().body(handler.getValidationErrors(result));
     }
     int insertResult = planService.insertPlanWithAct(writePlanDTO);
 
@@ -46,7 +49,7 @@ public class PlanController {
     }
 
     // 응답 메시지 설정
-    return ResponseEntity.status(getHttpStatus(insertResult)).body(createResponse(insertResult, msg));
+    return ResponseEntity.status(handler.getHttpStatus(insertResult)).body(handler.createResponse(insertResult, msg));
   }
 
 
@@ -110,17 +113,17 @@ public class PlanController {
       }
 
       // 응답 메시지 설정
-      return ResponseEntity.ok().body(createResponse(200, planDTO));
+      return ResponseEntity.ok().body(handler.createResponse(200, planDTO));
 
     } catch (NoSuchElementException e) {
       String msg = "루틴 조회 실패,, 조회하려는 루틴이 존재하지 않습니다.";
       System.out.println(e);
-      return ResponseEntity.status(getHttpStatus(404)).body(createResponse(404, msg));
+      return ResponseEntity.status(handler.getHttpStatus(404)).body(handler.createResponse(404, msg));
 
     } catch (Exception e) {
       String msg = "서버 내부 오류로 인해 루틴 조회에 실패했습니다.";
       System.out.println(e);
-      return ResponseEntity.status(getHttpStatus(500)).body(createResponse(500, msg));
+      return ResponseEntity.status(handler.getHttpStatus(500)).body(handler.createResponse(500, msg));
     }
   }
 
@@ -130,7 +133,7 @@ public class PlanController {
   public ResponseEntity<Map<String, Object>> modify(@Valid @RequestBody PlanDTO modifyPlanDTO, BindingResult result) {
     // 유효성 검사 실패 시 에러 반환
     if (result.hasErrors()) {
-      return ResponseEntity.badRequest().body(getValidationErrors(result));
+      return ResponseEntity.badRequest().body(handler.getValidationErrors(result));
     }
 
     // 삭제 여부 확인
@@ -149,8 +152,8 @@ public class PlanController {
     }
 
     // 응답 메시지 설정
-    return ResponseEntity.status(getHttpStatus(modifyResult))
-        .body(createResponse(modifyResult, msg));
+    return ResponseEntity.status(handler.getHttpStatus(modifyResult))
+        .body(handler.createResponse(modifyResult, msg));
   }
 
 
@@ -175,8 +178,8 @@ public class PlanController {
     }
 
     // 응답 메시지 설정
-    return ResponseEntity.status(getHttpStatus(deleteResult))
-        .body(createResponse(deleteResult, msg));
+    return ResponseEntity.status(handler.getHttpStatus(deleteResult))
+        .body(handler.createResponse(deleteResult, msg));
   }
 
   // 루틴 시작 API
@@ -184,7 +187,7 @@ public class PlanController {
   public ResponseEntity<Map<String, Object>> stopNgo(@Valid @RequestBody PlanRequestDTO requestDTO, BindingResult bindingResult) {
     // 유효성 검사 실패 시 에러 반환
     if (bindingResult.hasErrors()) {
-      return ResponseEntity.badRequest().body(getValidationErrors(bindingResult));
+      return ResponseEntity.badRequest().body(handler.getValidationErrors(bindingResult));
     }
 
     int planIdx = requestDTO.getPlanIdx();
@@ -206,13 +209,13 @@ public class PlanController {
     if (result == 200 && isActive == 0) {
       msg = "루틴을 비활성화 합니다.";
       // 응답 메시지 설정
-      return ResponseEntity.status(getHttpStatus(result))
-          .body(createResponse(result, msg));
+      return ResponseEntity.status(handler.getHttpStatus(result))
+          .body(handler.createResponse(result, msg));
     }
 
     // 응답 메시지 설정
-    return ResponseEntity.status(getHttpStatus(result))
-        .body(createResponse(result, msg));
+    return ResponseEntity.status(handler.getHttpStatus(result))
+        .body(handler.createResponse(result, msg));
   }
 
   // 루틴 추천하기
@@ -233,8 +236,8 @@ public class PlanController {
     }
 
     // 응답 메시지 설정
-    return ResponseEntity.status(getHttpStatus(result))
-        .body(createResponse(result, msg));
+    return ResponseEntity.status(handler.getHttpStatus(result))
+        .body(handler.createResponse(result, msg));
   }
 
   // 추천 여부 조회
@@ -242,8 +245,8 @@ public class PlanController {
   public ResponseEntity<Map<String, Object>> checkLike(@RequestBody PlanRequestDTO requestDTO) {
     boolean result = planService.checkLike(requestDTO);
 
-    return ResponseEntity.status(getHttpStatus(200))
-        .body(createResponse(200, result));
+    return ResponseEntity.status(handler.getHttpStatus(200))
+        .body(handler.createResponse(200, result));
   }
 
   // 루틴 추천 취소
@@ -261,8 +264,8 @@ public class PlanController {
     }
 
     // 응답 메시지 설정
-    return ResponseEntity.status(getHttpStatus(result))
-        .body(createResponse(result, msg));
+    return ResponseEntity.status(handler.getHttpStatus(result))
+        .body(handler.createResponse(result, msg));
   }
 
   // 조기 완료
@@ -283,8 +286,8 @@ public class PlanController {
     }
 
     // 응답 메시지 설정
-    return ResponseEntity.status(getHttpStatus(result))
-        .body(createResponse(result, msg));
+    return ResponseEntity.status(handler.getHttpStatus(result))
+        .body(handler.createResponse(result, msg));
   }
 
   // 후기 작성
@@ -305,8 +308,8 @@ public class PlanController {
     }
 
     // 응답 메시지 설정
-    return ResponseEntity.status(getHttpStatus(result))
-        .body(createResponse(result, msg));
+    return ResponseEntity.status(handler.getHttpStatus(result))
+        .body(handler.createResponse(result, msg));
   }
 
   // 후기 수정
@@ -326,62 +329,8 @@ public class PlanController {
     }
 
     // 응답 메시지 설정
-    return ResponseEntity.status(getHttpStatus(result))
-        .body(createResponse(result, msg));
-  }
-
-
-
-  // JSON 파싱 오류 처리 메소드
-  @ExceptionHandler(HttpMessageNotReadableException.class)
-  public ResponseEntity<Map<String, Object>> handleJsonParseException(HttpMessageNotReadableException ex) {
-    Map<String, Object> errorResponse = new HashMap<>();
-    errorResponse.put("status", "error");
-    errorResponse.put("message", "잘못된 JSON 형식입니다. 필드값이 누락되었거나, 필드명의 오타가 있을 수 있습니다.");
-    errorResponse.put("code", 400);
-
-    return ResponseEntity.badRequest().body(errorResponse);
-  }
-
-  // 유효성 검사 에러 처리
-  private Map<String, Object> getValidationErrors(BindingResult result) {
-    Map<String, Object> errors = new HashMap<>();
-    result.getFieldErrors().forEach(fieldError ->
-        errors.put(fieldError.getField(), fieldError.getDefaultMessage()));
-    return errors;
-  }
-
-  // HTTP 상태 코드 반환
-  private HttpStatus getHttpStatus(int result) {
-    return switch (result) {
-      case 200 -> HttpStatus.OK;
-      case 201 -> HttpStatus.CREATED;
-      case 403 -> HttpStatus.FORBIDDEN;
-      case 404 -> HttpStatus.NOT_FOUND;
-      case 409 -> HttpStatus.CONFLICT;
-      case 412 -> HttpStatus.PRECONDITION_FAILED;
-      case 500 -> HttpStatus.INTERNAL_SERVER_ERROR;
-      default -> HttpStatus.BAD_REQUEST;
-    };
-  }
-
-  // 응답 메시지 생성
-  private Map<String, Object> createResponse(int result, Object msg) {
-    Map<String, Object> message = new HashMap<>();
-    message.put("status", (result == 200 || result == 201) ? "success" : "error");
-    message.put("code", result);
-
-    switch (result) {
-      case 200 -> message.put("message", msg);
-      case 201 -> message.put("message", msg);
-      case 403 -> message.put("message", msg);
-      case 404 -> message.put("message", msg);
-      case 409 -> message.put("message", msg);
-      case 412 -> message.put("message", msg);
-      case 500 -> message.put("message", msg);
-      default -> message.put("message", msg);
-    }
-    return message;
+    return ResponseEntity.status(handler.getHttpStatus(result))
+        .body(handler.createResponse(result, msg));
   }
 
 }

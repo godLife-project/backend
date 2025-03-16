@@ -69,13 +69,13 @@ public interface PlanMapper {
   boolean checkJobEtcByPlanIdx(int planIdx);
   // 추천 존재 여부 확인
   @Select("SELECT COUNT(*) FROM LIKE_TABLE WHERE PLAN_IDX = #{planIdx} AND USER_IDX = #{userIdx}")
-  boolean checkLikeByPlanIdxNUserIdx(PlanRequestDTO planRequestDTO);
+  boolean checkLikeByPlanIdxNUserIdx(int planIdx, int userIdx);
   // 포크 여부 확인
   @Select("SELECT FORK_IDX FROM PLAN_TABLE WHERE PLAN_IDX = #{planIdx}")
   Integer getForkIdxByPlanIdx(int planIdx);
   // 루틴 완료 여부 확인
   @Select("SELECT COUNT(*) FROM PLAN_TABLE WHERE PLAN_IDX = #{planIdx} AND IS_COMPLETED = #{isCompleted} AND IS_DELETED = #{isDeleted}")
-  boolean checkCompleteByPlanIdx(PlanRequestDTO planRequestDTO);
+  boolean checkCompleteByPlanIdx(int planIdx, int isCompleted, int isDeleted);
   // 루틴 활성 여부 확인
   @Select("SELECT IS_ACTIVE FROM PLAN_TABLE WHERE PLAN_IDX = #{planIdx}")
   boolean checkActiveByPlanIdx(int planIdx);
@@ -111,13 +111,13 @@ public interface PlanMapper {
   void goStopPlan(@Param("planIdx") int planIdx, @Param("userIdx") int userIdx, @Param("isActive") int isActive);
 
   // 루틴 추천
-  void likePlan(PlanRequestDTO planRequestDTO);
+  void likePlan(int planIdx, int userIdx);
   // 추천 취소
   @Delete("DELETE FROM LIKE_TABLE WHERE PLAN_IDX = #{planIdx} AND USER_IDX = #{userIdx}")
-  void unLikePlan(PlanRequestDTO planRequestDTO);
+  void unLikePlan(int planIdx, int userIdx);
 
   // 루틴 완료 처리
   void updateCompleteByPlanIdx(int planIdx);
   // 루틴 조기 완료 처리
-  void updateEarlyComplete(PlanRequestDTO planRequestDTO);
+  void updateEarlyComplete(int planIdx, int userIdx);
 }

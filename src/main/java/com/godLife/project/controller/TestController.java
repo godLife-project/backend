@@ -82,6 +82,23 @@ public class TestController {
     }
   }
 
+  @PatchMapping("/set/plan/status/{planIdx}")
+  public ResponseEntity<String> changePlanStatus(@PathVariable int planIdx,
+                                                 @RequestParam int isActive,
+                                                 @RequestParam int isCompleted,
+                                                 @RequestParam int isDeleted,
+                                                 @RequestParam int isShared) {
+    try {
+      testService.changePlanStatus(isActive, isCompleted, isDeleted, isShared, planIdx);
+      return ResponseEntity.ok().build();
+
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+  }
+
+
+
   @GetMapping("/apiCheck")
   public ResponseEntity<String> apicheck() {
     try {

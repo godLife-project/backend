@@ -229,7 +229,7 @@
              PLAN_SUB_START = NULL,
              PLAN_SUB_END = NULL
            </if>
-     WHERE PLAN_IDX = #{planIdx} AND USER_IDX = #{userIdx}
+     WHERE PLAN_IDX = #{planIdx} AND USER_IDX = #{userIdx} AND IS_COMPLETED = 0
   </update>
 
   <!-- 후기 작성 -->
@@ -252,14 +252,14 @@
     WHERE PLAN_IDX = #{planIdx} AND ((IS_ACTIVE = 1 AND IS_COMPLETED = 0 AND IS_DELETED = 0) AND PLAN_SUB_END <![CDATA[ <= ]]> SYSDATE)
   </update>
   <!-- 루틴 조기 완료 처리 -->
-  <update id="updateEarlyComplete" parameterType="com.godLife.project.dto.request.PlanRequestDTO">
+  <update id="updateEarlyComplete" parameterType="map">
     UPDATE PLAN_TABLE
     SET IS_COMPLETED = 1
     WHERE (PLAN_IDX = #{planIdx} AND USER_IDX = #{userIdx}) AND (IS_COMPLETED = 0 AND IS_DELETED = 0 AND IS_ACTIVE = 1)
   </update>
 
   <!-- 추천 하기 -->
-  <insert id="likePlan" parameterType="com.godLife.project.dto.request.PlanRequestDTO">
+  <insert id="likePlan" parameterType="map">
     INSERT INTO LIKE_TABLE VALUES (#{userIdx}, #{planIdx}, SYSDATE)
   </insert>
 </mapper>

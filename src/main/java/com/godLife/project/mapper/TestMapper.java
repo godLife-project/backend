@@ -16,4 +16,6 @@ public interface TestMapper {
     List<GetUserListDTO> getUserList();
     @Update("UPDATE PLAN_TABLE SET REVIEW = NULL WHERE PLAN_IDX = #{planIdx}")
     void deleteReview(int planIdx);
+    @Update("UPDATE PLAN_TABLE SET IS_ACTIVE = #{isActive}, IS_COMPLETED = #{isCompleted}, IS_DELETED = #{isDeleted}, IS_SHARED = #{isShared} WHERE PLAN_IDX = #{planIdx}")
+    void changePlanStatus(int isActive, int isCompleted, int isDeleted, int isShared, int planIdx);
 }

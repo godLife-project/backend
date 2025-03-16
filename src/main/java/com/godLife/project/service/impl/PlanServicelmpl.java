@@ -212,16 +212,15 @@ public class PlanServicelmpl implements PlanService {
   // 루틴 추천
   @Override
   @Transactional(rollbackFor = Exception.class)
-  public int likePlan(PlanRequestDTO planRequestDTO, int isDeleted) {
+  public int likePlan(int planIdx, int userIdx, int isDeleted) {
     try {
-      int planIdx = planRequestDTO.getPlanIdx();
       if (!planMapper.checkPlanByPlanIdx(planIdx, isDeleted)) {
         return 404; // not found
       }
-      if (planMapper.checkLikeByPlanIdxNUserIdx(planRequestDTO)) {
+      if (planMapper.checkLikeByPlanIdxNUserIdx(planIdx, userIdx)) {
         return 409; // exist
       }
-      planMapper.likePlan(planRequestDTO);
+      planMapper.likePlan(planIdx, userIdx);
       planMapper.modifyLikeCount(planIdx);
       return 200; // ok
     } catch (Exception e) {
@@ -233,23 +232,22 @@ public class PlanServicelmpl implements PlanService {
 
   // 추천 여부 확인
   @Override
-  public boolean checkLike(PlanRequestDTO planRequestDTO) {
-    return planMapper.checkLikeByPlanIdxNUserIdx(planRequestDTO);
+  public boolean checkLike(int planIdx, int userIdx) {
+    return planMapper.checkLikeByPlanIdxNUserIdx(planIdx, userIdx);
   }
 
   // 추천 취소
   @Override
   @Transactional(rollbackFor = Exception.class)
-  public int unLikePlan(PlanRequestDTO planRequestDTO) {
-    int planIdx = planRequestDTO.getPlanIdx();
+  public int unLikePlan(int planIdx, int userIdx) {
     try {
       if (!planMapper.checkPlanByPlanIdx(planIdx, 0) && !planMapper.checkPlanByPlanIdx(planIdx, 1)) {
         return 404; // not found
       }
-      if (!planMapper.checkLikeByPlanIdxNUserIdx(planRequestDTO)) {
+      if (!planMapper.checkLikeByPlanIdxNUserIdx(planIdx, userIdx)) {
         return 404; // not found
       }
-      planMapper.unLikePlan(planRequestDTO);
+      planMapper.unLikePlan(planIdx, userIdx);
       planMapper.modifyLikeCount(planIdx);
       return 200; // ok
     } catch (Exception e) {
@@ -266,11 +264,10 @@ public class PlanServicelmpl implements PlanService {
   }
 
   @Override
-  public int updateEarlyComplete(PlanRequestDTO planRequestDTO) {
+  public int updateEarlyComplete(int planIdx, int userIdx) {
     try {
-      int planIdx = planRequestDTO.getPlanIdx();
-      int userIdx = planRequestDTO.getUserIdx();
-      int isDeleted = planRequestDTO.getIsDeleted();
+      int isDeleted = 0;
+      int isCompleted = 1;
       if (!planMapper.checkPlanByPlanIdx(planIdx, isDeleted)) {
         return 404; // not found
       }
@@ -280,10 +277,10 @@ public class PlanServicelmpl implements PlanService {
       if (!planMapper.checkActiveByPlanIdx(planIdx)) {
         return 412; // preCondition
       }
-      if (planMapper.checkCompleteByPlanIdx(planRequestDTO)) {
+      if (planMapper.checkCompleteByPlanIdx(planIdx, isCompleted, isDeleted)) {
         return 409; // conflict
       }
-      planMapper.updateEarlyComplete(planRequestDTO);
+      planMapper.updateEarlyComplete(planIdx, userIdx);
       return 200; // ok
     } catch (Exception e) {
       log.error("Error modifying plan: ", e);
@@ -298,9 +295,10 @@ public class PlanServicelmpl implements PlanService {
       int planIdx = planRequestDTO.getPlanIdx();
       int userIdx = planRequestDTO.getUserIdx();
       int isDeleted = planRequestDTO.getIsDeleted();
+      int isCompleted = planRequestDTO.getIsCompleted();
 
       if (!planMapper.checkPlanByPlanIdx(planIdx, isDeleted)) { return 404; } // not found
-      if (!planMapper.checkCompleteByPlanIdx(planRequestDTO)) { return 412; } // preCondition
+      if (!planMapper.checkCompleteByPlanIdx(planIdx, isCompleted, isDeleted)) { return 412; } // preCondition
       if (planMapper.getUserIdxByPlanIdx(planIdx) != userIdx) { return 403; } // another
       if (planMapper.getReviewExist(planIdx) != null) { return 409; } // conflict
 
@@ -320,9 +318,10 @@ public class PlanServicelmpl implements PlanService {
       int planIdx = planRequestDTO.getPlanIdx();
       int userIdx = planRequestDTO.getUserIdx();
       int isDeleted = planRequestDTO.getIsDeleted();
+      int isCompleted = planRequestDTO.getIsCompleted();
 
       if (!planMapper.checkPlanByPlanIdx(planIdx, isDeleted)) { return 404; } // not found
-      if ((!planMapper.checkCompleteByPlanIdx(planRequestDTO)) || (planMapper.getReviewExist(planIdx) == null)) { return 412; } // preCondition
+      if ((!planMapper.checkCompleteByPlanIdx(planIdx, isCompleted, isDeleted)) || (planMapper.getReviewExist(planIdx) == null)) { return 412; } // preCondition
       if (planMapper.getUserIdxByPlanIdx(planIdx) != userIdx) { return 403; } // another
 
       planMapper.modifyReview(planRequestDTO);

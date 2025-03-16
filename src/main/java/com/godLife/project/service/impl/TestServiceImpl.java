@@ -25,4 +25,9 @@ public class TestServiceImpl implements TestService {
 
     @Override
     public void deleteReview(int planIdx) { testMapper.deleteReview(planIdx); }
+
+    @Override
+    public void changePlanStatus(int isActive, int isCompleted, int isDeleted, int isShared, int planIdx) {
+        testMapper.changePlanStatus(isActive, isCompleted, isDeleted, isShared, planIdx);
+    }
 }

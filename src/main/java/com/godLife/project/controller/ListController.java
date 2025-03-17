@@ -1,6 +1,7 @@
 package com.godLife.project.controller;
 
 import com.godLife.project.dto.list.MyPlanDTO;
+import com.godLife.project.dto.list.PlanListDTO;
 import com.godLife.project.handler.GlobalExceptionHandler;
 import com.godLife.project.service.interfaces.ListService;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -27,8 +27,6 @@ public class ListController {
 
   @GetMapping("/auth/myPlans")
   public ResponseEntity<Map<String, Object>> listMyPlans(@RequestHeader("Authorization") String authHeader) {
-
-    Map<String, Object> message = new HashMap<>();
     try {
       // userIdx 조회
       int userIdx = handler.getUsernameFromToken(authHeader);
@@ -53,6 +51,35 @@ public class ListController {
       log.error("e: ", e);
       return ResponseEntity.status(handler.getHttpStatus(500)).body(handler.createResponse(500, msg));
     }
+  }
+
+  @GetMapping("/plan/{mode}")
+  public ResponseEntity<Map<String, Object>> listAllPlans(@PathVariable String mode,
+                                                          @RequestParam(defaultValue = "1") int page,
+                                                          @RequestParam(defaultValue = "10") int size,
+                                                          @RequestParam(defaultValue = "0") int status,
+                                                          @RequestParam(required = false) List<Integer> target,
+                                                          @RequestParam(required = false) List<Integer> job,
+                                                          @RequestParam(defaultValue = "latest") String sort,
+                                                          @RequestParam(defaultValue = "desc") String order) {
+
+    //System.out.println("--컨트롤러--");
+    //System.out.println(page + " " +  size + " " + status + " " + target + " " + job + " " + sort + " " + order);
+    Map<String, Object> response = listService.getAllPlansList(mode, page - 1, size, status, target, job, sort, order);
+
+    Object plans = response.get("plans");
+
+    if (plans instanceof List<?>) {
+      List<PlanListDTO> tempList = ((List<?>) plans).stream()
+          .filter(PlanListDTO.class::isInstance)  // PlanListDTO 타입만 필터링
+          .map(PlanListDTO.class::cast)
+          .toList();
+      if (tempList.isEmpty()) {
+        return ResponseEntity.status(handler.getHttpStatus(204)).build();
+      }
+    }
+
+    return ResponseEntity.ok(response);
   }
 
   /* -----------------------------------------// 함수 구현 //------------------------------------------------------- */

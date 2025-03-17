@@ -10,4 +10,5 @@ public interface TestService {
     List<GetPlanIdxDTO> findPlanIdx();
     List<GetUserListDTO> getUserList();
     void deleteReview(int planIdx);
+    void changePlanStatus(int isActive, int isCompleted, int isDeleted, int isShared, int planIdx);
 }

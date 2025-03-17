@@ -32,11 +32,14 @@ public class PlanController {
 
   // 루틴 작성 API
   @PostMapping("/auth/write")
-  public ResponseEntity<Map<String, Object>> write(@Valid @RequestBody PlanDTO writePlanDTO, BindingResult result) {
+  public ResponseEntity<Map<String, Object>> write(@RequestHeader("Authorization") String authHeader, @Valid @RequestBody PlanDTO writePlanDTO, BindingResult result) {
 
     if (result.hasErrors()) {
       return ResponseEntity.badRequest().body(handler.getValidationErrors(result));
     }
+    // userIdx 조회
+    int userIdx = handler.getUsernameFromToken(authHeader);
+    writePlanDTO.setUserIdx(userIdx);
     int insertResult = planService.insertPlanWithAct(writePlanDTO);
 
     // 응답 메세지 세팅
@@ -130,7 +133,7 @@ public class PlanController {
 
   // 루틴 수정 API
   @PatchMapping("/auth/modify")
-  public ResponseEntity<Map<String, Object>> modify(@Valid @RequestBody PlanDTO modifyPlanDTO, BindingResult result) {
+  public ResponseEntity<Map<String, Object>> modify(@RequestHeader("Authorization") String authHeader, @Valid @RequestBody PlanDTO modifyPlanDTO, BindingResult result) {
     // 유효성 검사 실패 시 에러 반환
     if (result.hasErrors()) {
       return ResponseEntity.badRequest().body(handler.getValidationErrors(result));
@@ -138,6 +141,10 @@ public class PlanController {
 
     // 삭제 여부 확인
     int isDeleted = 0;
+
+    // userIdx 조회
+    int userIdx = handler.getUsernameFromToken(authHeader);
+    modifyPlanDTO.setUserIdx(userIdx);
 
     // 서비스 로직 실행
     int modifyResult = planService.modifyPlanWithAct(modifyPlanDTO, isDeleted);
@@ -158,10 +165,11 @@ public class PlanController {
 
 
   // 루틴 삭제 API
-  @PatchMapping("/auth/delete")
-  public ResponseEntity<Map<String, Object>> delete(@RequestBody PlanRequestDTO requestDTO) {
-    int planIdx = requestDTO.getPlanIdx();
-    int userIdx = requestDTO.getUserIdx();
+  @PatchMapping("/auth/delete/{planIdx}")
+  public ResponseEntity<Map<String, Object>> delete(@RequestHeader("Authorization") String authHeader,
+                                                    @PathVariable int planIdx) {
+    // userIdx 조회
+    int userIdx = handler.getUsernameFromToken(authHeader);
 
     // 서비스 로직 실행
     int deleteResult = planService.deletePlan(planIdx, userIdx);
@@ -184,14 +192,17 @@ public class PlanController {
 
   // 루틴 시작 API
   @PatchMapping("/auth/stopNgo")
-  public ResponseEntity<Map<String, Object>> stopNgo(@Valid @RequestBody PlanRequestDTO requestDTO, BindingResult bindingResult) {
+  public ResponseEntity<Map<String, Object>> stopNgo(@RequestHeader("Authorization") String authHeader,
+                                                     @Valid @RequestBody PlanRequestDTO requestDTO,
+                                                     BindingResult bindingResult) {
     // 유효성 검사 실패 시 에러 반환
     if (bindingResult.hasErrors()) {
       return ResponseEntity.badRequest().body(handler.getValidationErrors(bindingResult));
     }
 
     int planIdx = requestDTO.getPlanIdx();
-    int userIdx = requestDTO.getUserIdx();
+    // userIdx 조회
+    int userIdx = handler.getUsernameFromToken(authHeader);
     int isActive = requestDTO.getIsActive();
     int isDeleted = 0;
 
@@ -219,11 +230,15 @@ public class PlanController {
   }
 
   // 루틴 추천하기
-  @PostMapping("/auth/likePlan")
-  public ResponseEntity<Map<String, Object>> likePlan(@RequestBody PlanRequestDTO requestDTO) {
+  @PostMapping("/auth/likePlan/{planIdx}")
+  public ResponseEntity<Map<String, Object>> likePlan(@RequestHeader("Authorization") String authHeader,
+                                                      @PathVariable int planIdx) {
     int isDeleted = 0;
 
-    int result = planService.likePlan(requestDTO, isDeleted);
+    // userIdx 조회
+    int userIdx = handler.getUsernameFromToken(authHeader);
+
+    int result = planService.likePlan(planIdx, userIdx, isDeleted);
 
     // 응답 메세지 세팅
     String msg = "";
@@ -241,18 +256,38 @@ public class PlanController {
   }
 
   // 추천 여부 조회
-  @GetMapping("/checkLike")
-  public ResponseEntity<Map<String, Object>> checkLike(@RequestBody PlanRequestDTO requestDTO) {
-    boolean result = planService.checkLike(requestDTO);
+  @GetMapping("/checkLike/{planIdx}")
+  public ResponseEntity<Map<String, Object>> checkLike(@RequestHeader(value = "Authorization", required = false) String authHeader,
+                                                       @PathVariable int planIdx) {
 
-    return ResponseEntity.status(handler.getHttpStatus(200))
-        .body(handler.createResponse(200, result));
+    // userIdx 조회
+    if (authHeader != null) {
+      int userIdx = handler.getUsernameFromToken(authHeader);
+      boolean result = planService.checkLike(planIdx, userIdx);
+
+      return ResponseEntity.status(handler.getHttpStatus(200))
+          .body(handler.createResponse(200, result));
+    }
+    else {
+      int userIdx = 0;
+      boolean result = planService.checkLike(planIdx, userIdx);
+
+      return ResponseEntity.status(handler.getHttpStatus(200))
+          .body(handler.createResponse(200, result));
+    }
+
+
+
   }
 
   // 루틴 추천 취소
-  @DeleteMapping("/auth/unLikePlan")
-  public ResponseEntity<Map<String, Object>> unLikePlan(@RequestBody PlanRequestDTO requestDTO) {
-    int result = planService.unLikePlan(requestDTO);
+  @DeleteMapping("/auth/unLikePlan/{planIdx}")
+  public ResponseEntity<Map<String, Object>> unLikePlan(@RequestHeader("Authorization") String authHeader,
+                                                        @PathVariable int planIdx) {
+    // userIdx 조회
+    int userIdx = handler.getUsernameFromToken(authHeader);
+
+    int result = planService.unLikePlan(planIdx, userIdx);
 
     // 응답 메세지 세팅
     String msg = "";
@@ -269,9 +304,13 @@ public class PlanController {
   }
 
   // 조기 완료
-  @PatchMapping("/auth/earlyComplete")
-  public ResponseEntity<Map<String, Object>> earlyComplete(@RequestBody PlanRequestDTO requestDTO) {
-    int result = planService.updateEarlyComplete(requestDTO);
+  @PatchMapping("/auth/earlyComplete/{planIdx}")
+  public ResponseEntity<Map<String, Object>> earlyComplete(@RequestHeader("Authorization") String authHeader,
+                                                           @PathVariable int planIdx) {
+    // userIdx 조회
+    int userIdx = handler.getUsernameFromToken(authHeader);
+
+    int result = planService.updateEarlyComplete(planIdx, userIdx);
 
     // 응답 메세지 세팅
     String msg = "";
@@ -292,7 +331,12 @@ public class PlanController {
 
   // 후기 작성
   @PatchMapping("/auth/addReview")
-  public ResponseEntity<Map<String, Object>> addreview(@RequestBody PlanRequestDTO requestDTO) {
+  public ResponseEntity<Map<String, Object>> addreview(@RequestHeader("Authorization") String authHeader,
+                                                       @RequestBody PlanRequestDTO requestDTO) {
+    // userIdx 조회
+    int userIdx = handler.getUsernameFromToken(authHeader);
+    requestDTO.setUserIdx(userIdx);
+
     int result = planService.addReview(requestDTO);
 
     // 응답 메세지 세팅
@@ -314,7 +358,12 @@ public class PlanController {
 
   // 후기 수정
   @PatchMapping("/auth/modifyReview")
-  public ResponseEntity<Map<String, Object>> modifyReview(@RequestBody PlanRequestDTO requestDTO) {
+  public ResponseEntity<Map<String, Object>> modifyReview(@RequestHeader("Authorization") String authHeader,
+                                                          @RequestBody PlanRequestDTO requestDTO) {
+    // userIdx 조회
+    int userIdx = handler.getUsernameFromToken(authHeader);
+    requestDTO.setUserIdx(userIdx);
+
     int result = planService.modifyReview(requestDTO);
 
     // 응답 메세지 세팅

@@ -1,7 +1,10 @@
 package com.godLife.project.controller;
 
 import com.godLife.project.dto.request.VerifyRequestDTO;
+import com.godLife.project.handler.GlobalExceptionHandler;
 import com.godLife.project.service.interfaces.VerifyService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -11,15 +14,22 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/verify")
 public class VerifyController {
 
+  @Autowired
+  private GlobalExceptionHandler handler;
+
   private final VerifyService verifyService;
 
-  public VerifyController (VerifyService verifyService) { this.verifyService = verifyService; }
-
   @PostMapping("/auth/routine")
-  public ResponseEntity<Map<String, Object>> verifyRoutine(@RequestBody VerifyRequestDTO verifyRequestDTO) {
+  public ResponseEntity<Map<String, Object>> verifyRoutine(@RequestHeader("Authorization") String authHeader,
+                                                           @RequestBody VerifyRequestDTO verifyRequestDTO) {
+    // userIdx 조회
+    int userIdx = handler.getUsernameFromToken(authHeader);
+    verifyRequestDTO.setUserIdx(userIdx);
+
     int result = verifyService.verifyActivity(verifyRequestDTO);
 
     // 응답 메세지 세팅
@@ -35,52 +45,6 @@ public class VerifyController {
     }
 
     // 응답 메시지 설정
-    return ResponseEntity.status(getHttpStatus(result)).body(createResponse(result, msg));
-  }
-
-
-
-  // JSON 파싱 오류 처리 메소드
-  @ExceptionHandler(HttpMessageNotReadableException.class)
-  public ResponseEntity<Map<String, Object>> handleJsonParseException(HttpMessageNotReadableException ex) {
-    Map<String, Object> errorResponse = new HashMap<>();
-    errorResponse.put("status", "error");
-    errorResponse.put("message", "잘못된 JSON 형식입니다. 필드값이 누락되었거나, 필드명의 오타가 있을 수 있습니다.");
-    errorResponse.put("code", 400);
-
-    return ResponseEntity.badRequest().body(errorResponse);
-  }
-
-  // HTTP 상태 코드 반환
-  private HttpStatus getHttpStatus(int result) {
-    return switch (result) {
-      case 200 -> HttpStatus.OK;
-      case 201 -> HttpStatus.CREATED;
-      case 403 -> HttpStatus.FORBIDDEN;
-      case 404 -> HttpStatus.NOT_FOUND;
-      case 409 -> HttpStatus.CONFLICT;
-      case 412 -> HttpStatus.PRECONDITION_FAILED;
-      case 500 -> HttpStatus.INTERNAL_SERVER_ERROR;
-      default -> HttpStatus.BAD_REQUEST;
-    };
-  }
-
-  // 응답 메시지 생성
-  private Map<String, Object> createResponse(int result, Object msg) {
-    Map<String, Object> message = new HashMap<>();
-    message.put("status", (result == 200 || result == 201) ? "success" : "error");
-    message.put("code", result);
-
-    switch (result) {
-      case 200 -> message.put("message", msg);
-      case 201 -> message.put("message", msg);
-      case 403 -> message.put("message", msg);
-      case 404 -> message.put("message", msg);
-      case 409 -> message.put("message", msg);
-      case 412 -> message.put("message", msg);
-      case 500 -> message.put("message", msg);
-      default -> message.put("message", msg);
-    }
-    return message;
+    return ResponseEntity.status(handler.getHttpStatus(result)).body(handler.createResponse(result, msg));
   }
 }

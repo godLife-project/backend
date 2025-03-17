@@ -21,19 +21,19 @@ public interface PlanService {
   int goStopPlan(int planIdx, int userIdx, int isActive, int isDeleted);
 
   // 루틴 추천
-  int likePlan(PlanRequestDTO planRequestDTO, int isDeleted);
+  int likePlan(int planIdx, int userIdx, int isDeleted);
 
   // 루틴 추천 여부 조회
-  boolean checkLike(PlanRequestDTO planRequestDTO);
+  boolean checkLike(int planIdx, int userIdx);
 
   // 루틴 추천 취소
-  int unLikePlan(PlanRequestDTO planRequestDTO);
+  int unLikePlan(int planIdx, int userIdx);
 
   // 루틴 조회수 상승
   void increaseView(int planIdx);
 
   // 루틴 조기 완료
-  int updateEarlyComplete(PlanRequestDTO planRequestDTO);
+  int updateEarlyComplete(int planIdx, int userIdx);
 
   // 후기 작성
   int addReview(PlanRequestDTO planRequestDTO);

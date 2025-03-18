@@ -23,24 +23,29 @@ public class NoticeServiceImpl implements NoticeService {
   }
 
   // 공지 작성
-  public void createNotice(NoticeDTO noticeDTO){
+  public int createNotice(NoticeDTO noticeDTO){
   noticeMapper.createNotice(noticeDTO);
+  return 200;
   }
 
   // 공지 수정
-  public void modifyNotice(NoticeDTO noticeDTO){
+  public int modifyNotice(NoticeDTO noticeDTO){
     int  updateCount = noticeMapper.modifyNotice(noticeDTO);
     // 1건만 수정 되는지 확인
     if (updateCount != 1) {
       throw new IllegalArgumentException("챌린지 수정 실패");
     }
+    return 200;
   }
 
-  // 공지 삭제
-  public void deleteNotice(int noticeIdx){
-    int deleteCount =  noticeMapper.deleteNotice(noticeIdx);
+  // 공지 삭제 서비스 메소드
+  public int deleteNotice(int noticeIdx) {
+    // 공지 존재 여부 확인
+    int deleteCount = noticeMapper.deleteNotice(noticeIdx);
     if (deleteCount != 1) {
-      throw new IllegalArgumentException("챌린지 삭제 실패");
+      return 404; // 공지가 존재하지 않는 경우
     }
+
+    return 200; // 공지 삭제 완료
   }
  }

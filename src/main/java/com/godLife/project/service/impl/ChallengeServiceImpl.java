@@ -29,11 +29,29 @@ public class ChallengeServiceImpl implements ChallengeService {
     // 최신 챌린지 가져오기
     public List<ChallengeDTO> getLatestChallenges() {
         // 종료된 챌린지를 제외하고 최신 챌린지 리스트를 조회
-        return challengeMapper.getLatestChallenges();
+        List<ChallengeDTO> challengeList = challengeMapper.getLatestChallenges();
+
+        // 각 챌린지의 참여 인원 수 조회 및 설정
+        for (ChallengeDTO challenge : challengeList) {
+            int participantCount = challengeMapper.countParticipants(challenge.getChallIdx());
+            challenge.setCurrentParticipants(participantCount);
+        }
+
+        return challengeList;
     }
+
+
     // 카테고리별 챌린지 조회
     public List<ChallengeDTO> getChallengesByCategoryId(int categoryIdx) {
-        return challengeMapper.getChallengesByCategoryId(categoryIdx);
+        List<ChallengeDTO> challengeList = challengeMapper.getChallengesByCategoryId(categoryIdx);
+
+        // 각 챌린지의 참여 인원 수 조회 및 설정
+        for (ChallengeDTO challenge : challengeList) {
+            int participantCount = challengeMapper.countParticipants(challenge.getChallIdx());
+            challenge.setCurrentParticipants(participantCount);
+        }
+
+        return challengeList;
     }
 
     // 챌린지 작성

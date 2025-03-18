@@ -11,9 +11,9 @@ public interface NoticeService {
   // 공지 상세조회
   NoticeDTO getNoticeDetail(int noticeIdx);
   // 공지 작성
-  void createNotice(NoticeDTO noticeDTO);
+  int createNotice(NoticeDTO noticeDTO);
   // 공지 수정
-  void modifyNotice(NoticeDTO noticeDTO);
+  int modifyNotice(NoticeDTO noticeDTO);
   //공지 삭제
-  void deleteNotice(int noticeIdx);
+  int deleteNotice(int noticeIdx);
 }

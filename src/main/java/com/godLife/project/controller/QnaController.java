@@ -1,17 +1,24 @@
 package com.godLife.project.controller;
 
 import com.godLife.project.dto.contents.QnADTO;
+import com.godLife.project.handler.GlobalExceptionHandler;
 import com.godLife.project.service.interfaces.QnaService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/qna")
 public class QnaController {
   private final QnaService qnaService;
+  @Autowired
+  private GlobalExceptionHandler handler;
 
   public QnaController(QnaService qnaService) {
     this.qnaService = qnaService;
@@ -19,17 +26,38 @@ public class QnaController {
 
   // 특정 QnA 조회
   @GetMapping("/{qnaIdx}")
-  public ResponseEntity<QnADTO> getQnaById(@PathVariable int qnaIdx) {
+  public ResponseEntity<Map<String, Object>> getQnaById(@PathVariable int qnaIdx, BindingResult result) {
+    // 첫 번째 호출로 이미 qna 데이터를 얻었으므로 두 번째 호출은 불필요
     QnADTO qna = qnaService.getQnaById(qnaIdx);
-    return ResponseEntity.ok(qna);
+
+    // 검증 오류가 있을 경우 처리
+    if (result.hasErrors()) {
+      return ResponseEntity.badRequest().body(handler.getValidationErrors(result));
+    }
+
+    // qna가 null인 경우를 체크하여 처리 (선택적)
+    if (qna == null) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(handler.createResponse(404, "QnA not found"));
+    }
+
+    // 정상적인 경우 응답 반환
+    return ResponseEntity.ok(handler.createResponse(200, qna));
   }
 
   // 모든 QnA 조회
   @GetMapping
-  public ResponseEntity<List<QnADTO>> getAllQna() {
+  public ResponseEntity<Map<String, Object>> getAllQna() {
     List<QnADTO> qnaList = qnaService.selectAllQna();
-    return ResponseEntity.ok(qnaList);
+
+    // QnA 게시글이 없을 경우 404 상태 코드와 메시지 반환
+    if (qnaList.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+              .body(handler.createResponse(404, "게시글이 존재하지 않습니다."));
+    }
+
+    return ResponseEntity.ok(handler.createResponse(200, qnaList));
   }
+
 
   // QnA 작성
   @PostMapping

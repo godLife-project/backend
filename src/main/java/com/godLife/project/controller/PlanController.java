@@ -238,6 +238,7 @@ public class PlanController {
     // userIdx 조회
     int userIdx = handler.getUsernameFromToken(authHeader);
 
+
     int result = planService.likePlan(planIdx, userIdx, isDeleted);
 
     // 응답 메세지 세팅

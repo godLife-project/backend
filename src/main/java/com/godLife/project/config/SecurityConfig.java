@@ -87,8 +87,8 @@ public class SecurityConfig {
         .requestMatchers("/api/verify/auth/**").authenticated()
         // 리스트 관련
             .requestMatchers("/api/list/auth/**").authenticated()
-        // 챌린지 참여/인증
-        //.requestMatchers("/api/join/{challIdx}", "/api/verify/{challIdx}").authenticated()
+        // 챌린지 관련
+        .requestMatchers("/api/challenges/auth/**").authenticated()
 
 
     // 지정한 엔드포인트는 해당 권한 등급이 없으면 로그인을 해도 접근 못함 (관리자)
@@ -96,8 +96,8 @@ public class SecurityConfig {
         .requestMatchers("/api/categories/admin/**").hasAnyAuthority("2", "3", "4", "5", "6", "7")
         // 테스트 용 (관리자 권한)
         .requestMatchers("/api/admin").hasAuthority("7")
-        // 관리자 권한 챌린지 작성
-        .requestMatchers("/api/challenges/admin/create").hasAnyAuthority("2", "3", "4", "5", "6", "7")
+        // 관리자 권한 챌린지 관련
+        .requestMatchers("/api/challenges/admin/**").hasAnyAuthority("2", "3", "4", "5", "6", "7")
 
 
     // 그 외 모든 접근 허용 (비 로그인 접근)

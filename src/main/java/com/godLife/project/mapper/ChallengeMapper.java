@@ -17,10 +17,10 @@ public interface ChallengeMapper {
     List<ChallengeDTO> getLatestChallenges();
 
     // 카테고리별 챌린지 조회
-    List<ChallengeDTO> getChallengesByCategoryId(@Param("categoryIdx") int categoryIdx);
+    List<ChallengeDTO> getChallengesByCategoryId(@Param("challCategoryIdx") int challCategoryIdx);
 
     // 챌린지 상세조회
-    ChallengeDTO ChallengeDetail(Long challIdx);
+    ChallengeDTO challengeDetail(Long challIdx);
 
     // 현재 참여자수 조회
     int countParticipants(Long challIdx);
@@ -45,7 +45,7 @@ public interface ChallengeMapper {
     // 클리어 시간 0 이하 시 챌린지 종료
     void finishChallenge(Long challIdx);
     // 챌린지 존재 여부 확인
-    boolean existsById(@Param("challIdx") Long challIdx);
+    int existsById(@Param("challIdx") Long challIdx);
     // 챌린지 수정
     int modifyChallenge(ChallengeDTO challengeDTO);
     // 챌린지 삭제

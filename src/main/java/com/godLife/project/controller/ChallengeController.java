@@ -80,23 +80,23 @@ public class ChallengeController {
         return challengeService.getChallnegeDetail(challIdx, userJoin, duration);
     }
 
-    // 카테고리 챌린지 조회 api
-    @GetMapping("/latest/{challCategoryIdx}")
-    public ResponseEntity<List<ChallengeDTO>> getChallengesByCategoryId(@PathVariable int challCategoryIdx){
-        try {
-            // 서비스에서 카테고리별 챌린지 조회
-            List<ChallengeDTO> challenges = challengeService.getChallengesByCategoryId(challCategoryIdx);
 
-            // 결과 반환
-            if (challenges.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(challenges); // 비어있을 경우
-            }
-            return ResponseEntity.ok(challenges); // 결과가 있으면 200 OK 반환
-        } catch (Exception e) {
-            // 예외 처리
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
+  @GetMapping("/latest/{challCategoryIdx}")
+  public ResponseEntity<Map<String, Object>> getChallengesByCategoryId(@PathVariable int challCategoryIdx) {
+    // 카테고리별 챌린지 조회
+    List<ChallengeDTO> challenges = challengeService.getChallengesByCategoryId(challCategoryIdx);
+
+    // 조회된 챌린지가 없을 경우
+    if (challenges.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.NO_CONTENT)
+              .body(handler.createResponse(204, "해당 카테고리에 챌린지가 없습니다."));
     }
+
+    // 카테고리별 챌린지가 있을 경우
+    Map<String, Object> response = handler.createResponse(200, "카테고리별 챌린지 조회 성공");
+    response.put("challenges", challenges);  // 챌린지 리스트를 응답에 추가
+    return ResponseEntity.ok(response);
+  }
 
     // 챌린지 참여 API
     @PostMapping("/auth/join/{challIdx}")

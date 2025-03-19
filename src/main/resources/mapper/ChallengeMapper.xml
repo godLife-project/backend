@@ -18,9 +18,9 @@
 
 
     <!-- 챌린지 상세정보 조회 -->
-    <select id="ChallengeDetail" resultType="com.godLife.project.dto.contents.ChallengeDTO">
+    <select id="challengeDetail" resultType="com.godLife.project.dto.contents.ChallengeDTO">
         SELECT
-            CHALL_TITLE, CHALL_DESCRIPTION, CHALL_CATEGORY_IDX,
+            CHALL_IDX, CHALL_TITLE, CHALL_DESCRIPTION, CHALL_CATEGORY_IDX,
             MIN_PARTICIPATION_TIME, TOTAL_CLEAR_TIME, MAX_PARTICIPANTS,
             CHALL_START_TIME, CHALL_END_TIME, CHALL_CREATED_AT, CHALL_STATE
         FROM Chall_table
@@ -37,9 +37,9 @@
     <!-- 유저 참여형 챌린지 최초 참여 시 정보 업데이트 -->
     <update id="updateChallengeStartTime">
         UPDATE CHALL_TABLE
-        SET CHALL_START_TIME = #{challStartTime},
-            CHALL_END_TIME = #{challEndTime},
-            CHALL_STATE = #{challState}
+        SET CHALL_START_TIME = #{startTime},
+            CHALL_END_TIME = #{endTime},
+            CHALL_STATE = #{state}
         WHERE CHALL_IDX = #{challIdx}
     </update>
 
@@ -49,12 +49,23 @@
         VALUES (#{challIdx}, #{userIdx}, #{startTime}, #{endTime}, #{activity})
     </insert>
 
-    <!-- 챌린지 카테고리별 조회 -->
-    <select id="getChallengesByCategory" resultType="com.godLife.project.dto.contents.ChallengeDTO">
+    <!-- 카테고리 조회 -->
+    <select id="getChallengesByCategoryId" resultType="com.godLife.project.dto.contents.ChallengeDTO">
         SELECT
-        FROM CHALL_TABEL
-        WHERE CHALL_CATEGORY_IDX =#{challCategoryIdx}
-        ORDER BY CHALL_CREATE_AT DESC
+            CHALL_IDX,
+            CHALL_TITLE,
+            CHALL_DESCRIPTION,
+            CHALL_CATEGORY_IDX,
+            MIN_PARTICIPATION_TIME,
+            TOTAL_CLEAR_TIME,
+            MAX_PARTICIPANTS,
+            CHALL_START_TIME,
+            CHALL_END_TIME,
+            CHALL_CREATED_AT,
+            CHALL_STATE
+        FROM CHALL_TABLE
+        WHERE CHALL_CATEGORY_IDX = #{challCategoryIdx}
+        ORDER BY CHALL_CREATED_AT DESC
     </select>
 
     <!-- 인증 기록 저장 -->
@@ -90,7 +101,6 @@
     MAX_PARTICIPANTS,
     CHALL_CREATED_AT,
     CHALL_END_TIME,
-    COUNT(USER_IDX) AS PARTICIPANT_COUNT
     FROM CHALL_TABLE
     WHERE CHALL_END_TIME IS NULL OR CHALL_END_TIME > SYSDATE
     ORDER BY CHALL_CREATED_AT DESC
@@ -98,7 +108,7 @@
 
     <!-- 챌린지 존재 확인 -->
     <select id="existsById" resultType="int">
-        SELECT COUNT(*) FROM challenge WHERE chall_idx = #{challIdx}
+        SELECT COUNT(*) FROM chall_table WHERE chall_idx = #{challIdx}
     </select>
 
     <!-- 챌린지 수정 -->

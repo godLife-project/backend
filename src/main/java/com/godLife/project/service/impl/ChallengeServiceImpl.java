@@ -95,7 +95,7 @@ public class ChallengeServiceImpl implements ChallengeService {
 
 
     public void updateChallengeStartTime(Long challIdx, Integer duration) throws Exception {
-        ChallengeDTO challengeDTO = challengeMapper.ChallengeDetail(challIdx);
+        ChallengeDTO challengeDTO = challengeMapper.challengeDetail(challIdx);
         // 시작시간이 설정되지 않은 경우에만 업데이트
         if (challengeDTO.getChallStartTime() != null) {
             LocalDateTime startTime = LocalDateTime.now(); // 첫 참가자 시점으로 시작시간 업데이트
@@ -116,7 +116,7 @@ public class ChallengeServiceImpl implements ChallengeService {
     // 챌린지 상세 조회 및 상태 변경
     public ChallengeDTO getChallnegeDetail(Long challIdx, int userJoin, Integer duration) {
         // 챌린지 기본 정보 조회
-        ChallengeDTO challenge = challengeMapper.ChallengeDetail(challIdx);
+        ChallengeDTO challenge = challengeMapper.challengeDetail(challIdx);
         //현재 참여자수 조회
         int participantCount = challengeMapper.countParticipants(challIdx);
         challenge.setCurrentParticipants(participantCount);
@@ -166,7 +166,7 @@ public class ChallengeServiceImpl implements ChallengeService {
     @Override
     public ChallengeDTO joinChallenge(Long challIdx, int userIdx, Integer duration, LocalDateTime startTime, LocalDateTime endTime, String activity) {
         // 챌린지 기본 정보 조회
-        ChallengeDTO challenge = challengeMapper.ChallengeDetail(challIdx);
+        ChallengeDTO challenge = challengeMapper.challengeDetail(challIdx);
 
         // 챌린지 상태가 "게시중", "진행중" 일 때만 참여 가능
         if (!"PUBLISHED".equals(challenge.getChallState()) && !"IN_PROGRESS".equals(challenge.getChallState())) {
@@ -216,15 +216,15 @@ public class ChallengeServiceImpl implements ChallengeService {
         challengeMapper.updateClearTime(verifyDTO.getChallIdx(), elapsedMinutes);
 
         // 클리어 시간 0이면 챌린지 종료 처리
-        ChallengeDTO challenge = challengeMapper.ChallengeDetail((Long) verifyDTO.getChallIdx());
+        ChallengeDTO challenge = challengeMapper.challengeDetail((Long) verifyDTO.getChallIdx());
         if (challenge.getTotalClearTime() <= 0) {
             challengeMapper.finishChallenge(verifyDTO.getChallIdx());
         }
     }
-    // 챌린지 존재 여부 확인
+    // 챌린지 존재 여부 확인 (서비스 구현 수정)
     @Override
     public boolean existsById(Long challIdx) {
-        return challengeMapper.existsById(challIdx);  // 0보다 크면 존재하는 챌린지
+        return challengeMapper.existsById(challIdx) > 0;  // 0보다 크면 존재하는 챌린지
     }
 
     // 챌린지 수정

@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface ListMapper {
@@ -28,11 +29,13 @@ public interface ListMapper {
                                    @Param("target") List<Integer> target,
                                    @Param("job") List<Integer> job,
                                    @Param("sort") String sort,
-                                   @Param("order") String order);
+                                   @Param("order") String order,
+                                   @Param("keywords") Map<String, List<String>> keywords);
   // 루틴 리스트 총 게시글 수 조회
   int getTotalPlanCount(@Param("mode") String mode,
                         @Param("status") int status,
                         @Param("target") List<Integer> target,
-                        @Param("job") List<Integer> job);
+                        @Param("job") List<Integer> job,
+                        @Param("keywords") Map<String, List<String>> keywords);
 
 }

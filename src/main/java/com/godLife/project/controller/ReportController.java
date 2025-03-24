@@ -2,6 +2,7 @@ package com.godLife.project.controller;
 
 
 import com.godLife.project.dto.infos.PlanReportDTO;
+import com.godLife.project.dto.infos.UserReportDTO;
 import com.godLife.project.handler.GlobalExceptionHandler;
 import com.godLife.project.service.interfaces.jwtInterface.ReportService;
 import lombok.RequiredArgsConstructor;
@@ -37,9 +38,10 @@ public class ReportController {
     // 응답 메세지 세팅
     String msg = "";
     switch (result) {
-      case 200 -> msg = "루틴 신고를 정상적으로 접수했습니다.";
+      case 200 -> msg = "루틴 신고가 정상적으로 접수됐습니다.";
       case 404 -> msg = "신고하신 루틴이 존재하지 않습니다.";
       case 409 -> msg = "이미 신고한 루틴입니다.";
+      case 422 -> msg = "요청 본문에 누락된 데이터가 있습니다.";
       case 500 -> msg = "서버 내부적으로 오류가 발생하여 루틴을 신고 하지 못했습니다.";
       default -> msg = "알 수 없는 오류가 발생했습니다.";
     }
@@ -67,7 +69,7 @@ public class ReportController {
     switch (result) {
       case 200 -> msg = "루틴 신고가 정상적으로 취소됐습니다.";
       case 404 -> msg = "취소할 루틴이 존재하지 않거나, 이미 처리된 신고 또는 아직 신고하지 않은 루틴입니다.";
-      case 500 -> msg = "서버 내부적으로 오류가 발생하여 루틴을 신고 하지 못했습니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 신고를 취소 하지 못했습니다.";
       default -> msg = "알 수 없는 오류가 발생했습니다.";
     }
 
@@ -76,4 +78,57 @@ public class ReportController {
         .body(handler.createResponse(result, msg));
   }
 
+  @PostMapping("/auth/user/{reportedIdx}")
+  ResponseEntity<Map<String, Object>> userReport(@RequestHeader("Authorization") String authHeader,
+                                                 @PathVariable int reportedIdx,
+                                                 @RequestBody UserReportDTO userReportDTO) {
+    int userIdx = handler.getUsernameFromToken(authHeader);
+    userReportDTO.setReporterIdx(userIdx);
+    userReportDTO.setReportedIdx(reportedIdx);
+
+    int result = reportService.userReport(userReportDTO);
+
+    // 응답 메세지 세팅
+    String msg = "";
+    switch (result) {
+      case 200 -> msg = "유저 신고가 정상적으로 접수됐습니다.";
+      case 400 -> msg = "자기 자신은 신고할 수 없습니다.";
+      case 404 -> msg = "신고하신 유저가 존재하지 않습니다.";
+      case 409 -> msg = "이미 신고한 유저입니다.";
+      case 422 -> msg = "요청 본문에 누락된 데이터가 있습니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 유저를 신고 하지 못했습니다.";
+      default -> msg = "알 수 없는 오류가 발생했습니다.";
+    }
+
+    // 응답 메시지 설정
+    return ResponseEntity.status(handler.getHttpStatus(result))
+        .body(handler.createResponse(result, msg));
+  }
+
+  @PatchMapping("/auth/user/cancel/{reportedIdx}")
+  ResponseEntity<Map<String, Object>> userReportCancel(@RequestHeader("Authorization") String authHeader,
+                                                       @PathVariable int reportedIdx) {
+    int userIdx = handler.getUsernameFromToken(authHeader);
+
+    UserReportDTO userReportDTO = new UserReportDTO();
+
+    userReportDTO.setReporterIdx(userIdx);
+    userReportDTO.setReportedIdx(reportedIdx);
+    userReportDTO.setStatus(3);
+
+    int result = reportService.userReportCancel(userReportDTO);
+
+    // 응답 메세지 세팅
+    String msg = "";
+    switch (result) {
+      case 200 -> msg = "유저 신고가 정상적으로 취소됐습니다.";
+      case 404 -> msg = "취소할 유저가 존재하지 않거나, 이미 처리된 신고 또는 아직 신고하지 않은 유저입니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 신고를 취소 하지 못했습니다.";
+      default -> msg = "알 수 없는 오류가 발생했습니다.";
+    }
+
+    // 응답 메시지 설정
+    return ResponseEntity.status(handler.getHttpStatus(result))
+        .body(handler.createResponse(result, msg));
+  }
 }

@@ -11,6 +11,6 @@ public interface ListService {
   List<MyPlanDTO> getMyPlansList(int userIdx);
 
   // 모든 루틴 리스트 조회
-  Map<String, Object> getAllPlansList(String mode, int page, int size, int status, List<Integer> target, List<Integer> job, String sort, String order);
+  Map<String, Object> getAllPlansList(String mode, int page, int size, int status, List<Integer> target, List<Integer> job, String sort, String order, String search);
 
 }

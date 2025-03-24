@@ -11,10 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -67,7 +65,7 @@ public class ListServiceImpl implements ListService {
   @Override
   public Map<String, Object> getAllPlansList(String mode, int page, int size, int status,
                                              List<Integer> target, List<Integer> job,
-                                             String sort, String order) {
+                                             String sort, String order, String search) {
     // 페이지 번호가 음수일 경우 예외 처리
     if (page < 0) {
       Map<String, Object> errorResponse = new HashMap<>();
@@ -81,8 +79,14 @@ public class ListServiceImpl implements ListService {
       //System.out.println("--서비스--");
       //System.out.println(page + " " +  size + " " + status + " " + target + " " + job + " " + sort + " " + order);
 
-      List<PlanListDTO> plans = listMapper.getAllPlanList(mode, offset, size, status, target, job, sort, order);
-      int totalPlans = listMapper.getTotalPlanCount(mode, status, target, job);
+      Map<String, List<String>> keywords = new HashMap<>();
+      if (search != null) {
+        keywords = parseKeywords(search);
+        System.out.println(keywords);
+      }
+
+      List<PlanListDTO> plans = listMapper.getAllPlanList(mode, offset, size, status, target, job, sort, order, keywords);
+      int totalPlans = listMapper.getTotalPlanCount(mode, status, target, job, keywords);
 
       Map<String, Object> response = new HashMap<>();
       response.put("plans", plans);
@@ -101,4 +105,48 @@ public class ListServiceImpl implements ListService {
       return errorResponse; // 실패 응답 반환
     }
   }
+
+
+
+  /* -----------------------------------------// 함수 구현 //------------------------------------------------------- */
+  public static Map<String, List<String>> parseKeywords(String input) {
+    Map<String, List<String>> keywords = new HashMap<>();
+    if (input == null || input.isBlank()) return keywords;
+
+    String remainingInput = input.trim();
+
+    // 1. "!^" 처리 (NOT 조건)
+    String[] notSplit = remainingInput.split("!\\^", 2);
+    remainingInput = notSplit[0].trim();
+    if (notSplit.length > 1) {
+      keywords.put("not", Collections.singletonList(notSplit[1].trim()));
+    }
+
+    // 2. "|" 처리 (OR 조건)
+    List<String> orConditions = new ArrayList<>();
+    List<String> andConditions = new ArrayList<>();
+
+    String[] orSplit = remainingInput.split("\\|");
+    for (String orPart : orSplit) {
+      orPart = orPart.trim();
+      if (orPart.contains("+")) {
+        // 3. "+" 처리 (AND 조건)
+        andConditions.add(orPart.replaceAll("\\+", "%"));
+      } else {
+        orConditions.add(orPart);
+      }
+    }
+
+    // 결과 저장
+    if (!orConditions.isEmpty()) {
+      keywords.put("or", orConditions);
+    }
+    if (!andConditions.isEmpty()) {
+      keywords.put("and", andConditions);
+    }
+
+    return keywords;
+  }
+  /* --------------------------------------------------------------------------------------------------------------- */
+
 }

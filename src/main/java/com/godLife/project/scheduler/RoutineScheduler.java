@@ -74,7 +74,7 @@ public class RoutineScheduler {
   // ⚡ 2시간마다 실행 (0시, 2시, 4시, ...)
   @Scheduled(cron = "0 0 0/2 * * ?")
   public void checkEveryTwoHours() {
-    routineScheduleService.deleteExpiredRefreshTokens();
-    System.out.println(".....만료 된 모든 재발급 토큰을 삭제했습니다.....");
+    int result = routineScheduleService.deleteExpiredRefreshTokens();
+    System.out.println(".....만료 된 모든 재발급 토큰을 삭제했습니다.....삭제된 토큰 수 ::> " + result);
   }
 }

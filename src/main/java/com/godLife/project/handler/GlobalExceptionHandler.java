@@ -51,6 +51,7 @@ public class GlobalExceptionHandler {
       case 404 -> HttpStatus.NOT_FOUND;
       case 409 -> HttpStatus.CONFLICT;
       case 412 -> HttpStatus.PRECONDITION_FAILED;
+      case 422 -> HttpStatus.UNPROCESSABLE_ENTITY;
       case 500 -> HttpStatus.INTERNAL_SERVER_ERROR;
       default -> HttpStatus.BAD_REQUEST;
     };
@@ -70,6 +71,7 @@ public class GlobalExceptionHandler {
       case 404 -> message.put("message", msg);
       case 409 -> message.put("message", msg);
       case 412 -> message.put("message", msg);
+      case 422 -> message.put("message", msg);
       case 500 -> message.put("message", msg);
       default -> message.put("message", msg);
     }

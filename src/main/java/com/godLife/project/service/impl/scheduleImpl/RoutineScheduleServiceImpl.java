@@ -53,7 +53,7 @@ public class RoutineScheduleServiceImpl {
   }
 
   // 만료된 재발급 토큰 삭제 로직
-  public void deleteExpiredRefreshTokens() { midnightMapper.deleteExpiredRefreshTokens(); }
+  public int deleteExpiredRefreshTokens() { return midnightMapper.deleteExpiredRefreshTokens(); }
 
 
   /* -----------------------------------------// 함수 구현 //------------------------------------------------------- */

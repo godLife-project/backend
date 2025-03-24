@@ -20,9 +20,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class NoticeController {
   @Autowired
-  private GlobalExceptionHandler handler;
+  private final GlobalExceptionHandler handler;
 
-  private NoticeService noticeService;
+  private final NoticeService noticeService;
 
   @GetMapping
   public ResponseEntity<List<NoticeDTO>> getNoticeList() {

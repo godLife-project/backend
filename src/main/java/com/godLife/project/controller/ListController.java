@@ -21,7 +21,7 @@ import java.util.NoSuchElementException;
 public class ListController {
 
   @Autowired
-  private GlobalExceptionHandler handler;
+  private final GlobalExceptionHandler handler;
 
   private final ListService listService;
 
@@ -61,11 +61,13 @@ public class ListController {
                                                           @RequestParam(required = false) List<Integer> target,
                                                           @RequestParam(required = false) List<Integer> job,
                                                           @RequestParam(defaultValue = "latest") String sort,
-                                                          @RequestParam(defaultValue = "desc") String order) {
+                                                          @RequestParam(defaultValue = "desc") String order,
+                                                          @RequestParam(required = false) String search) {
 
     //System.out.println("--컨트롤러--");
     //System.out.println(page + " " +  size + " " + status + " " + target + " " + job + " " + sort + " " + order);
-    Map<String, Object> response = listService.getAllPlansList(mode, page - 1, size, status, target, job, sort, order);
+
+    Map<String, Object> response = listService.getAllPlansList(mode, page - 1, size, status, target, job, sort, order, search);
 
     Object plans = response.get("plans");
 

@@ -26,7 +26,7 @@ import java.util.NoSuchElementException;
 public class PlanController {
 
   @Autowired
-  private GlobalExceptionHandler handler;
+  private final GlobalExceptionHandler handler;
 
   private final PlanService planService;
 

@@ -64,6 +64,8 @@ public class RoutineScheduler {
       System.out.println("2...진행중인 루틴의 불꽃을 모두 활성화 하지 못한 유저의 콤보를 초기화 했습니다.");
       routineScheduleService.clearAllFireStateWhenMidnight();
       System.out.println("3...진행중인 루틴의 불꽃 활성화 상태를 초기화 했습니다.");
+      int AccountClearResult = routineScheduleService.clearAccountDelete();
+      System.out.println("4...탈퇴한 유저중 데이터 유지 만료일이 지난 계정을 삭제 처리했습니다.....삭제된 유저 수 ::> " + AccountClearResult);
     } catch (Exception e) {
       log.error("e: ", e);
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly(); // 수동 롤백

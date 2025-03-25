@@ -46,8 +46,9 @@ public class PlanController {
     String msg = "";
     switch (insertResult) {
       case 201 -> msg = "루틴 저장 완료";
+      case 410 -> msg = "회원 탈퇴한 계정입니다.";
       case 412 -> msg = "루틴 작성은 최대 5개만 가능합니다. 현재 작성한 루틴을 지우거나, 목표치 까지 완료해주세요.";
-      case 500 -> msg = "서버 내부적으로 오류가 발생하여 루틴을 저장하지 못했습니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
       default -> msg = "알 수 없는 오류가 발생했습니다.";
     }
 
@@ -154,7 +155,8 @@ public class PlanController {
       case 200 -> msg = "루틴 수정 완료";
       case 403 -> msg = "작성자가 아닙니다. 재로그인 해주세요.";
       case 404 -> msg = "요청하신 루틴이 존재하지 않습니다.";
-      case 500 -> msg = "서버 내부적으로 오류가 발생하여 루틴을 수정하지 못했습니다.";
+      case 410 -> msg = "회원 탈퇴한 계정입니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
       default -> msg = "알 수 없는 오류가 발생했습니다.";
     }
 
@@ -179,9 +181,9 @@ public class PlanController {
     switch (deleteResult) {
       case 200 -> msg = "루틴 삭제 완료";
       case 403 -> msg = "작성자가 아닙니다. 재로그인 해주세요.";
-
+      case 410 -> msg = "회원 탈퇴한 계정입니다.";
       case 404 -> msg = "요청하신 루틴이 존재하지 않습니다.";
-      case 500 -> msg = "서버 내부적으로 오류가 발생하여 루틴을 삭제하지 못했습니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
       default -> msg = "알 수 없는 오류가 발생했습니다.";
     }
 
@@ -214,7 +216,8 @@ public class PlanController {
       case 200 -> msg = "루틴을 활성화 합니다.";
       case 403 -> msg = "작성자가 아닙니다. 재로그인 해주세요.";
       case 404 -> msg = "요청하신 루틴이 존재하지 않습니다.";
-      case 500 -> msg = "서버 내부적으로 오류가 발생하여 루틴을 활성화 하지 못했습니다.";
+      case 410 -> msg = "회원 탈퇴한 계정입니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
       default -> msg = "알 수 없는 오류가 발생했습니다.";
     }
     if (result == 200 && isActive == 0) {
@@ -238,7 +241,6 @@ public class PlanController {
     // userIdx 조회
     int userIdx = handler.getUsernameFromToken(authHeader);
 
-
     int result = planService.likePlan(planIdx, userIdx, isDeleted);
 
     // 응답 메세지 세팅
@@ -247,7 +249,8 @@ public class PlanController {
       case 200 -> msg = "루틴을 추천합니다.";
       case 404 -> msg = "요청하신 루틴이 존재하지 않습니다.";
       case 409 -> msg = "이미 추천한 루틴입니다.";
-      case 500 -> msg = "서버 내부적으로 오류가 발생하여 루틴을 추천 하지 못했습니다.";
+      case 410 -> msg = "회원 탈퇴한 계정입니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
       default -> msg = "알 수 없는 오류가 발생했습니다.";
     }
 
@@ -295,7 +298,8 @@ public class PlanController {
     switch (result) {
       case 200 -> msg = "루틴 추천을 취소 합니다.";
       case 404 -> msg = "루틴이 존재하지 않거나, 이미 추천을 취소 했습니다.";
-      case 500 -> msg = "서버 내부적으로 오류가 발생하여 추천을 취소 하지 못했습니다.";
+      case 410 -> msg = "회원 탈퇴한 계정입니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
       default -> msg = "알 수 없는 오류가 발생했습니다.";
     }
 
@@ -320,8 +324,9 @@ public class PlanController {
       case 403 -> msg = "작성자가 아닙니다. 재로그인 해주세요.";
       case 404 -> msg = "요청하신 루틴이 존재하지 않거나, 삭제 처리 된 루틴입니다.";
       case 409 -> msg = "이미 완료 처리된 루틴입니다.";
+      case 410 -> msg = "회원 탈퇴한 계정입니다.";
       case 412 -> msg = "활성화 된 루틴이 아닙니다. 루틴 활성화 후 실행해 주세요.";
-      case 500 -> msg = "서버 내부적으로 오류가 발생하여 루틴을 완료 처리하지 못했습니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
       default -> msg = "알 수 없는 오류가 발생했습니다.";
     }
 
@@ -347,8 +352,9 @@ public class PlanController {
       case 403 -> msg = "작성자가 아닙니다. 재로그인 해주세요.";
       case 404 -> msg = "요청하신 루틴이 존재하지 않거나, 삭제 처리 된 루틴입니다.";
       case 409 -> msg = "이미 후기를 작성했습니다. 수정을 원할 경우, 수정 api를 사용해주세요.";
+      case 410 -> msg = "회원 탈퇴한 계정입니다.";
       case 412 -> msg = "후기를 작성 하기 전 루틴을 완료해야 합니다.";
-      case 500 -> msg = "서버 내부적으로 오류가 발생하여 후기를 저장하지 못했습니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
       default -> msg = "알 수 없는 오류가 발생했습니다.";
     }
 
@@ -373,8 +379,9 @@ public class PlanController {
       case 200 -> msg = "후기가 정상적으로 수정 되었습니다.";
       case 403 -> msg = "작성자가 아닙니다. 재로그인 해주세요.";
       case 404 -> msg = "요청하신 루틴이 존재하지 않거나, 삭제 처리 된 루틴입니다.";
+      case 410 -> msg = "회원 탈퇴한 계정입니다.";
       case 412 -> msg = "후기를 수정 하기 전 루틴을 완료하거나 후기를 작성해야 합니다.";
-      case 500 -> msg = "서버 내부적으로 오류가 발생하여 후기를 수정하지 못했습니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
       default -> msg = "알 수 없는 오류가 발생했습니다.";
     }
 

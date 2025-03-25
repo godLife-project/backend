@@ -55,6 +55,12 @@ public class RoutineScheduleServiceImpl {
   // 만료된 재발급 토큰 삭제 로직
   public int deleteExpiredRefreshTokens() { return midnightMapper.deleteExpiredRefreshTokens(); }
 
+  // 탈퇴 회원 삭제 처리
+  public int clearAccountDelete() {
+    int expire = 7; // 완전 삭제까지 7일
+    return midnightMapper.clearAccount(expire);
+  }
+
 
   /* -----------------------------------------// 함수 구현 //------------------------------------------------------- */
   public void expDecreaseProcedure(VerifyUnder90DTO dto, int defaultMinusExp) {

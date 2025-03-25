@@ -138,4 +138,6 @@ public class PlanDTO {
 
     @Schema(description = "불꽃 활성 여부", example = "false")
     private boolean fireState;
+
+    private String userDelete;
 }

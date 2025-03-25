@@ -44,7 +44,7 @@ public class ChallengeController {
       String msg = "";
       switch (insertResult) {
         case 201 -> msg = "챌린지 작성 완료";
-        case 500 -> msg = "서버 내부적으로 오류가 발생하여 챌린지를 저장하지 못했습니다.";
+        case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
         default -> msg = "알 수 없는 오류가 발생했습니다.";
       }
 
@@ -153,7 +153,7 @@ public class ChallengeController {
         case 200 -> "챌린지 수정 완료";
         case 403 -> "작성자가 아닙니다. 재로그인 해주세요.";
         case 404 -> "요청하신 챌린지가 존재하지 않습니다.";
-        case 500 -> "서버 내부적으로 오류가 발생하여 챌린지를 수정하지 못했습니다.";
+        case 500 -> "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
         default -> "알 수 없는 오류가 발생했습니다.";
       };
 

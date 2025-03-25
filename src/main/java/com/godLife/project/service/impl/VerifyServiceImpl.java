@@ -38,6 +38,7 @@ public class VerifyServiceImpl implements VerifyService {
       if (planMapper.getUserIdxByPlanIdx(planIdx) != verifyRequestDTO.getUserIdx()) { return 403; } // another 작성자 아님
       if (!planMapper.checkActiveByPlanIdx(planIdx)) { return 412; } // preCondition 루틴 활성화 상태 아님
       if (verifyMapper.checkTodayVerified(verifyRequestDTO)) { return 409; } // conflict 이미 인증 함 (activityIdx 사용)
+      if (!planMapper.getUserIsDeleted(userIdx).contains("N")) { return 410; } // 탈퇴한 유저 인증 불가
 
       // 활동 인증 처리 ( 데이터 저장 )
       verifyMapper.verifyActivity(verifyRequestDTO); // activityIdx , userIdx 사용

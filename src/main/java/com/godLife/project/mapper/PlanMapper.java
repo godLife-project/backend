@@ -16,6 +16,10 @@ import java.util.List;
 @Mapper
 public interface PlanMapper {
 
+  // 유저 탈퇴 여부 확인
+  @Select("SELECT IS_DELETED FROM USER_TABLE WHERE USER_IDX = #{userIdx}")
+  String getUserIsDeleted(int userIdx);
+
   // 루틴 추가
   void insertPlan(PlanDTO planDTO);
   // 활동 추가

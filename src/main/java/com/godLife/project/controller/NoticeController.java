@@ -99,7 +99,7 @@ public class NoticeController {
       case 200 -> msg = "공지 수정 완료";
       case 403 -> msg = "관리자가 아닙니다. 재로그인 해주세요.";
       case 404 -> msg = "요청하신 공지가 존재하지 않습니다.";
-      case 500 -> msg = "서버 내부적으로 오류가 발생하여 공지를 수정하지 못했습니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
       default -> msg = "알 수 없는 오류가 발생했습니다.";
     }
 
@@ -119,7 +119,7 @@ public class NoticeController {
     switch (deleteResult) {
       case 200 -> msg = "공지 삭제 완료";
       case 404 -> msg = "요청하신 공지가 존재하지 않습니다.";
-      case 500 -> msg = "서버 내부적으로 오류가 발생하여 공지를 삭제하지 못했습니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
       default -> msg = "알 수 없는 오류가 발생했습니다.";
     }
 

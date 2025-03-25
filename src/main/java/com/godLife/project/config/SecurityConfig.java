@@ -89,6 +89,8 @@ public class SecurityConfig {
             .requestMatchers("/api/list/auth/**").authenticated()
         // 신고 관련
             .requestMatchers("/api/report/auth/**").authenticated()
+        // 마이페이지 관련
+            .requestMatchers("/api/myPage/auth/**").authenticated()
 
 
     // 지정한 엔드포인트는 해당 권한 등급이 없으면 로그인을 해도 접근 못함 (관리자)

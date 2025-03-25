@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godLife.project.mapper.MyPageMapper">
+
+    <!-- 회원 탈퇴 쿼리 -->
+    <update id="deleteAccount" parameterType="int">
+        UPDATE USER_TABLE
+        SET IS_DELETED = 'Y', DELETE_DATE = SYSDATE
+        WHERE USER_IDX = #{userIdx}
+        AND IS_DELETED = 'N'
+    </update>
+
+    <!-- 탈퇴 취소 -->
+    <update id="deleteCancelAccount" parameterType="int">
+        UPDATE USER_TABLE
+        SET IS_DELETED = 'N', DELETE_DATE = NULL
+        WHERE USER_IDX = #{userIdx}
+        AND IS_DELETED = 'Y'
+    </update>
+
+</mapper>

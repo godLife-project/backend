@@ -27,7 +27,7 @@ public class VerifyDTO {
     @Schema(description = "인증한 날짜", example = "2025/02/16 HH:mm:ss")
     @JsonSerialize(using = LocalDateTimeSerializer.class) // 직렬화
     @JsonDeserialize(using = LocalDateTimeDeserializer.class) // 역직렬화
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime verifyDate;
 
     @Schema(description = "경과 시간(챌린지용)", example = "120")

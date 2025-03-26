@@ -3,20 +3,23 @@ package com.godLife.project.service.impl;
 import com.godLife.project.dto.contents.NoticeDTO;
 import com.godLife.project.mapper.NoticeMapper;
 import com.godLife.project.service.interfaces.NoticeService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class NoticeServiceImpl implements NoticeService {
   private NoticeMapper noticeMapper;
+
+  public NoticeServiceImpl(NoticeMapper noticeMapper) {
+    this.noticeMapper = noticeMapper;
+  }
 
   @Override
   public List<NoticeDTO> getNoticeList(){
     return noticeMapper.getNoticeList();
   }
+
   // 상세 조회
   public NoticeDTO getNoticeDetail(int noticeIdx){
     return noticeMapper.getNoticeDetail(noticeIdx);
@@ -24,8 +27,7 @@ public class NoticeServiceImpl implements NoticeService {
 
   // 공지 작성
   public int createNotice(NoticeDTO noticeDTO){
-  noticeMapper.createNotice(noticeDTO);
-  return 200;
+    return noticeMapper.createNotice(noticeDTO);
   }
 
   // 공지 수정

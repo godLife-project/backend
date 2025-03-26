@@ -18,9 +18,9 @@
 
 
     <!-- 챌린지 상세정보 조회 -->
-    <select id="ChallengeDetail" resultType="com.godLife.project.dto.contents.ChallengeDTO">
+    <select id="challengeDetail" resultType="com.godLife.project.dto.contents.ChallengeDTO">
         SELECT
-            CHALL_TITLE, CHALL_DESCRIPTION, CHALL_CATEGORY_IDX,
+            CHALL_IDX, CHALL_TITLE, CHALL_DESCRIPTION, CHALL_CATEGORY_IDX,
             MIN_PARTICIPATION_TIME, TOTAL_CLEAR_TIME, MAX_PARTICIPANTS,
             CHALL_START_TIME, CHALL_END_TIME, CHALL_CREATED_AT, CHALL_STATE
         FROM Chall_table
@@ -45,16 +45,58 @@
 
     <!-- 유저 참여 기록 -->
     <insert id="addUserToChallenge">
-        INSERT INTO CHALL_JOIN (chall_idx, user_idx, startTime, endTime, activity)
-        VALUES (#{challIdx}, #{userIdx}, #{startTime}, #{endTime}, #{activity})
+        INSERT INTO CHALL_JOIN (CHALL_JOIN_IDX, chall_idx, user_idx, start_Time, end_Time, activity)
+        VALUES (CHALL_JOIN_SEQ.NEXTVAL ,#{challIdx}, #{userIdx}, #{startTime}, #{endTime}, #{activity})
     </insert>
 
-    <!-- 챌린지 카테고리별 조회 -->
-    <select id="getChallengesByCategory" resultType="com.godLife.project.dto.contents.ChallengeDTO">
+    <!-- 최신순 챌린지 리스트 조회 (페이징 적용) -->
+    <select id="getLatestChallenges" resultType="com.godLife.project.dto.contents.ChallengeDTO">
         SELECT
-        FROM CHALL_TABEL
-        WHERE CHALL_CATEGORY_IDX =#{challCategoryIdx}
-        ORDER BY CHALL_CREATE_AT DESC
+        CHALL_IDX,
+        CHALL_TITLE,
+        CHALL_DESCRIPTION,
+        CHALL_CATEGORY_IDX,
+        MAX_PARTICIPANTS,
+        CHALL_CREATED_AT,
+        CHALL_END_TIME
+        FROM CHALL_TABLE
+        WHERE CHALL_END_TIME IS NULL OR CHALL_END_TIME > SYSDATE
+        ORDER BY CHALL_CREATED_AT DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <!-- 최신 챌린지 총 개수 조회 -->
+    <select id="countLatestChallenges" resultType="int">
+        SELECT COUNT(*)
+        FROM CHALL_TABLE
+        WHERE CHALL_END_TIME IS NULL OR CHALL_END_TIME > SYSDATE
+    </select>
+
+    <!-- 카테고리별 챌린지 조회 (페이징 적용) -->
+    <select id="getChallengesByCategoryId" resultType="com.godLife.project.dto.contents.ChallengeDTO">
+        SELECT
+        CHALL_IDX,
+        CHALL_TITLE,
+        CHALL_DESCRIPTION,
+        CHALL_CATEGORY_IDX,
+        MIN_PARTICIPATION_TIME,
+        TOTAL_CLEAR_TIME,
+        MAX_PARTICIPANTS,
+        CHALL_START_TIME,
+        CHALL_END_TIME,
+        CHALL_CREATED_AT,
+        CHALL_STATE
+        FROM CHALL_TABLE
+        WHERE CHALL_CATEGORY_IDX = #{challCategoryIdx}
+        ORDER BY CHALL_CREATED_AT DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <!-- 카테고리별 챌린지 총 개수 조회 -->
+    <select id="countChallengesByCategoryId" resultType="int">
+        SELECT COUNT(*)
+        FROM CHALL_TABLE
+        WHERE CHALL_CATEGORY_IDX = #{challCategoryIdx}
     </select>
 
     <!-- 인증 기록 저장 -->
@@ -66,12 +108,26 @@
     )
     </insert>
 
-    <!-- 남은 클리어 시간 차감 -->
+    <!-- 남은 클리어 시간 차감 및 상태 변경 -->
     <update id="updateClearTime">
         UPDATE CHALL_TABLE
-        SET TOTAL_CLEAR_TIME = TOTAL_CLEAR_TIME - #{elapsedTime}
+        SET TOTAL_CLEAR_TIME = CASE
+                                   WHEN TOTAL_CLEAR_TIME - #{elapsedTime} <![CDATA[<]]> 0 THEN 0
+                                   ELSE TOTAL_CLEAR_TIME - #{elapsedTime}
+            END,
+            CHALL_STATE = CASE
+                              WHEN TOTAL_CLEAR_TIME - #{elapsedTime} <![CDATA[<=]]> 0 THEN 'FINISHED'
+                              ELSE CHALL_STATE
+                END
         WHERE CHALL_IDX = #{challIdx}
     </update>
+
+    <!-- 인증을 통해 감소한 총 시간 조회 -->
+    <select id="getElapsedClearTime" resultType="int">
+        SELECT COALESCE(SUM(ELAPSED_TIME), 0)  --인증 데이터가 없으면 NULL 을 반환하는게 아닌 0을 반환하여 오류 방지
+        FROM VERIFY_TABLE
+        WHERE CHALL_IDX = #{challIdx}
+    </select>
 
     <!-- 클리어 시간 0 이하 시 챌린지 종료 처리 -->
     <update id="finishChallenge">
@@ -80,25 +136,10 @@
         WHERE CHALL_IDX = #{challIdx}
     </update>
 
-<!-- 최신순 챌린지 리스트 조회 -->
-<select id="getLatestChallenges" resultType="com.godLife.project.dto.contents.ChallengeDTO">
-    SELECT
-    CHALL_IDX,
-    CHALL_TITLE,
-    CHALL_DESCRIPTION,
-    CHALL_CATEGORY_IDX,
-    MAX_PARTICIPANTS,
-    CHALL_CREATED_AT,
-    CHALL_END_TIME,
-    COUNT(USER_IDX) AS PARTICIPANT_COUNT
-    FROM CHALL_TABLE
-    WHERE CHALL_END_TIME IS NULL OR CHALL_END_TIME > SYSDATE
-    ORDER BY CHALL_CREATED_AT DESC
-</select>
 
     <!-- 챌린지 존재 확인 -->
     <select id="existsById" resultType="int">
-        SELECT COUNT(*) FROM challenge WHERE chall_idx = #{challIdx}
+        SELECT COUNT(*) FROM chall_table WHERE chall_idx = #{challIdx}
     </select>
 
     <!-- 챌린지 수정 -->

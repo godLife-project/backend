@@ -18,7 +18,7 @@ public enum ChallengeState {
 
     public static ChallengeState fromString(String state) {
         for (ChallengeState challengeState : ChallengeState.values()) {
-            if (challengeState.name().equalsIgnoreCase(state)) { // ENUM의 name() 값과 비교
+            if (challengeState.getState().equalsIgnoreCase(state)) { // 상태 문자열을 비교
                 return challengeState;
             }
         }

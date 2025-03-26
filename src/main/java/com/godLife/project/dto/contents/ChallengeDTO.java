@@ -1,6 +1,7 @@
 package com.godLife.project.dto.contents;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
@@ -58,6 +59,7 @@ public class ChallengeDTO {
     private int userJoin;
 
     @Schema(description = "클라이언트에서 받는 유지시간", example = "7일")
+    @JsonInclude(JsonInclude.Include.NON_NULL) // null 값일 경우 json 에 포함 되지 않도록 설정
     private Integer duration;
 
     private int currentParticipants; // 현재 참여자 수

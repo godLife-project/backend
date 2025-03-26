@@ -6,22 +6,24 @@
 
     <!-- 공지사항 List 조회 -->
     <select id="getNoticeList" resultType="com.godLife.project.dto.contents.NoticeDTO">
-        SELECT noticcIdx, noticeTitle, noticeDate
+        SELECT notice_Idx AS noticeIdx,
+        notice_Title AS noticeTitle,
+        notice_Date AS noticeDate
         FROM NOTICE_TABLE
-        ORDER BY noticeDate DESC;
+        ORDER BY notice_Date DESC
     </select>
 
     <!-- 공지사항 상세 조회 -->
     <select id="getNoticeDetail" resultType="com.godLife.project.dto.contents.NoticeDTO">
-        SELECT noticeIdx, noticeTitle, noticeSub, noticeDate, noticeModify
+        SELECT NOTICE_IDX, NOTICE_TITLE, NOTICE_SUB, NOTICE_DATE, NOTICE_MODIFY
         FROM NOTICE_TABLE
         WHERE NOTICE_IDX = #{noticeIdx}
     </select>
 
     <!-- 공지사항 작성 -->
     <insert id="createNotice" parameterType="com.godLife.project.dto.contents.NoticeDTO">
-        INSERT INTO notice (notice_title, notice_sub, notice_date)
-        VALUES (#{noticeTitle}, #{noticeSub}, SYSDATE)
+        INSERT INTO NOTICE_TABLE (NOTICE_IDX, NOTICE_TITLE, NOTICE_SUB, USER_IDX, NOTICE_DATE)
+        VALUES (NOTICE_SEQ.NEXTVAL, #{noticeTitle}, #{noticeSub}, #{userIdx}, SYSDATE)
     </insert>
 
 
@@ -30,7 +32,7 @@
         UPDATE NOTICE_TABLE
         SET NOTICE_TITLE = #{noticeTitle},
             NOTICE_SUB = #{noticeSub},
-            NOTICE_MODIFY = #{noticeModify}
+            NOTICE_MODIFY = SYSDATE
         WHERE NOTICE_IDX = #{noticeIdx}
     </update>
 

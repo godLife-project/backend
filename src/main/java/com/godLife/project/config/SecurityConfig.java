@@ -91,6 +91,9 @@ public class SecurityConfig {
             .requestMatchers("/api/report/auth/**").authenticated()
         // 챌린지 관련
         .requestMatchers("/api/challenges/auth/**").authenticated()
+        // QnA 관련
+        .requestMatchers("/api/qna/auth/**").authenticated()
+
 
 
     // 지정한 엔드포인트는 해당 권한 등급이 없으면 로그인을 해도 접근 못함 (관리자)
@@ -105,6 +108,8 @@ public class SecurityConfig {
         .requestMatchers("/api/challenges/admin/**").hasAnyAuthority("2", "3", "4", "5", "6", "7")
         // 관리자 권한 공지사항 관련
         .requestMatchers("/api/notice/admin/**").hasAnyAuthority("2", "3", "4", "5", "6", "7")
+        // 관리자 권한 QnA 관련
+        .requestMatchers("/api/qna/admin/**").hasAnyAuthority("2", "3", "4", "5", "6", "7")
 
 
     // 그 외 모든 접근 허용 (비 로그인 접근)

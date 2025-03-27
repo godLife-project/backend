@@ -4,6 +4,7 @@ import com.godLife.project.dto.contents.QnADTO;
 import com.godLife.project.handler.GlobalExceptionHandler;
 import com.godLife.project.service.interfaces.QnaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -59,22 +60,32 @@ public class QnaController {
   }
 
 
-  // QnA 작성
-  @PostMapping
-  public ResponseEntity<String> createQna(@RequestBody QnADTO qna) {
-    int result = qnaService.createQna(qna);
-    String msg;
-    switch (result) {
-      case 200 -> msg = "QnA 등록 성공";
-      case 500 -> msg = "서버 오류로 인해 QnA 등록 실패";
-      default -> msg = "알 수 없는 오류가 발생했습니다.";
+  @PostMapping("/auth/write")
+  public ResponseEntity<String> createQna(
+          @RequestBody QnADTO qna,
+          @RequestHeader("Authorization") String authHeader) { // Authorization 헤더에서 JWT 추출
+
+    // JWT에서 사용자 정보를 추출하여 userIdx를 얻음
+    int userIdx = handler.getUsernameFromToken(authHeader);
+
+    // userIdx가 없으면 인증 오류 처리
+    if (userIdx == 0) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
     }
-    return ResponseEntity.status(result).body(msg);
+
+    // QnADTO에 qIdx 설정 (qIdx는 userIdx와 동일)
+    qna.setQIdx(userIdx);  // 사용자가 로그인한 userIdx를 qIdx에 설정
+
+    // QnA 작성 서비스 호출
+    int result = qnaService.createQna(qna);
+
+    // 성공/실패 응답
+    return ResponseEntity.status(result).body(result == 200 ? "QnA 등록 성공" : "QnA 등록 실패");
   }
 
 
   // QnA 수정 API
-  @PutMapping("/{qnaIdx}")
+  @PatchMapping("/{qnaIdx}")
   public ResponseEntity<String> updateQna(@PathVariable int qnaIdx, @RequestBody QnADTO qnaDTO) {
     // qnaIdx를 DTO에 set하여 전달
     qnaDTO.setQnaIdx(qnaIdx);
@@ -118,12 +129,11 @@ public class QnaController {
   @GetMapping("/search")
   public ResponseEntity<List<QnADTO>> searchQna(@RequestParam(value = "query", required = false) String query) {
     try {
-      List<QnADTO> searchResult = qnaService.searchQna(query != null ? query : "");
-      return ResponseEntity.ok(searchResult);
-    } catch (Exception e) {
-      // 예외 처리 후 내부 서버 오류 반환
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-              .body(Collections.emptyList());
+      return ResponseEntity.ok(qnaService.searchQna(query));
+    } catch (DataAccessException e) { // DB 관련 예외 처리
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
+    } catch (Exception e) { // 기타 예외 처리
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
     }
   }
 

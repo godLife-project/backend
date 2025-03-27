@@ -16,7 +16,7 @@ public class QnADTO {
     private int qnaIdx;
 
     @Schema(description = "질문자 인덱스", example = "1")
-    private int qIdx;
+    private Integer qIdx; // null 값 비교를 위한 int -> Integer 타입 변경
 
     @Schema(description = "질문 제목", example = "질문 제목입니다.")
     private String qTitle;

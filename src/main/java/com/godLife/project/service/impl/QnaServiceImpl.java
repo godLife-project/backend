@@ -23,14 +23,15 @@ public class QnaServiceImpl implements QnaService {
     return qnaMapper.selectAllQna();
   }
 
-     //  QnA 작성
+
+  // QnA 작성
   public int createQna(QnADTO qna) {
-    int result = qnaMapper.insertQna(qna);
-    if (result > 0) {
-      return 200; // 성공
-    } else {
-      return 500; // 실패
+    if (qna.getQIdx() == null) {  // 유저 정보가 없으면 실패 처리
+      return 400; // Bad Request
     }
+
+    int result = qnaMapper.insertQna(qna);
+    return (result > 0) ? 200 : 500; // 성공: 200, 실패: 500
   }
      //  QnA 수정
   public int updateQna(QnADTO qnaDTO) {
@@ -72,14 +73,13 @@ public class QnaServiceImpl implements QnaService {
   }
 
 
-     // QnA 검색
-     public List<QnADTO> searchQna(String query) {
-       // query가 null이거나 비어 있으면 빈 리스트 반환
-       if (query == null || query.trim().isEmpty()) {
-         return Collections.emptyList();
-       }
-       return qnaMapper.searchQna(query); // Mapper를 통해 DB에서 검색
-     }
+  // QnA 검색
+  public List<QnADTO> searchQna(String query) {
+    if (query == null || query.trim().isEmpty()) {
+      return Collections.emptyList();
+    }
+    return qnaMapper.searchQna(query.trim()); // 공백 제거 후 검색
+  }
 
   public void saveAnswer(int qnaIdx, int aIdx, String aSub) {
     // 답변 등록/수정

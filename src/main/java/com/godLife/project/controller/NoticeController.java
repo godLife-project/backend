@@ -115,7 +115,7 @@ public class NoticeController {
     // 응답 메시지 세팅
     String msg = "";
     switch (modifyResult) {
-      case 1 -> msg = "공지 수정 완료";
+      case 200 -> msg = "공지 수정 완료";
       case 403 -> msg = "관리자가 아닙니다. 재로그인 해주세요.";
       case 404 -> msg = "요청하신 공지가 존재하지 않습니다.";
       case 500 -> msg = "서버 내부적으로 오류가 발생하여 공지를 수정하지 못했습니다.";

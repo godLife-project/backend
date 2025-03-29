@@ -38,7 +38,7 @@ public class SearchController {
       return handleNotLoggedIn(response, request, key, uniqueId, keyword);
     }
 
-    int userIdx = handler.getUsernameFromToken(authHeader);
+    int userIdx = handler.getUserIdxFromToken(authHeader);
     SearchLogDTO searchLogDTO = new SearchLogDTO();
     searchLogDTO.setUserIdx(userIdx);
 
@@ -79,7 +79,7 @@ public class SearchController {
       return setResponseMessages(result);
     }
     // 헤더 있음
-    int userIdx = handler.getUsernameFromToken(authHeader);
+    int userIdx = handler.getUserIdxFromToken(authHeader);
     searchLogDTO.setUserIdx(userIdx);
 
     int result = searchService.deleteSearchLog(searchLogDTO);

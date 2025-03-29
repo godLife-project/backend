@@ -4,26 +4,34 @@ import com.godLife.project.dto.request.VerifyRequestDTO;
 import com.godLife.project.dto.verify.CheckAllFireActivateDTO;
 import com.godLife.project.mapper.PlanMapper;
 import com.godLife.project.mapper.VerifyMapper;
+import com.godLife.project.service.impl.redis.RedisService;
 import com.godLife.project.service.interfaces.VerifyService;
+import com.godLife.project.service.interfaces.emailInterface.EmailService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.List;
+import java.util.Random;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class VerifyServiceImpl implements VerifyService {
+
+  private static final String AUTH_CODE_PREFIX = "AuthCode ";
 
   private final VerifyMapper verifyMapper;
 
   private final PlanMapper planMapper;
 
-  public VerifyServiceImpl (VerifyMapper verifyMapper, PlanMapper planMapper) {
-    this.verifyMapper = verifyMapper;
-    this.planMapper = planMapper;
-  }
+  private final EmailService emailService;
+
+  private final RedisService redisService;
 
   @Override
   @Transactional(rollbackFor = Exception.class)
@@ -74,9 +82,38 @@ public class VerifyServiceImpl implements VerifyService {
     }
   }
 
+  // 인증 코드 생성 및 이메일 전송
+  @Override
+  public void sendCodeToEmail(String toEmail) {
+    String title = "[갓생 로그] 이메일 인증 코드 입니다.";
+    String authCode = this.createCode();
+    emailService.sendEmail(toEmail, title, authCode);
 
+    // 이메일 인증 요청 시 인증 번호 Redis에 저장
+    // (key = "AuthCode " + Email / value = AuthCode) 소멸시간 5분
+    String key = AUTH_CODE_PREFIX + toEmail;
+
+    redisService.saveData(key, authCode, 300);
+  }
+
+  // 인증 코드 검증
+  @Override
+  public boolean verifiedAuthCode(String email, String authCode) {
+    String key = AUTH_CODE_PREFIX + email;
+    String redisAuthCode = redisService.getData(key);
+
+    boolean result = redisService.checkExistsValue(key) && redisAuthCode.equals(authCode);
+    if (result) { // 검증 성공 시 인증코드 삭제
+      redisService.deleteData(key);
+      redisService.saveData("EMAIL_VERIFIED: " + email, "true", 600);
+    }
+    return result;
+  }
+
+
+  /* -----------------------------------------// 함수 구현 //------------------------------------------------------- */
   // 유저 경험치 계산 함수
-  public double getUserExpByCombo(int combo) {
+  private double getUserExpByCombo(int combo) {
     double defaultExp = 50; // 기본 경험치
     int percentage = 10; // 퍼센티지
     int quotient = combo / 10; // 몫
@@ -87,4 +124,23 @@ public class VerifyServiceImpl implements VerifyService {
 
     return defaultExp + bonusExp;
   }
+
+  private String createCode() {
+    int length = 6;
+    try {
+      Random random = SecureRandom.getInstanceStrong();
+      StringBuilder builder = new StringBuilder();
+      for (int i = 0; i < length; i++) {
+        builder.append(random.nextInt(10));
+      }
+      return builder.toString();
+    } catch (NoSuchAlgorithmException e) {
+      log.debug("MemberService.createCode() exception occur");
+      Random random = new Random();
+      int code = 100000 + random.nextInt(900000); // 6자리 랜덤 숫자
+      return String.valueOf(code);
+    }
+  }
+  /* --------------------------------------------------------------------------------------------------------------- */
+
 }

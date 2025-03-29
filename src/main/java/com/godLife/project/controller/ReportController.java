@@ -29,7 +29,7 @@ public class ReportController {
   ResponseEntity<Map<String, Object>> planReport(@RequestHeader("Authorization") String authHeader,
                                                  @PathVariable int planIdx,
                                                  @RequestBody PlanReportDTO planReportDTO) {
-    int userIdx = handler.getUsernameFromToken(authHeader);
+    int userIdx = handler.getUserIdxFromToken(authHeader);
     planReportDTO.setReporterIdx(userIdx);
     planReportDTO.setPlanIdx(planIdx);
 
@@ -54,7 +54,7 @@ public class ReportController {
   @PatchMapping("/auth/plan/cancel/{planIdx}")
   ResponseEntity<Map<String, Object>> planReportCancel(@RequestHeader("Authorization") String authHeader,
                                                        @PathVariable int planIdx) {
-    int userIdx = handler.getUsernameFromToken(authHeader);
+    int userIdx = handler.getUserIdxFromToken(authHeader);
 
     PlanReportDTO planReportDTO = new PlanReportDTO();
 
@@ -82,7 +82,7 @@ public class ReportController {
   ResponseEntity<Map<String, Object>> userReport(@RequestHeader("Authorization") String authHeader,
                                                  @PathVariable int reportedIdx,
                                                  @RequestBody UserReportDTO userReportDTO) {
-    int userIdx = handler.getUsernameFromToken(authHeader);
+    int userIdx = handler.getUserIdxFromToken(authHeader);
     userReportDTO.setReporterIdx(userIdx);
     userReportDTO.setReportedIdx(reportedIdx);
 
@@ -109,7 +109,7 @@ public class ReportController {
   @PatchMapping("/auth/user/cancel/{reportedIdx}")
   ResponseEntity<Map<String, Object>> userReportCancel(@RequestHeader("Authorization") String authHeader,
                                                        @PathVariable int reportedIdx) {
-    int userIdx = handler.getUsernameFromToken(authHeader);
+    int userIdx = handler.getUserIdxFromToken(authHeader);
 
     UserReportDTO userReportDTO = new UserReportDTO();
 

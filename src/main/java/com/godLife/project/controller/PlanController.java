@@ -10,9 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,7 +36,7 @@ public class PlanController {
       return ResponseEntity.badRequest().body(handler.getValidationErrors(result));
     }
     // userIdx 조회
-    int userIdx = handler.getUsernameFromToken(authHeader);
+    int userIdx = handler.getUserIdxFromToken(authHeader);
     writePlanDTO.setUserIdx(userIdx);
     int insertResult = planService.insertPlanWithAct(writePlanDTO);
 
@@ -144,7 +142,7 @@ public class PlanController {
     int isDeleted = 0;
 
     // userIdx 조회
-    int userIdx = handler.getUsernameFromToken(authHeader);
+    int userIdx = handler.getUserIdxFromToken(authHeader);
     modifyPlanDTO.setUserIdx(userIdx);
 
     // 서비스 로직 실행
@@ -171,7 +169,7 @@ public class PlanController {
   public ResponseEntity<Map<String, Object>> delete(@RequestHeader("Authorization") String authHeader,
                                                     @PathVariable int planIdx) {
     // userIdx 조회
-    int userIdx = handler.getUsernameFromToken(authHeader);
+    int userIdx = handler.getUserIdxFromToken(authHeader);
 
     // 서비스 로직 실행
     int deleteResult = planService.deletePlan(planIdx, userIdx);
@@ -204,7 +202,7 @@ public class PlanController {
 
     int planIdx = requestDTO.getPlanIdx();
     // userIdx 조회
-    int userIdx = handler.getUsernameFromToken(authHeader);
+    int userIdx = handler.getUserIdxFromToken(authHeader);
     int isActive = requestDTO.getIsActive();
     int isDeleted = 0;
 
@@ -239,7 +237,7 @@ public class PlanController {
     int isDeleted = 0;
 
     // userIdx 조회
-    int userIdx = handler.getUsernameFromToken(authHeader);
+    int userIdx = handler.getUserIdxFromToken(authHeader);
 
     int result = planService.likePlan(planIdx, userIdx, isDeleted);
 
@@ -266,7 +264,7 @@ public class PlanController {
 
     // userIdx 조회
     if (authHeader != null) {
-      int userIdx = handler.getUsernameFromToken(authHeader);
+      int userIdx = handler.getUserIdxFromToken(authHeader);
       boolean result = planService.checkLike(planIdx, userIdx);
 
       return ResponseEntity.status(handler.getHttpStatus(200))
@@ -289,7 +287,7 @@ public class PlanController {
   public ResponseEntity<Map<String, Object>> unLikePlan(@RequestHeader("Authorization") String authHeader,
                                                         @PathVariable int planIdx) {
     // userIdx 조회
-    int userIdx = handler.getUsernameFromToken(authHeader);
+    int userIdx = handler.getUserIdxFromToken(authHeader);
 
     int result = planService.unLikePlan(planIdx, userIdx);
 
@@ -313,7 +311,7 @@ public class PlanController {
   public ResponseEntity<Map<String, Object>> earlyComplete(@RequestHeader("Authorization") String authHeader,
                                                            @PathVariable int planIdx) {
     // userIdx 조회
-    int userIdx = handler.getUsernameFromToken(authHeader);
+    int userIdx = handler.getUserIdxFromToken(authHeader);
 
     int result = planService.updateEarlyComplete(planIdx, userIdx);
 
@@ -340,7 +338,7 @@ public class PlanController {
   public ResponseEntity<Map<String, Object>> addreview(@RequestHeader("Authorization") String authHeader,
                                                        @RequestBody PlanRequestDTO requestDTO) {
     // userIdx 조회
-    int userIdx = handler.getUsernameFromToken(authHeader);
+    int userIdx = handler.getUserIdxFromToken(authHeader);
     requestDTO.setUserIdx(userIdx);
 
     int result = planService.addReview(requestDTO);
@@ -368,7 +366,7 @@ public class PlanController {
   public ResponseEntity<Map<String, Object>> modifyReview(@RequestHeader("Authorization") String authHeader,
                                                           @RequestBody PlanRequestDTO requestDTO) {
     // userIdx 조회
-    int userIdx = handler.getUsernameFromToken(authHeader);
+    int userIdx = handler.getUserIdxFromToken(authHeader);
     requestDTO.setUserIdx(userIdx);
 
     int result = planService.modifyReview(requestDTO);

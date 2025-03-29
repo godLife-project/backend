@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 @Data
 public class UserDTO {
 
-
     @Schema(description = "유저 idx", example = "1")
     private int userIdx;
 

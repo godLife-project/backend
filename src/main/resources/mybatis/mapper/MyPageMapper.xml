@@ -20,4 +20,23 @@
         AND IS_DELETED = 'Y'
     </update>
 
+    <!-- 회원 정보 수정 (개인 정보) -->
+    <update id="modifyPersonal" parameterType="com.godLife.project.dto.request.myPage.ModifyPersonalRequestDTO">
+        UPDATE USER_TABLE
+        SET USER_NAME = #{userName},
+            USER_PHONE = #{userPhone},
+            USER_GENDER = #{userGender}
+        WHERE USER_IDX = #{userIdx} AND IS_DELETED = 'N'
+    </update>
+
+    <!-- 회원 정보 수정 (닉네임) -->
+    <update id="modifyNickName" parameterType="com.godLife.project.dto.request.myPage.ModifyNicknameRequestDTO">
+        UPDATE USER_TABLE
+        SET USER_NICK = #{userNick}
+        <if test="nickTag != null">
+            , NICK_TAG = #{nickTag}
+        </if>
+        WHERE USER_IDX = #{userIdx} AND IS_DELETED = 'N'
+    </update>
+
 </mapper>

@@ -55,7 +55,7 @@ public class NoticeController {
     noticeDTO.setNoticeDate(LocalDateTime.now());
 
     // userIdx 조회 (관리자 여부 확인)
-    int userIdx = handler.getUsernameFromToken(authHeader);
+    int userIdx = handler.getUserIdxFromToken(authHeader);
     noticeDTO.setUserIdx(userIdx);
 
     // 공지 작성
@@ -87,7 +87,7 @@ public class NoticeController {
     }
 
     // 관리자 인증 여부 확인
-    int userIdx = handler.getUsernameFromToken(authHeader);
+    int userIdx = handler.getUserIdxFromToken(authHeader);
     noticeDTO.setUserIdx(userIdx);
 
     // 공지 존재 여부 확인

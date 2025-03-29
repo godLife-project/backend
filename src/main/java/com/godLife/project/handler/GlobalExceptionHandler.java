@@ -2,8 +2,6 @@ package com.godLife.project.handler;
 
 import com.godLife.project.jwt.JWTUtil;
 import com.godLife.project.mapper.VerifyMapper;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -81,10 +79,17 @@ public class GlobalExceptionHandler {
   }
 
   // 토큰에서 user_idx 조회 하는 로직
-  public int getUsernameFromToken(String authHeader) {
+  public int getUserIdxFromToken(String authHeader) {
     String token = authHeader.replace("Bearer ", "");
     String username = jwtUtil.getUsername(token);
 
     return verifyMapper.getUserIdxByUsername(username);
+  }
+
+  // 토큰에서 user_name 조회 하는 로직
+  public String getUserNameFromToken(String authHeader) {
+    String token = authHeader.replace("Bearer ", "");
+
+    return jwtUtil.getUsername(token);
   }
 }

@@ -22,6 +22,9 @@ public interface ReportMapper {
   @Update("UPDATE PLAN_REPORT SET REPORT_REASON = #{reportReason}, STATUS = 0 WHERE PLAN_IDX = #{planIdx} AND REPORTER_IDX = #{reporterIdx} AND STATUS = 3")
   void rePlanReport(PlanReportDTO planReportDTO);
 
+  // 유저 탈퇴 여부 확인
+  @Select("SELECT IS_DELETED FROM USER_TABLE WHERE USER_IDX = #{userIdx}")
+  String getUserIsDeleted(int userIdx);
   // 유저 신고하기
   @Insert("INSERT INTO USER_REPORT(REPORTER_IDX, REPORTED_IDX, REPORT_REASON) VALUES (#{reporterIdx}, #{reportedIdx}, #{reportReason})")
   void userReport(UserReportDTO userReportDTO);

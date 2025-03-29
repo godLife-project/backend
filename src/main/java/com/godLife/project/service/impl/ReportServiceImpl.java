@@ -72,6 +72,9 @@ public class ReportServiceImpl implements ReportService {
   @Override
   public int userReport(UserReportDTO userReportDTO) {
     try {
+      if (!reportMapper.getUserIsDeleted(userReportDTO.getReporterIdx()).contains("N")) {
+        return 410;
+      }
       reportMapper.userReport(userReportDTO);
       return 200;
 

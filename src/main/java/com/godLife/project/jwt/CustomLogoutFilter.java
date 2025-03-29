@@ -92,6 +92,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
     Cookie cookie = new Cookie("refresh", null);
     cookie.setMaxAge(0);
     cookie.setPath("/");
+    response.addCookie(cookie);
 
     // 성공 응답
     System.out.println("refresh 토큰 삭제 로그아웃완료");

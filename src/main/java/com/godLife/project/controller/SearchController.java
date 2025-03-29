@@ -38,7 +38,7 @@ public class SearchController {
       return handleNotLoggedIn(response, request, key, uniqueId, keyword);
     }
 
-    int userIdx = handler.getUsernameFromToken(authHeader);
+    int userIdx = handler.getUserIdxFromToken(authHeader);
     SearchLogDTO searchLogDTO = new SearchLogDTO();
     searchLogDTO.setUserIdx(userIdx);
 
@@ -79,7 +79,7 @@ public class SearchController {
       return setResponseMessages(result);
     }
     // 헤더 있음
-    int userIdx = handler.getUsernameFromToken(authHeader);
+    int userIdx = handler.getUserIdxFromToken(authHeader);
     searchLogDTO.setUserIdx(userIdx);
 
     int result = searchService.deleteSearchLog(searchLogDTO);
@@ -164,7 +164,7 @@ public class SearchController {
       case 400 -> msg = "쿠키 혹은 로그인 정보가 없습니다. 로그인 먼저 진행 후, 검색을 통해 기록을 저장해주세요.";
       case 412 -> msg = "이미 삭제 처리되었거나, 본인의 검색 기록이 아닙니다.";
       case 422 -> msg = "어떤 검색 기록을 삭제할 지 선택해주세요.";
-      case 500 -> msg = "서버 내부적으로 오류가 발생하여 기록을 삭제하지 못했습니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
       default -> msg = "알 수 없는 오류가 발생했습니다.";
     }
 

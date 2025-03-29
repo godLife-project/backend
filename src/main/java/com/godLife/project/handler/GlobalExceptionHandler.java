@@ -2,8 +2,6 @@ package com.godLife.project.handler;
 
 import com.godLife.project.jwt.JWTUtil;
 import com.godLife.project.mapper.VerifyMapper;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -50,6 +48,7 @@ public class GlobalExceptionHandler {
       case 403 -> HttpStatus.FORBIDDEN;
       case 404 -> HttpStatus.NOT_FOUND;
       case 409 -> HttpStatus.CONFLICT;
+      case 410 -> HttpStatus.GONE;
       case 412 -> HttpStatus.PRECONDITION_FAILED;
       case 422 -> HttpStatus.UNPROCESSABLE_ENTITY;
       case 500 -> HttpStatus.INTERNAL_SERVER_ERROR;
@@ -70,6 +69,7 @@ public class GlobalExceptionHandler {
       case 403 -> message.put("message", msg);
       case 404 -> message.put("message", msg);
       case 409 -> message.put("message", msg);
+      case 410 -> message.put("message", msg);
       case 412 -> message.put("message", msg);
       case 422 -> message.put("message", msg);
       case 500 -> message.put("message", msg);
@@ -79,10 +79,17 @@ public class GlobalExceptionHandler {
   }
 
   // 토큰에서 user_idx 조회 하는 로직
-  public int getUsernameFromToken(String authHeader) {
+  public int getUserIdxFromToken(String authHeader) {
     String token = authHeader.replace("Bearer ", "");
     String username = jwtUtil.getUsername(token);
 
     return verifyMapper.getUserIdxByUsername(username);
+  }
+
+  // 토큰에서 user_name 조회 하는 로직
+  public String getUserNameFromToken(String authHeader) {
+    String token = authHeader.replace("Bearer ", "");
+
+    return jwtUtil.getUsername(token);
   }
 }

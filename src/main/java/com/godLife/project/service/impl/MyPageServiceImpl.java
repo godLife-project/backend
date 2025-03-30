@@ -1,15 +1,14 @@
 package com.godLife.project.service.impl;
 
 import com.godLife.project.dto.datas.UserDTO;
-import com.godLife.project.dto.request.myPage.ModifyEmailRequestDTO;
-import com.godLife.project.dto.request.myPage.ModifyNicknameRequestDTO;
-import com.godLife.project.dto.request.myPage.ModifyPersonalRequestDTO;
+import com.godLife.project.dto.request.myPage.*;
 import com.godLife.project.dto.response.MyPageUserInfosResponseDTO;
 import com.godLife.project.mapper.MyPageMapper;
 import com.godLife.project.mapper.UserMapper;
 import com.godLife.project.service.interfaces.MyPageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,6 +20,7 @@ public class MyPageServiceImpl implements MyPageService {
     private final UserMapper userMapper;
 
     private final AuthServiceImpl authService;
+    private final PasswordEncoder passwordEncoder;
 
     // 회원 탈퇴
     @Override
@@ -156,6 +156,59 @@ public class MyPageServiceImpl implements MyPageService {
             int result = myPageMapper.modifyEmail(modifyEmailRequestDTO);
 
             if (result == 0) { return 404; }
+
+            return 200;
+        } catch (Exception e) {
+            log.error("e: ", e);
+            return 500;
+        }
+    }
+
+    // 직업/목표 수정
+    @Override
+    public int modifyJobTarget(ModifyJobTargetRequestDTO modifyJobTargetRequestDTO) {
+        try {
+            int result = myPageMapper.modifyJobTarget(modifyJobTargetRequestDTO);
+
+            if (result == 0) { return 404; }
+
+            return 200;
+        } catch (Exception e) {
+            log.error("e: ", e);
+            return 500;
+        }
+    }
+
+    // 비밀번호 수정
+    @Override
+    public int modifyPassword(GetUserPwRequestDTO userPwRequestDTO) {
+        try {
+            String originalPw = userPwRequestDTO.getOriginalPw();
+            String userPw = userPwRequestDTO.getUserPw();
+            String pwConfirm = userPwRequestDTO.getUserPwConfirm();
+            int userIdx = userPwRequestDTO.getUserIdx();
+
+            String encryptPassword = myPageMapper.getEncryptPassword(userIdx);
+            if (encryptPassword == null) { return 404; } // 비밀번호 조회 안될 경우
+
+            boolean isValid = authService.verifyPassword(originalPw, encryptPassword);
+            // 현재 유저의 암호 틀림
+            if (!isValid) { return 403; }
+            // 현재 암호와 변경 암호 일치 여부
+            if (originalPw.equals(userPw)) { return 409; }
+            // 비밀번호 확인 존재 여부
+            if (pwConfirm == null || pwConfirm.isBlank()) { return 400; }
+            // 변경 비밀번호와 비밀번호 확인 일치 여부
+            if (!userPw.equals(pwConfirm)) { return 422; }
+
+            String encryptedPassword = passwordEncoder.encode(userPwRequestDTO.getUserPw());
+            userPwRequestDTO.setUserPw(encryptedPassword);
+
+            int result = myPageMapper.modifyPassword(userPwRequestDTO);
+
+            if (result == 0) {
+                return 404;
+            }
 
             return 200;
         } catch (Exception e) {

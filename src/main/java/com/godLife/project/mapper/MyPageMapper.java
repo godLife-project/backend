@@ -1,9 +1,7 @@
 package com.godLife.project.mapper;
 
 import com.godLife.project.dto.datas.UserDTO;
-import com.godLife.project.dto.request.myPage.ModifyEmailRequestDTO;
-import com.godLife.project.dto.request.myPage.ModifyNicknameRequestDTO;
-import com.godLife.project.dto.request.myPage.ModifyPersonalRequestDTO;
+import com.godLife.project.dto.request.myPage.*;
 import com.godLife.project.dto.response.MyPageUserInfosResponseDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
@@ -33,4 +31,11 @@ public interface MyPageMapper {
     // 이메일 수정
     @Update("UPDATE USER_TABLE SET USER_EMAIL = #{userEmail} WHERE USER_IDX = #{userIdx} AND IS_DELETED = 'N'")
     int modifyEmail(ModifyEmailRequestDTO modifyEmailRequestDTO);
+    // 직업/목표 수정
+    @Update("UPDATE USER_TABLE SET JOB_IDX = #{jobIdx} AND TARGET_IDX = #{targetIdx} WHERE USER_IDX = #{userIdx} AND IS_DELETED = 'N'")
+    int modifyJobTarget(ModifyJobTargetRequestDTO modifyJobTargetRequestDTO);
+
+    // 비밀번호 수정
+    @Update("UPDATE USER_TABLE SET USER_PW = #{userPw} WHERE USER_IDX = #{userIdx} AND IS_DELETED = 'N'")
+    int modifyPassword(GetUserPwRequestDTO userPwRequestDTO);
 }

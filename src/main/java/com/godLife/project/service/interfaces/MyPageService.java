@@ -2,9 +2,7 @@ package com.godLife.project.service.interfaces;
 
 
 import com.godLife.project.dto.datas.UserDTO;
-import com.godLife.project.dto.request.myPage.ModifyEmailRequestDTO;
-import com.godLife.project.dto.request.myPage.ModifyNicknameRequestDTO;
-import com.godLife.project.dto.request.myPage.ModifyPersonalRequestDTO;
+import com.godLife.project.dto.request.myPage.*;
 import com.godLife.project.dto.response.MyPageUserInfosResponseDTO;
 
 public interface MyPageService {
@@ -21,4 +19,10 @@ public interface MyPageService {
     int modifyNickName(ModifyNicknameRequestDTO modifyNicknameRequestDTO);
     // 이메일 수정
     int modifyEmail(ModifyEmailRequestDTO modifyEmailRequestDTO);
+    // 직업/목표 수정
+    int modifyJobTarget(ModifyJobTargetRequestDTO modifyJobTargetRequestDTO);
+
+    // 비밀번호 수정
+    int modifyPassword(GetUserPwRequestDTO getUserPwRequestDTO);
+
 }

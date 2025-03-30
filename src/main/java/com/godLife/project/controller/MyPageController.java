@@ -1,9 +1,6 @@
 package com.godLife.project.controller;
 
-import com.godLife.project.dto.request.myPage.GetUserPwRequestDTO;
-import com.godLife.project.dto.request.myPage.ModifyEmailRequestDTO;
-import com.godLife.project.dto.request.myPage.ModifyNicknameRequestDTO;
-import com.godLife.project.dto.request.myPage.ModifyPersonalRequestDTO;
+import com.godLife.project.dto.request.myPage.*;
 import com.godLife.project.dto.response.MyPageUserInfosResponseDTO;
 import com.godLife.project.handler.GlobalExceptionHandler;
 import com.godLife.project.service.impl.redis.RedisService;
@@ -35,6 +32,21 @@ public class MyPageController {
 
   private final RedisService redisService;
 
+
+  // 유저 정보 추가 제공
+  @GetMapping("/myAccount")
+  public ResponseEntity<Map<String, Object>> getMyInfos(@RequestHeader("Authorization") String authHeader) {
+
+    int userIdx = handler.getUserIdxFromToken(authHeader);
+
+    MyPageUserInfosResponseDTO result = myPageService.getUserInfos(userIdx);
+
+    if (result == null) {
+      return ResponseEntity.status(404).body(handler.createResponse(404, "유저 정보가 없습니다."));
+    }
+    // 응답 메시지 설정
+    return ResponseEntity.status(handler.getHttpStatus(200)).body(handler.createResponse(200, result));
+  }
 
   // 개인 정보 수정
   @PatchMapping("/myAccount/modify/personal")
@@ -123,7 +135,33 @@ public class MyPageController {
     // 응답 메시지 설정
     return ResponseEntity.status(handler.getHttpStatus(result)).body(handler.createResponse(result, msg));
   }
-/*
+
+  // 직업/목표 수정
+  @PatchMapping("/myAccount/modify/job-target")
+  public ResponseEntity<Map<String, Object>> modifyJobAndTarget(@RequestHeader("Authorization") String authHeader,
+                                                                @RequestBody ModifyJobTargetRequestDTO jobTargetRequestDTO,
+                                                                BindingResult valid) {
+    if (valid.hasErrors()) {
+      return ResponseEntity.badRequest().body(handler.getValidationErrors(valid));
+    }
+    int userIdx = handler.getUserIdxFromToken(authHeader);
+    jobTargetRequestDTO.setUserIdx(userIdx);
+
+    int result = myPageService.modifyJobTarget(jobTargetRequestDTO);
+
+    // 응답 메세지 세팅
+    String msg = "";
+    switch (result) {
+      case 200 -> msg = "직업 / 목표 수정 완료";
+      case 404 -> msg = "탈퇴했거나, 존재하지 않는 유저입니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
+      default -> msg = "알 수 없는 오류가 발생했습니다.";
+    }
+
+    // 응답 메시지 설정
+    return ResponseEntity.status(handler.getHttpStatus(result)).body(handler.createResponse(result, msg));
+  }
+
   // 비밀번호 변경
   @PatchMapping("/security/change/password")
   public ResponseEntity<Map<String, Object>> modifyPassword(@RequestHeader("Authorization") String authHeader,
@@ -133,12 +171,28 @@ public class MyPageController {
       return ResponseEntity.badRequest().body(handler.getValidationErrors(valid));
     }
 
-    String userPw = userPwRequestDTO.getUserPw();
-    String pwConfirm = userPwRequestDTO.getUserPwConfirm();
+    int userIdx = handler.getUserIdxFromToken(authHeader);
+    userPwRequestDTO.setUserIdx(userIdx);
 
-    if (pwConfirm.isEmpty())
+    int result = myPageService.modifyPassword(userPwRequestDTO);
+
+    // 응답 메세지 세팅
+    String msg = "";
+    switch (result) {
+      case 200 -> msg = "비밀번호 수정 완료";
+      case 400 -> msg = "비밀번호 확인 필드의 값이 누락되었습니다.";
+      case 403 -> msg = "현재 비밀번호가 틀렸습니다.";
+      case 404 -> msg = "탈퇴했거나, 존재하지 않는 유저입니다.";
+      case 409 -> msg = "현재 비밀번호와 동일한 비밀번호로 수정할 수 없습니다.";
+      case 422 -> msg = "비밀번호가 일치하지 않습니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
+      default -> msg = "알 수 없는 오류가 발생했습니다.";
+    }
+
+    // 응답 메시지 설정
+    return ResponseEntity.status(handler.getHttpStatus(result)).body(handler.createResponse(result, msg));
   }
-  */
+
 
   // 회원 탈퇴
   @PatchMapping("/accountDeletion")
@@ -199,20 +253,7 @@ public class MyPageController {
     return ResponseEntity.status(handler.getHttpStatus(result)).body(handler.createResponse(result, msg));
   }
 
-  // 유저 정보 추가 제공
-  @GetMapping("/myAccount")
-  public ResponseEntity<Map<String, Object>> getMyInfos(@RequestHeader("Authorization") String authHeader) {
 
-    int userIdx = handler.getUserIdxFromToken(authHeader);
-
-    MyPageUserInfosResponseDTO result = myPageService.getUserInfos(userIdx);
-
-    if (result == null) {
-      return ResponseEntity.status(404).body(handler.createResponse(404, "유저 정보가 없습니다."));
-    }
-    // 응답 메시지 설정
-    return ResponseEntity.status(handler.getHttpStatus(200)).body(handler.createResponse(200, result));
-  }
 
 
 

@@ -34,3 +34,6 @@ build/
 
 ## 환경변수 파일 제외 ##
 .env
+application.properties
+config/application.properties
+src/main/resources/application.properties

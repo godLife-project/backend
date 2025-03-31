@@ -35,5 +35,5 @@ build/
 ## 환경변수 파일 제외 ##
 .env
 
-# application.properties 파일 제외하기
-application.properties
+# src/main/resources 경로의 application.properties 제외하기
+src/main/resources/application.properties

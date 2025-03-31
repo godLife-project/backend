@@ -10,9 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,7 +36,7 @@ public class PlanController {
       return ResponseEntity.badRequest().body(handler.getValidationErrors(result));
     }
     // userIdx 조회
-    int userIdx = handler.getUsernameFromToken(authHeader);
+    int userIdx = handler.getUserIdxFromToken(authHeader);
     writePlanDTO.setUserIdx(userIdx);
     int insertResult = planService.insertPlanWithAct(writePlanDTO);
 
@@ -46,8 +44,9 @@ public class PlanController {
     String msg = "";
     switch (insertResult) {
       case 201 -> msg = "루틴 저장 완료";
+      case 410 -> msg = "회원 탈퇴한 계정입니다.";
       case 412 -> msg = "루틴 작성은 최대 5개만 가능합니다. 현재 작성한 루틴을 지우거나, 목표치 까지 완료해주세요.";
-      case 500 -> msg = "서버 내부적으로 오류가 발생하여 루틴을 저장하지 못했습니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
       default -> msg = "알 수 없는 오류가 발생했습니다.";
     }
 
@@ -143,7 +142,7 @@ public class PlanController {
     int isDeleted = 0;
 
     // userIdx 조회
-    int userIdx = handler.getUsernameFromToken(authHeader);
+    int userIdx = handler.getUserIdxFromToken(authHeader);
     modifyPlanDTO.setUserIdx(userIdx);
 
     // 서비스 로직 실행
@@ -154,7 +153,8 @@ public class PlanController {
       case 200 -> msg = "루틴 수정 완료";
       case 403 -> msg = "작성자가 아닙니다. 재로그인 해주세요.";
       case 404 -> msg = "요청하신 루틴이 존재하지 않습니다.";
-      case 500 -> msg = "서버 내부적으로 오류가 발생하여 루틴을 수정하지 못했습니다.";
+      case 410 -> msg = "회원 탈퇴한 계정입니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
       default -> msg = "알 수 없는 오류가 발생했습니다.";
     }
 
@@ -169,7 +169,7 @@ public class PlanController {
   public ResponseEntity<Map<String, Object>> delete(@RequestHeader("Authorization") String authHeader,
                                                     @PathVariable int planIdx) {
     // userIdx 조회
-    int userIdx = handler.getUsernameFromToken(authHeader);
+    int userIdx = handler.getUserIdxFromToken(authHeader);
 
     // 서비스 로직 실행
     int deleteResult = planService.deletePlan(planIdx, userIdx);
@@ -179,9 +179,9 @@ public class PlanController {
     switch (deleteResult) {
       case 200 -> msg = "루틴 삭제 완료";
       case 403 -> msg = "작성자가 아닙니다. 재로그인 해주세요.";
-
+      case 410 -> msg = "회원 탈퇴한 계정입니다.";
       case 404 -> msg = "요청하신 루틴이 존재하지 않습니다.";
-      case 500 -> msg = "서버 내부적으로 오류가 발생하여 루틴을 삭제하지 못했습니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
       default -> msg = "알 수 없는 오류가 발생했습니다.";
     }
 
@@ -202,7 +202,7 @@ public class PlanController {
 
     int planIdx = requestDTO.getPlanIdx();
     // userIdx 조회
-    int userIdx = handler.getUsernameFromToken(authHeader);
+    int userIdx = handler.getUserIdxFromToken(authHeader);
     int isActive = requestDTO.getIsActive();
     int isDeleted = 0;
 
@@ -214,7 +214,8 @@ public class PlanController {
       case 200 -> msg = "루틴을 활성화 합니다.";
       case 403 -> msg = "작성자가 아닙니다. 재로그인 해주세요.";
       case 404 -> msg = "요청하신 루틴이 존재하지 않습니다.";
-      case 500 -> msg = "서버 내부적으로 오류가 발생하여 루틴을 활성화 하지 못했습니다.";
+      case 410 -> msg = "회원 탈퇴한 계정입니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
       default -> msg = "알 수 없는 오류가 발생했습니다.";
     }
     if (result == 200 && isActive == 0) {
@@ -236,8 +237,7 @@ public class PlanController {
     int isDeleted = 0;
 
     // userIdx 조회
-    int userIdx = handler.getUsernameFromToken(authHeader);
-
+    int userIdx = handler.getUserIdxFromToken(authHeader);
 
     int result = planService.likePlan(planIdx, userIdx, isDeleted);
 
@@ -247,7 +247,8 @@ public class PlanController {
       case 200 -> msg = "루틴을 추천합니다.";
       case 404 -> msg = "요청하신 루틴이 존재하지 않습니다.";
       case 409 -> msg = "이미 추천한 루틴입니다.";
-      case 500 -> msg = "서버 내부적으로 오류가 발생하여 루틴을 추천 하지 못했습니다.";
+      case 410 -> msg = "회원 탈퇴한 계정입니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
       default -> msg = "알 수 없는 오류가 발생했습니다.";
     }
 
@@ -263,7 +264,7 @@ public class PlanController {
 
     // userIdx 조회
     if (authHeader != null) {
-      int userIdx = handler.getUsernameFromToken(authHeader);
+      int userIdx = handler.getUserIdxFromToken(authHeader);
       boolean result = planService.checkLike(planIdx, userIdx);
 
       return ResponseEntity.status(handler.getHttpStatus(200))
@@ -286,7 +287,7 @@ public class PlanController {
   public ResponseEntity<Map<String, Object>> unLikePlan(@RequestHeader("Authorization") String authHeader,
                                                         @PathVariable int planIdx) {
     // userIdx 조회
-    int userIdx = handler.getUsernameFromToken(authHeader);
+    int userIdx = handler.getUserIdxFromToken(authHeader);
 
     int result = planService.unLikePlan(planIdx, userIdx);
 
@@ -295,7 +296,8 @@ public class PlanController {
     switch (result) {
       case 200 -> msg = "루틴 추천을 취소 합니다.";
       case 404 -> msg = "루틴이 존재하지 않거나, 이미 추천을 취소 했습니다.";
-      case 500 -> msg = "서버 내부적으로 오류가 발생하여 추천을 취소 하지 못했습니다.";
+      case 410 -> msg = "회원 탈퇴한 계정입니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
       default -> msg = "알 수 없는 오류가 발생했습니다.";
     }
 
@@ -309,7 +311,7 @@ public class PlanController {
   public ResponseEntity<Map<String, Object>> earlyComplete(@RequestHeader("Authorization") String authHeader,
                                                            @PathVariable int planIdx) {
     // userIdx 조회
-    int userIdx = handler.getUsernameFromToken(authHeader);
+    int userIdx = handler.getUserIdxFromToken(authHeader);
 
     int result = planService.updateEarlyComplete(planIdx, userIdx);
 
@@ -320,8 +322,9 @@ public class PlanController {
       case 403 -> msg = "작성자가 아닙니다. 재로그인 해주세요.";
       case 404 -> msg = "요청하신 루틴이 존재하지 않거나, 삭제 처리 된 루틴입니다.";
       case 409 -> msg = "이미 완료 처리된 루틴입니다.";
+      case 410 -> msg = "회원 탈퇴한 계정입니다.";
       case 412 -> msg = "활성화 된 루틴이 아닙니다. 루틴 활성화 후 실행해 주세요.";
-      case 500 -> msg = "서버 내부적으로 오류가 발생하여 루틴을 완료 처리하지 못했습니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
       default -> msg = "알 수 없는 오류가 발생했습니다.";
     }
 
@@ -335,7 +338,7 @@ public class PlanController {
   public ResponseEntity<Map<String, Object>> addreview(@RequestHeader("Authorization") String authHeader,
                                                        @RequestBody PlanRequestDTO requestDTO) {
     // userIdx 조회
-    int userIdx = handler.getUsernameFromToken(authHeader);
+    int userIdx = handler.getUserIdxFromToken(authHeader);
     requestDTO.setUserIdx(userIdx);
 
     int result = planService.addReview(requestDTO);
@@ -347,8 +350,9 @@ public class PlanController {
       case 403 -> msg = "작성자가 아닙니다. 재로그인 해주세요.";
       case 404 -> msg = "요청하신 루틴이 존재하지 않거나, 삭제 처리 된 루틴입니다.";
       case 409 -> msg = "이미 후기를 작성했습니다. 수정을 원할 경우, 수정 api를 사용해주세요.";
+      case 410 -> msg = "회원 탈퇴한 계정입니다.";
       case 412 -> msg = "후기를 작성 하기 전 루틴을 완료해야 합니다.";
-      case 500 -> msg = "서버 내부적으로 오류가 발생하여 후기를 저장하지 못했습니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
       default -> msg = "알 수 없는 오류가 발생했습니다.";
     }
 
@@ -362,7 +366,7 @@ public class PlanController {
   public ResponseEntity<Map<String, Object>> modifyReview(@RequestHeader("Authorization") String authHeader,
                                                           @RequestBody PlanRequestDTO requestDTO) {
     // userIdx 조회
-    int userIdx = handler.getUsernameFromToken(authHeader);
+    int userIdx = handler.getUserIdxFromToken(authHeader);
     requestDTO.setUserIdx(userIdx);
 
     int result = planService.modifyReview(requestDTO);
@@ -373,8 +377,9 @@ public class PlanController {
       case 200 -> msg = "후기가 정상적으로 수정 되었습니다.";
       case 403 -> msg = "작성자가 아닙니다. 재로그인 해주세요.";
       case 404 -> msg = "요청하신 루틴이 존재하지 않거나, 삭제 처리 된 루틴입니다.";
+      case 410 -> msg = "회원 탈퇴한 계정입니다.";
       case 412 -> msg = "후기를 수정 하기 전 루틴을 완료하거나 후기를 작성해야 합니다.";
-      case 500 -> msg = "서버 내부적으로 오류가 발생하여 후기를 수정하지 못했습니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
       default -> msg = "알 수 없는 오류가 발생했습니다.";
     }
 

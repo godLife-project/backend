@@ -29,7 +29,7 @@ public class ListController {
   public ResponseEntity<Map<String, Object>> listMyPlans(@RequestHeader("Authorization") String authHeader) {
     try {
       // userIdx 조회
-      int userIdx = handler.getUsernameFromToken(authHeader);
+      int userIdx = handler.getUserIdxFromToken(authHeader);
       // 루틴 리스트 조회
       List<MyPlanDTO> myPlanList = listService.getMyPlansList(userIdx);
 

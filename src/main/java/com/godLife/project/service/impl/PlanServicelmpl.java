@@ -35,6 +35,7 @@ public class PlanServicelmpl implements PlanService {
         return 412;
       }
       //System.out.println(planDTO);
+      if (!planMapper.getUserIsDeleted(userIdx).contains("N")) { return 410; }
       // 루틴 삽입하기
       planMapper.insertPlan(planDTO);
 
@@ -112,6 +113,8 @@ public class PlanServicelmpl implements PlanService {
     if (userIdx != planMapper.getUserIdxByPlanIdx(planIdx)) {
       return 403; // Forbidden
     }
+    // 탈퇴한 유저 수정 불가
+    if (!planMapper.getUserIsDeleted(userIdx).contains("N")) { return 410; }
 
     try {
       // 루틴 수정
@@ -176,6 +179,9 @@ public class PlanServicelmpl implements PlanService {
       if (planMapper.getUserIdxByPlanIdx(planIdx) != userIdx) {
         return 403; // another
       }
+      // 탈퇴한 유저 삭제 불가
+      if (!planMapper.getUserIsDeleted(userIdx).contains("N")) { return 410; }
+
       planMapper.deletePlan(planIdx, userIdx);
       Integer forkIdx = planMapper.getForkIdxByPlanIdx(planIdx);
       if (forkIdx != null) {
@@ -200,6 +206,9 @@ public class PlanServicelmpl implements PlanService {
       if (planMapper.getUserIdxByPlanIdx(planIdx) != userIdx) {
         return 403; // another
       }
+      // 탈퇴한 유저 수정 불가
+      if (!planMapper.getUserIsDeleted(userIdx).contains("N")) { return 410; }
+
       planMapper.goStopPlan(planIdx, userIdx, isActive);
       return 200; // ok
     } catch (Exception e) {
@@ -220,6 +229,8 @@ public class PlanServicelmpl implements PlanService {
       if (planMapper.checkLikeByPlanIdxNUserIdx(planIdx, userIdx)) {
         return 409; // exist
       }
+      // 탈퇴한 유저 수정 불가
+      if (!planMapper.getUserIsDeleted(userIdx).contains("N")) { return 410; }
       planMapper.likePlan(planIdx, userIdx);
       planMapper.modifyLikeCount(planIdx);
       return 200; // ok
@@ -247,6 +258,9 @@ public class PlanServicelmpl implements PlanService {
       if (!planMapper.checkLikeByPlanIdxNUserIdx(planIdx, userIdx)) {
         return 404; // not found
       }
+      // 탈퇴한 유저 수정 불가
+      if (!planMapper.getUserIsDeleted(userIdx).contains("N")) { return 410; }
+
       planMapper.unLikePlan(planIdx, userIdx);
       planMapper.modifyLikeCount(planIdx);
       return 200; // ok
@@ -280,6 +294,9 @@ public class PlanServicelmpl implements PlanService {
       if (planMapper.checkCompleteByPlanIdx(planIdx, isCompleted, isDeleted)) {
         return 409; // conflict
       }
+      // 탈퇴한 유저 수정 불가
+      if (!planMapper.getUserIsDeleted(userIdx).contains("N")) { return 410; }
+
       planMapper.updateEarlyComplete(planIdx, userIdx);
       return 200; // ok
     } catch (Exception e) {
@@ -301,6 +318,8 @@ public class PlanServicelmpl implements PlanService {
       if (!planMapper.checkCompleteByPlanIdx(planIdx, isCompleted, isDeleted)) { return 412; } // preCondition
       if (planMapper.getUserIdxByPlanIdx(planIdx) != userIdx) { return 403; } // another
       if (planMapper.getReviewExist(planIdx) != null) { return 409; } // conflict
+      // 탈퇴한 유저 수정 불가
+      if (!planMapper.getUserIsDeleted(userIdx).contains("N")) { return 410; }
 
       planMapper.addReview(planRequestDTO);
       return 200;
@@ -323,6 +342,8 @@ public class PlanServicelmpl implements PlanService {
       if (!planMapper.checkPlanByPlanIdx(planIdx, isDeleted)) { return 404; } // not found
       if ((!planMapper.checkCompleteByPlanIdx(planIdx, isCompleted, isDeleted)) || (planMapper.getReviewExist(planIdx) == null)) { return 412; } // preCondition
       if (planMapper.getUserIdxByPlanIdx(planIdx) != userIdx) { return 403; } // another
+      // 탈퇴한 유저 수정 불가
+      if (!planMapper.getUserIsDeleted(userIdx).contains("N")) { return 410; }
 
       planMapper.modifyReview(planRequestDTO);
       return 200;

@@ -249,6 +249,7 @@ public class ChallengeServiceImpl implements ChallengeService {
     }
 
     // 챌린지 수정
+    @Override
     public int modifyChallenge(ChallengeDTO challengeDTO) {
         int updatedCount = challengeMapper.modifyChallenge(challengeDTO);
         // 1건만 수정이 되는지 확인
@@ -259,6 +260,7 @@ public class ChallengeServiceImpl implements ChallengeService {
     }
 
     // 챌린지 삭제
+    @Override
     public int deleteChallenge(ChallengeDTO challengeDTO) {
         // 삭제 수행
         int result = challengeMapper.deleteChallenge(challengeDTO);

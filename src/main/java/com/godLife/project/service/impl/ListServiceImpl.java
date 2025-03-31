@@ -27,6 +27,8 @@ public class ListServiceImpl implements ListService {
   public List<MyPlanDTO> getMyPlansList(int userIdx) {
     List<MyPlanDTO> myPlanList = new ArrayList<>();
     try {
+      if (!planMapper.getUserIsDeleted(userIdx).contains("N")) { return null; } // 탈퇴한 유저 조회 불가
+
       List<CustomPlanDTO> planDtos = listMapper.getMyPlansByUserIdx(userIdx);
 
       if (planDtos == null || planDtos.isEmpty()) {

@@ -1,13 +1,13 @@
 package com.godLife.project.controller;
 
 import com.godLife.project.dto.contents.QnADTO;
+import com.godLife.project.dto.infos.SearchQueryDTO;
 import com.godLife.project.handler.GlobalExceptionHandler;
 import com.godLife.project.service.interfaces.QnaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -27,14 +27,10 @@ public class QnaController {
 
   // 특정 QnA 조회
   @GetMapping("/{qnaIdx}")
-  public ResponseEntity<Map<String, Object>> getQnaById(@PathVariable int qnaIdx, BindingResult result) {
+  public ResponseEntity<Map<String, Object>> getQnaById(@PathVariable int qnaIdx) {
     // 첫 번째 호출로 이미 qna 데이터를 얻었으므로 두 번째 호출은 불필요
     QnADTO qna = qnaService.getQnaById(qnaIdx);
 
-    // 검증 오류가 있을 경우 처리
-    if (result.hasErrors()) {
-      return ResponseEntity.badRequest().body(handler.getValidationErrors(result));
-    }
 
     // qna가 null인 경우를 체크하여 처리 (선택적)
     if (qna == null) {
@@ -106,8 +102,7 @@ public class QnaController {
     }
   }
 
-  // QnA 삭제 API
-  @DeleteMapping("/{qnaIdx}")
+  @DeleteMapping("/{qnaIdx}/{userIdx}")
   public ResponseEntity<String> deleteQna(@PathVariable int qnaIdx, @PathVariable int userIdx) {
     // 서비스 호출
     int result = qnaService.deleteQna(qnaIdx, userIdx);
@@ -126,13 +121,14 @@ public class QnaController {
   }
 
   // QnA 검색
-  @GetMapping("/search")
-  public ResponseEntity<List<QnADTO>> searchQna(@RequestParam(value = "query", required = false) String query) {
+  @PostMapping("/search")
+  public ResponseEntity<List<QnADTO>> searchQna(@RequestBody SearchQueryDTO searchQuery) {
     try {
-      return ResponseEntity.ok(qnaService.searchQna(query));
-    } catch (DataAccessException e) { // DB 관련 예외 처리
+      List<QnADTO> result = qnaService.searchQna(searchQuery);
+      return ResponseEntity.ok(result);
+    } catch (DataAccessException e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
-    } catch (Exception e) { // 기타 예외 처리
+    } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
     }
   }

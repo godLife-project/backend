@@ -1,14 +1,18 @@
 package com.godLife.project.service.impl;
 
 import com.godLife.project.dto.contents.QnADTO;
+import com.godLife.project.dto.infos.SearchQueryDTO;
 import com.godLife.project.mapper.QnaMapper;
 import com.godLife.project.service.interfaces.QnaService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Collections;
 import java.util.List;
 
 @Slf4j
+@Transactional
 @Service
 public class QnaServiceImpl implements QnaService {
   private final QnaMapper qnaMapper;
@@ -74,7 +78,8 @@ public class QnaServiceImpl implements QnaService {
 
 
   // QnA 검색
-  public List<QnADTO> searchQna(String query) {
+  public List<QnADTO> searchQna(SearchQueryDTO searchQuery) {
+    String query = searchQuery.getQuery();
     if (query == null || query.trim().isEmpty()) {
       return Collections.emptyList();
     }

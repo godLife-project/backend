@@ -8,6 +8,7 @@
     <select id="getNoticeList" resultType="com.godLife.project.dto.contents.NoticeDTO">
         SELECT notice_Idx AS noticeIdx,
         notice_Title AS noticeTitle,
+        notice_Sub As noticeSub,
         notice_Date AS noticeDate
         FROM NOTICE_TABLE
         ORDER BY notice_Date DESC

@@ -5,7 +5,7 @@
 <mapper namespace="com.godLife.project.mapper.QnaMapper">
 
     <!-- 특정 QnA를 Idx로 조회하는 select 쿼리 -->
-    <select id="selectQnaById" parameterType="long" resultType="com.godLife.project.dto.contents.QnADTO">
+    <select id="selectQnaById" parameterType="java.lang.Integer" resultType="com.godLife.project.dto.contents.QnADTO">
         SELECT QNA_IDX, Q_IDX, Q_TITLE, Q_SUB, Q_DATE,
                A_IDX, A_SUB, A_DATE, QNA_PRIV, PRIV_PW, IS_ANSWERED
         FROM QNA_TABLE
@@ -36,10 +36,9 @@
     <!-- QnA 수정 update 쿼리 -->
     <update id="updateQna" parameterType="com.godLife.project.dto.contents.QnADTO">
         UPDATE QNA_TABLE
-        SET Q_IDX = #{qIdx},
+        SET Q_IDX = #{qIdx}
             Q_TITLE = #{qTitle},
             Q_SUB = #{qSub},
-            Q_DATE = #{qDate},
             QNA_PRIV = #{qnaPriv},
             PRIV_PW = #{privPw}
         WHERE QNA_IDX = #{qnaIdx}
@@ -47,7 +46,7 @@
 
 
     <!-- 제목 또는 내용에 검색어가 포함된 QnA를 검색하는 select 쿼리 -->
-    <select id="searchQna" parameterType="java.lang.String" resultType="com.godLife.project.dto.contents.QnADTO">
+    <select id="searchQna" parameterType="com.godLife.project.dto.infos.SearchQueryDTO" resultType="com.godLife.project.dto.contents.QnADTO">
         SELECT * FROM QNA_TABLE
         WHERE CONTAINS(Q_TITLE, #{query}) > 0
         OR CONTAINS(Q_SUB, #{query}) > 0

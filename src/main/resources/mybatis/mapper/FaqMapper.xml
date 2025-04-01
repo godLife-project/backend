@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.godLife.project.mapper.FaqMapper">
+
+    <!-- 특정 FAQ를 Idx로 조회하는 select 쿼리 -->
+    <select id="selectFaqById" parameterType="java.lang.Integer" resultType="com.godLife.project.dto.contents.FaQDTO">
+        SELECT FAQ_IDX, FAQ_TITLE, FAQ_ANSWER, FAQ_CATEGORY
+        FROM FAQ_TABLE
+        WHERE FAQ_IDX = #{faqIdx}
+    </select>
+
+    <!-- 모든 FAQ를 조회하는 select 쿼리 -->
+    <select id="selectAllFaq" resultType="com.godLife.project.dto.contents.FaQDTO">
+        SELECT FAQ_IDX, FAQ_TITLE, FAQ_ANSWER, FAQ_CATEGORY
+        FROM FAQ_TABLE
+    </select>
+
+    <!-- FAQ 작성 쿼리 -->
+    <insert id="insertFaq" parameterType="com.godLife.project.dto.contents.FaQDTO">
+        INSERT INTO FAQ_TABLE (FAQ_IDX, FAQ_TITLE, FAQ_ANSWER, FAQ_CATEGORY)
+        VALUES (Faq_SEQ.NEXTVAL, #{faqTitle}, #{faqAnswer}, #{faqCategory})
+    </insert>
+
+    <!-- FAQ 수정 update 쿼리 -->
+    <update id="updateFaq" parameterType="com.godLife.project.dto.contents.FaQDTO">
+        UPDATE FAQ_TABLE
+        SET FAQ_TITLE = #{faqTitle},
+        FAQ_ANSWER = #{faqAnswer},
+        FAQ_CATEGORY = #{faqCategory}
+        WHERE FAQ_IDX = #{faqIdx}
+    </update>
+
+    <!-- FAQ 제목 또는 내용에 검색어가 포함된 FAQ를 검색하는 select 쿼리 -->
+    <select id="searchFaq" parameterType="com.godLife.project.dto.infos.SearchQueryDTO" resultType="com.godLife.project.dto.contents.FaQDTO">
+        SELECT FAQ_IDX, FAQ_TITLE, FAQ_ANSWER, FAQ_CATEGORY
+        FROM FAQ_TABLE
+        WHERE CONTAINS(FAQ_TITLE, #{query}) > 0
+        OR CONTAINS(FAQ_ANSWER, #{query}) > 0
+    </select>
+
+</mapper>

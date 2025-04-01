@@ -1,14 +1,13 @@
 package com.godLife.project.service.impl;
 
 import com.godLife.project.dto.contents.QnADTO;
-import com.godLife.project.dto.infos.SearchQueryDTO;
+import com.godLife.project.dto.contents.QnaContentDTO;
 import com.godLife.project.mapper.QnaMapper;
 import com.godLife.project.service.interfaces.QnaService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -18,76 +17,24 @@ public class QnaServiceImpl implements QnaService {
   private final QnaMapper qnaMapper;
   public  QnaServiceImpl(QnaMapper qnaMapper) {this.qnaMapper = qnaMapper;}
 
-      // 특정 QnA를 Idx로 조회
-  public QnADTO getQnaById(int qnaIdx) {
-    return qnaMapper.selectQnaById(qnaIdx);
-  }
-     // 모든 QnA를 조회
-  public List<QnADTO> selectAllQna() {
-    return qnaMapper.selectAllQna();
+  // 질문 추가
+
+  public void insertQuestion(QnADTO qnaDTO) {
+    qnaMapper.insertQuestion(qnaDTO);
   }
 
-
-  // QnA 작성
-  public int createQna(QnADTO qna) {
-    if (qna.getQIdx() == null) {  // 유저 정보가 없으면 실패 처리
-      return 400; // Bad Request
-    }
-
-    int result = qnaMapper.insertQna(qna);
-    return (result > 0) ? 200 : 500; // 성공: 200, 실패: 500
-  }
-     //  QnA 수정
-  public int updateQna(QnADTO qnaDTO) {
-    qnaMapper.updateQna(qnaDTO);
-    int userIdx = qnaDTO.getQIdx();
-    int qnaIdx = qnaDTO.getQnaIdx();
-
-    // 작성자만 수정 가능
-    if (userIdx != qnaMapper.getUserIdxByQna(qnaIdx)) {
-      return 403; // Forbidden
-    }
-    try {
-      // QnA 수정
-      return 200; // 성공
-    } catch (Exception e) {
-      log.error("Error modifying QnA: ", e);
-      return 500; // Internal Server Error: 수정 실패
-    }
+  // 질문 내용 추가 (답변)
+  public void insertQnaContent(QnaContentDTO qnaContentDTO) {
+    qnaMapper.insertQnaContent(qnaContentDTO);
   }
 
-  // QnA 삭제
-  public int deleteQna(int qnaIdx, int userIdx) {
-    // 작성자 인덱스 조회
-    int writerIdx = qnaMapper.getUserIdxByQna(qnaIdx);
-
-    // 작성자만 삭제 가능
-    if (userIdx != writerIdx) {
-      return 403; // Forbidden
-    }
-
-    try {
-      // QnA 삭제
-      qnaMapper.deleteQna(qnaIdx);
-      return 200; // 성공
-    } catch (Exception e) {
-      // 오류 발생 시 처리
-      return 500; // Internal Server Error
-    }
+  // 특정 질문 가져오기
+  public QnADTO selectQuestionById(Long qnaIdx) {
+    return qnaMapper.selectQuestionById(qnaIdx);
   }
 
-
-  // QnA 검색
-  public List<QnADTO> searchQna(SearchQueryDTO searchQuery) {
-    String query = searchQuery.getQuery();
-    if (query == null || query.trim().isEmpty()) {
-      return Collections.emptyList();
-    }
-    return qnaMapper.searchQna(query.trim()); // 공백 제거 후 검색
-  }
-
-  public void saveAnswer(int qnaIdx, int aIdx, String aSub) {
-    // 답변 등록/수정
-    qnaMapper.updateAnswer(qnaIdx, aIdx, aSub);
+  // 질문의 대한 대화 목록 가져오기 (채팅 기록)
+  public List<QnaContentDTO> getQnaContent(Long qnaIdx) {
+    return qnaMapper.getQnaContent(qnaIdx);  // QNA_CONTENT 테이블에서 메시지 조회
   }
 }

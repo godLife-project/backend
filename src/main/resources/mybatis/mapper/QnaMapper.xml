@@ -4,52 +4,26 @@
 
 <mapper namespace="com.godLife.project.mapper.QnaMapper">
 
-    <!-- 특정 QnA를 Idx로 조회하는 select 쿼리 -->
-    <select id="selectQnaById" parameterType="java.lang.Integer" resultType="com.godLife.project.dto.contents.QnADTO">
-        SELECT QNA_IDX, Q_IDX, Q_TITLE, Q_SUB, Q_DATE,
-               A_IDX, A_SUB, A_DATE, QNA_PRIV, PRIV_PW, IS_ANSWERED
-        FROM QNA_TABLE
-        WHERE QNA_IDX = #{qnaIdx}
-    </select>
-
-    <!-- 답변시 답변상태 업데이트 -->
-    <update id="updateAnswer">
-        UPDATE QNA_TABLE
-        SET A_IDX = #{aIdx},
-            A_SUB = #{aSub},
-            A_DATE = SYSDATE,
-            IS_ANSWERED = 'Y'
-        WHERE QNA_IDX = #{qnaIdx}
-    </update>
-
-    <!-- 모든 QnA를 조회하는 select 쿼리 -->
-    <select id="selectAllQna" resultType="com.godLife.project.dto.contents.QnADTO">
-        SELECT * FROM QNA_TABLE
-    </select>
-
-    <!-- QnA 작성 쿼리 -->
-    <insert id="insertQna" parameterType="com.godLife.project.dto.contents.QnADTO">
-        INSERT INTO QNA_TABLE (QNA_IDX, Q_IDX, Q_TITLE, Q_SUB, Q_DATE, QNA_PRIV, PRIV_PW)
-        VALUES (Qna_SEQ.NEXTVAL, #{qIdx}, #{qTitle}, #{qSub}, SYSDATE, #{qnaPriv}, #{privPw})
+    <!-- 질문 추가 -->
+    <insert id="insertQuestion">
+        INSERT INTO QNA_TABLE (QNA_IDX, Q_IDX, Q_TITLE, Q_DATE, Q_CATEGORY)
+        VALUES (QNA_SEQ.NEXTVAL, #{qIdx}, #{qTitle}, SYSDATE, #{qCategory})
     </insert>
 
-    <!-- QnA 수정 update 쿼리 -->
-    <update id="updateQna" parameterType="com.godLife.project.dto.contents.QnADTO">
-        UPDATE QNA_TABLE
-        SET Q_IDX = #{qIdx}
-            Q_TITLE = #{qTitle},
-            Q_SUB = #{qSub},
-            QNA_PRIV = #{qnaPriv},
-            PRIV_PW = #{privPw}
-        WHERE QNA_IDX = #{qnaIdx}
-    </update>
+    <!-- 질문 내용 추가 -->
+    <insert id="insertQnaContent">
+        INSERT INTO QNA_CONTENT (Q_CONTENT_IDX, QUESTION_IDX, RESPONSE_IDX, RESPONSE_SUB, CREATED_AT)
+        VALUES (QNA_CONTENT_SEQ.NEXTVAL, #{questionIdx}, #{responseIdx}, #{responseSub}, SYSDATE)
+    </insert>
 
+    <!-- 특정 질문 조회 -->
+    <select id="selectQuestionById" resultType="com.godLife.project.dto.contents.QnADTO">
+        SELECT * FROM QNA_TABLE WHERE QNA_IDX = #{qnaIdx}
+    </select>
 
-    <!-- 제목 또는 내용에 검색어가 포함된 QnA를 검색하는 select 쿼리 -->
-    <select id="searchQna" parameterType="com.godLife.project.dto.infos.SearchQueryDTO" resultType="com.godLife.project.dto.contents.QnADTO">
-        SELECT * FROM QNA_TABLE
-        WHERE CONTAINS(Q_TITLE, #{query}) > 0
-        OR CONTAINS(Q_SUB, #{query}) > 0
+    <!-- 질문에 대한 메시지 목록 조회 -->
+    <select id="getQnaContent" resultType="com.godLife.project.dto.contents.QnaContentDTO">
+        SELECT * FROM QNA_CONTENT WHERE QUESTION_IDX = #{questionIdx} ORDER BY CREATED_AT
     </select>
 
 </mapper>

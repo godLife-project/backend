@@ -1,144 +1,84 @@
 package com.godLife.project.controller;
 
 import com.godLife.project.dto.contents.QnADTO;
-import com.godLife.project.dto.infos.SearchQueryDTO;
+import com.godLife.project.dto.contents.QnaContentDTO;
+import com.godLife.project.dto.datas.UserDTO;
 import com.godLife.project.handler.GlobalExceptionHandler;
 import com.godLife.project.service.interfaces.QnaService;
+import com.godLife.project.service.interfaces.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
+import java.security.Principal;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/qna")
 public class QnaController {
   private final QnaService qnaService;
+
+  private UserService userService;  // UserService를 통해 사용자 정보 조회
+
   @Autowired
   private GlobalExceptionHandler handler;
 
-  public QnaController(QnaService qnaService) {
+
+  public QnaController(QnaService qnaService, UserService userService) {
     this.qnaService = qnaService;
+    this.userService = userService;}
+
+
+  // 1:1 문의 시작: 사용자가 카테고리와 첫 번째 질문을 보냄
+  @PostMapping("/auth/startChat")
+  public ResponseEntity<String> startChat(@RequestBody QnaContentDTO qnaContentDTO, Principal principal) {
+    String userId = principal.getName();  // 로그인한 사용자의 userId 가져오기
+
+    // userId를 통해 userIdx를 조회
+    UserDTO userDTO = userService.findByUserId(userId);  // UserService에서 userId로 UserDTO 조회
+    Long userIdx = (long) userDTO.getUserIdx();  // 유저 인덱스를 가져옴
+
+    // 첫 번째 질문을 QNA_TABLE에 저장
+    QnADTO qnaDTO = new QnADTO();
+    qnaDTO.setQIdx(userIdx);  // 로그인된 사용자 인덱스
+    qnaDTO.setQCategory(qnaContentDTO.getQuestionIdx());  // 선택한 카테고리
+    qnaDTO.setQTitle(qnaContentDTO.getResponseSub());  // 첫 번째 질문 내용
+    qnaService.insertQuestion(qnaDTO);  // QNA_TABLE에 첫 번째 질문 추가
+
+    // 첫 번째 메시지 내용을 QNA_CONTENT에 저장
+    qnaContentDTO.setResponseIdx(userIdx);  // 사용자의 인덱스
+    qnaService.insertQnaContent(qnaContentDTO);  // QNA_CONTENT에 첫 번째 메시지 저장
+
+    // 성공 시 메시지 반환
+    return ResponseEntity.ok("정상적으로 문의가 되었습니다");
   }
 
-  // 특정 QnA 조회
-  @GetMapping("/{qnaIdx}")
-  public ResponseEntity<Map<String, Object>> getQnaById(@PathVariable int qnaIdx) {
-    // 첫 번째 호출로 이미 qna 데이터를 얻었으므로 두 번째 호출은 불필요
-    QnADTO qna = qnaService.getQnaById(qnaIdx);
+  // 답변 추가: 사용자 또는 관리자가 응답
+  @PostMapping("/auth/respond")
+  public ResponseEntity<String> respondToQuestion(@RequestBody QnaContentDTO qnaContentDTO, Principal principal) {
+    String userId = principal.getName();  // 로그인한 사용자의 userId 가져오기
 
+    // userId를 통해 userIdx를 조회
+    UserDTO userDTO = userService.findByUserId(userId);  // UserService에서 userId로 UserDTO 조회
+    Long userIdx = (long) userDTO.getUserIdx();  // 유저 인덱스를 가져옴
+    qnaContentDTO.setResponseIdx(userIdx);  // 응답자 인덱스 설정
 
-    // qna가 null인 경우를 체크하여 처리 (선택적)
-    if (qna == null) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(handler.createResponse(404, "QnA not found"));
-    }
-
-    // 정상적인 경우 응답 반환
-    return ResponseEntity.ok(handler.createResponse(200, qna));
-  }
-
-  // 모든 QnA 조회
-  @GetMapping
-  public ResponseEntity<Map<String, Object>> getAllQna() {
-    List<QnADTO> qnaList = qnaService.selectAllQna();
-
-    // QnA 게시글이 없을 경우 404 상태 코드와 메시지 반환
-    if (qnaList.isEmpty()) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND)
-              .body(handler.createResponse(404, "게시글이 존재하지 않습니다."));
-    }
-
-    return ResponseEntity.ok(handler.createResponse(200, qnaList));
-  }
-
-
-  @PostMapping("/auth/write")
-  public ResponseEntity<String> createQna(
-          @RequestBody QnADTO qna,
-          @RequestHeader("Authorization") String authHeader) { // Authorization 헤더에서 JWT 추출
-
-    // JWT에서 사용자 정보를 추출하여 userIdx를 얻음
-    int userIdx = handler.getUsernameFromToken(authHeader);
-
-    // userIdx가 없으면 인증 오류 처리
-    if (userIdx == 0) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
-    }
-
-    // QnADTO에 qIdx 설정 (qIdx는 userIdx와 동일)
-    qna.setQIdx(userIdx);  // 사용자가 로그인한 userIdx를 qIdx에 설정
-
-    // QnA 작성 서비스 호출
-    int result = qnaService.createQna(qna);
-
-    // 성공/실패 응답
-    return ResponseEntity.status(result).body(result == 200 ? "QnA 등록 성공" : "QnA 등록 실패");
-  }
-
-
-  // QnA 수정 API
-  @PatchMapping("/{qnaIdx}")
-  public ResponseEntity<String> updateQna(@PathVariable int qnaIdx, @RequestBody QnADTO qnaDTO) {
-    // qnaIdx를 DTO에 set하여 전달
-    qnaDTO.setQnaIdx(qnaIdx);
-
-    // 서비스 호출
-    int result = qnaService.updateQna(qnaDTO);
-
-    // 상태 코드 및 메시지 반환
-    switch (result) {
-      case 200:
-        return ResponseEntity.ok("QnA 수정 성공");
-      case 403:
-        return ResponseEntity.status(403).body("작성자가 아니므로 수정할 수 없습니다.");
-      case 500:
-        return ResponseEntity.status(500).body("서버 오류로 인해 QnA 수정에 실패했습니다.");
-      default:
-        return ResponseEntity.status(500).body("알 수 없는 오류가 발생했습니다.");
+    if (userDTO.isRoleStatus()) {  // 관리자 여부 확인
+      // 관리자 응답 로직
+      qnaService.insertQnaContent(qnaContentDTO);  // QNA_CONTENT에 답변 저장
+      return ResponseEntity.ok("관리자가 정상적으로 응답하였습니다.");
+    } else {
+      // 사용자 응답 로직
+      qnaService.insertQnaContent(qnaContentDTO);  // QNA_CONTENT에 답변 저장
+      return ResponseEntity.ok("사용자가 정상적으로 응답하였습니다.");
     }
   }
 
-  @DeleteMapping("/{qnaIdx}/{userIdx}")
-  public ResponseEntity<String> deleteQna(@PathVariable int qnaIdx, @PathVariable int userIdx) {
-    // 서비스 호출
-    int result = qnaService.deleteQna(qnaIdx, userIdx);
-
-    // 상태 코드 및 메시지 반환
-    switch (result) {
-      case 200:
-        return ResponseEntity.ok("QnA 삭제 성공");
-      case 403:
-        return ResponseEntity.status(403).body("작성자가 아니므로 삭제할 수 없습니다.");
-      case 500:
-        return ResponseEntity.status(500).body("서버 오류로 인해 QnA 삭제에 실패했습니다.");
-      default:
-        return ResponseEntity.status(500).body("알 수 없는 오류가 발생했습니다.");
-    }
+  // 특정 qnaIdx에 해당하는 메시지 목록 조회
+  @GetMapping("/auth/{qnaIdx}/messages")
+  public ResponseEntity<List<QnaContentDTO>> getMessages(@PathVariable Long qnaIdx) {
+    List<QnaContentDTO> messages = qnaService.getQnaContent(qnaIdx);  // QNA_CONTENT 테이블에서 메시지 목록 조회
+    return ResponseEntity.ok(messages);  // 메시지 목록 반환
   }
 
-  // QnA 검색
-  @PostMapping("/search")
-  public ResponseEntity<List<QnADTO>> searchQna(@RequestBody SearchQueryDTO searchQuery) {
-    try {
-      List<QnADTO> result = qnaService.searchQna(searchQuery);
-      return ResponseEntity.ok(result);
-    } catch (DataAccessException e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
-    }
-  }
-
-  @PostMapping("/answer/{qnaIdx}")
-  public ResponseEntity<String> saveAnswer(@PathVariable int qnaIdx,
-                                           @RequestBody QnADTO qnADTO) {
-    // 답변 등록 API
-    qnaService.saveAnswer(qnaIdx, qnADTO.getAIdx(), qnADTO.getASub());
-    return ResponseEntity.ok("답변 등록 완료");
-  }
 }

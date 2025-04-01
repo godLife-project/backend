@@ -1,21 +1,20 @@
 package com.godLife.project.service.interfaces;
 
 import com.godLife.project.dto.contents.QnADTO;
-import com.godLife.project.dto.infos.SearchQueryDTO;
-import org.apache.ibatis.annotations.Param;
+import com.godLife.project.dto.contents.QnaContentDTO;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public interface QnaService {
-  List<QnADTO> selectAllQna();
-  QnADTO getQnaById(int qnaIdx);
-  int createQna(QnADTO qna);
-  int updateQna(QnADTO qna);
-  int deleteQna(@Param("qnaIdx") int qnaIdx, int userIdx);
 
-  List<QnADTO> searchQna(SearchQueryDTO searchQuery);
+  void insertQuestion(QnADTO qnaDTO);
 
-  // 답변 저장
-  void saveAnswer(int qnaIdx, int aIdx, String aSub);
+  void insertQnaContent(QnaContentDTO qnaContentDTO);
 
+  QnADTO selectQuestionById(Long qnaIdx);
+
+  // 특정 QNA에 대한 메시지 목록 조회
+  List<QnaContentDTO> getQnaContent(Long qnaIdx);
 }

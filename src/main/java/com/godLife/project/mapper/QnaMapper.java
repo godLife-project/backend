@@ -1,30 +1,24 @@
 package com.godLife.project.mapper;
 
 import com.godLife.project.dto.contents.QnADTO;
-import org.apache.ibatis.annotations.Delete;
+import com.godLife.project.dto.contents.QnaContentDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
 @Mapper
 public interface QnaMapper {
-  QnADTO selectQnaById(@Param("qnaIdx") int qnaIdx);
-  List<QnADTO> selectAllQna();
-  int insertQna(QnADTO qna);
-  int updateQna(QnADTO qna);
-  List<QnADTO> searchQna(@Param("query") String query);
 
-  @Delete("DELETE FROM QNA_TABLE WHERE QNA_IDX = #{qnaIdx}")
-  int deleteQna(@Param("qnaIdx") int qnaIdx);
+  // 질문 추가
+  void insertQuestion(QnADTO qnaDTO);
 
-  // 답변
-  void updateAnswer(@Param("qnaIdx") int qnaIdx,
-                    @Param("aIdx") int aIdx,
-                    @Param("aSub") String aSub);
+  // 질문 내용 추가
+  void insertQnaContent(QnaContentDTO qnaContentDTO);
 
-  // 작성자 인덱스 조회
-  @Select("SELECT Q_IDX FROM QNA_TABLE WHERE QNA_IDX = #{qnaIdx}")
-  int getUserIdxByQna(int qnaIdx);
+  // 특정 질문 가져오기
+  QnADTO selectQuestionById(@Param("qnaIdx") Long qnaIdx);
+
+  // 질문의 대한 메세지 목록 가져오기
+  List<QnaContentDTO> getQnaContent(@Param("questionIdx") Long questionIdx);
 }

@@ -1,9 +1,14 @@
 package com.godLife.project.controller;
 
 import com.godLife.project.dto.datas.UserDTO;
+import com.godLife.project.dto.request.GetEmailRequestDTO;
+import com.godLife.project.dto.request.GetNameNEmail;
+import com.godLife.project.handler.GlobalExceptionHandler;
+import com.godLife.project.service.impl.redis.RedisService;
 import com.godLife.project.service.interfaces.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -13,13 +18,14 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user")
+@RequiredArgsConstructor
 public class UserController {
 
   private final UserService userService;
 
-  public UserController(UserService userService) {
-    this.userService = userService;
-  }
+  private final RedisService redisService;
+
+  private final GlobalExceptionHandler handler;
 
   // 회원가입
   @Operation(summary = "회원가입 API", description = "유효성 검사 후 모두 통과시 정보 Insert")
@@ -61,5 +67,49 @@ public class UserController {
     Boolean isAvailable = userService.checkUserIdExist(userId);
     return ResponseEntity.ok(isAvailable);
   }
+
+  // 아이디 찾기
+  @GetMapping("/find/userId")
+  public ResponseEntity<Map<String, Object>> findUserId(@Valid @ModelAttribute GetNameNEmail request,
+                                                        BindingResult valid) {
+    if (valid.hasErrors()) {
+      return ResponseEntity.badRequest().body(handler.getValidationErrors(valid));
+    }
+
+    String result = userService.FindUserIdByNameNEmail(request, true);
+
+    if (result == null || result.isBlank()) {
+      return ResponseEntity.status(404).body(handler.createResponse(404, "아이디가 없습니다."));
+    }
+    return ResponseEntity.ok().body(handler.createResponse(200, result));
+  }
+  // 아이디 찾기 마스킹 제거
+  @GetMapping("/find/userId/noMask")
+  public ResponseEntity<Map<String, Object>> noMaskingUserId(@Valid @ModelAttribute GetNameNEmail request,
+                                                             BindingResult valid) {
+    if (valid.hasErrors()) {
+      return ResponseEntity.badRequest().body(handler.getValidationErrors(valid));
+    }
+
+    // 이메일 인증 여부 검증
+    String key = "EMAIL_VERIFIED: " + request.getUserEmail();
+    String verified = redisService.getData(key); // 인증 여부 조회
+
+    if (verified == null || !verified.equals("true")) {
+      return ResponseEntity.status(handler.getHttpStatus(412))
+          .body(handler.createResponse(412, "이메일 인증이 필요합니다."));
+    }
+
+    String result = userService.FindUserIdByNameNEmail(request, false);
+
+    redisService.deleteData(key); // 인증 데이터 삭제
+
+    if (result == null || result.isBlank()) {
+      return ResponseEntity.status(404).body(handler.createResponse(404, "아이디가 없습니다."));
+    }
+    return ResponseEntity.ok().body(handler.createResponse(200, result));
+
+  }
+
 
 }

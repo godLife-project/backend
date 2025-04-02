@@ -1,6 +1,7 @@
 package com.godLife.project.mapper;
 
 import com.godLife.project.dto.datas.UserDTO;
+import com.godLife.project.dto.request.GetNameNEmail;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -31,4 +32,8 @@ public interface UserMapper {
     // 관리자 권환 확인
     @Select("SELECT authority_idx FROM users WHERE user_id = #{userId}")
     Integer getUserAuthority(@Param("userId") Long userId);
+
+    // 아이디 찾기
+    @Select("SELECT USER_ID FROM USER_TABLE WHERE USER_NAME = #{userName} AND USER_EMAIL = #{userEmail}")
+    String getUserId(GetNameNEmail getNameNEmail);
 }

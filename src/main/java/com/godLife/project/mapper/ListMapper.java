@@ -30,12 +30,14 @@ public interface ListMapper {
                                    @Param("job") List<Integer> job,
                                    @Param("sort") String sort,
                                    @Param("order") String order,
-                                   @Param("keywords") Map<String, List<String>> keywords);
+                                   @Param("keywords") Map<String, List<String>> keywords,
+                                   @Param("userIdx") int userIdx);
   // 루틴 리스트 총 게시글 수 조회
   int getTotalPlanCount(@Param("mode") String mode,
                         @Param("status") int status,
                         @Param("target") List<Integer> target,
                         @Param("job") List<Integer> job,
-                        @Param("keywords") Map<String, List<String>> keywords);
+                        @Param("keywords") Map<String, List<String>> keywords,
+                        @Param("userIdx") int userIdx);
 
 }

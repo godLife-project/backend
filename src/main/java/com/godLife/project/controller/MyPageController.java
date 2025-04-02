@@ -1,9 +1,11 @@
 package com.godLife.project.controller;
 
+import com.godLife.project.dto.list.PlanListDTO;
 import com.godLife.project.dto.request.myPage.*;
 import com.godLife.project.dto.response.MyPageUserInfosResponseDTO;
 import com.godLife.project.handler.GlobalExceptionHandler;
 import com.godLife.project.service.impl.redis.RedisService;
+import com.godLife.project.service.interfaces.ListService;
 import com.godLife.project.service.interfaces.MyPageService;
 import com.godLife.project.service.interfaces.jwtInterface.RefreshService;
 import jakarta.servlet.http.Cookie;
@@ -16,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -31,6 +34,8 @@ public class MyPageController {
   private final RefreshService refreshService;
 
   private final RedisService redisService;
+
+  private final ListService listService;
 
 
   // 유저 정보 추가 제공
@@ -123,6 +128,8 @@ public class MyPageController {
 
     int result = myPageService.modifyEmail(modifyEmailRequestDTO);
 
+    redisService.deleteData("EMAIL_VERIFIED: " + modifyEmailRequestDTO.getUserEmail());
+
     // 응답 메세지 세팅
     String msg = "";
     switch (result) {
@@ -139,7 +146,7 @@ public class MyPageController {
   // 직업/목표 수정
   @PatchMapping("/myAccount/modify/job-target")
   public ResponseEntity<Map<String, Object>> modifyJobAndTarget(@RequestHeader("Authorization") String authHeader,
-                                                                @RequestBody ModifyJobTargetRequestDTO jobTargetRequestDTO,
+                                                                @Valid @RequestBody ModifyJobTargetRequestDTO jobTargetRequestDTO,
                                                                 BindingResult valid) {
     if (valid.hasErrors()) {
       return ResponseEntity.badRequest().body(handler.getValidationErrors(valid));
@@ -251,6 +258,108 @@ public class MyPageController {
 
     // 응답 메시지 설정
     return ResponseEntity.status(handler.getHttpStatus(result)).body(handler.createResponse(result, msg));
+  }
+
+  // 나의 루틴 기록 조회
+  @GetMapping("/list/myPlan")
+  public ResponseEntity<Map<String, Object>> getMyPlanList(@RequestParam(defaultValue = "1") int page,
+                                                           @RequestParam(defaultValue = "10") int size,
+                                                           @RequestParam(defaultValue = "0") int status,
+                                                           @RequestParam(required = false) List<Integer> target,
+                                                           @RequestParam(required = false) List<Integer> job,
+                                                           @RequestParam(defaultValue = "latest") String sort,
+                                                           @RequestParam(defaultValue = "desc") String order,
+                                                           @RequestParam(required = false) String search,
+                                                           @RequestHeader("Authorization") String authHeader) {
+
+    //System.out.println("--컨트롤러--");
+    //System.out.println(page + " " +  size + " " + status + " " + target + " " + job + " " + sort + " " + order);
+    String mode = "private";
+    int userIdx = handler.getUserIdxFromToken(authHeader);
+    Map<String, Object> response = listService.getAllPlansList(mode, page - 1, size, status, target, job, sort, order, search, userIdx);
+
+    Object plans = response.get("plans");
+
+    if (plans instanceof List<?>) {
+      List<PlanListDTO> tempList = ((List<?>) plans).stream()
+          .filter(PlanListDTO.class::isInstance)  // PlanListDTO 타입만 필터링
+          .map(PlanListDTO.class::cast)
+          .toList();
+      if (tempList.isEmpty()) {
+        return ResponseEntity.status(handler.getHttpStatus(204)).build();
+      }
+    }
+
+    return ResponseEntity.ok(response);
+  }
+
+  // 선택 루틴 일괄 삭제
+  @PatchMapping("/delete/plans")
+  public ResponseEntity<Map<String, Object>> deleteMyPlans(@RequestHeader("Authorization") String authHeader,
+                                                           @RequestBody List<Integer> planIndexes) {
+    // userIdx 조회
+    int userIdx = handler.getUserIdxFromToken(authHeader);
+
+    // 서비스 로직 실행
+    int result = myPageService.deleteSelectPlans(userIdx, planIndexes);
+
+    // 응답 메세지 세팅
+    String msg = "";
+    switch (result) {
+      case 200 -> msg = "루틴 일괄 삭제 완료";
+      case 404 -> msg = "루틴이 존재하지 않거나, 작성자가 아닙니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
+      default -> msg = "알 수 없는 오류가 발생했습니다.";
+    }
+
+    // 응답 메시지 설정
+    return ResponseEntity.status(handler.getHttpStatus(result))
+        .body(handler.createResponse(result, msg));
+  }
+
+  // 선택 루틴 일괄 공개/비공개 전환
+  @PatchMapping("/switch/isShared")
+  public ResponseEntity<Map<String, Object>> switchMyPlansIsShared(@RequestHeader("Authorization") String authHeader,
+                                                                   @RequestBody List<Integer> planIndexes,
+                                                                   @RequestParam(defaultValue = "reverse") String mode) {
+    // userIdx 조회
+    int userIdx = handler.getUserIdxFromToken(authHeader);
+
+    // 서비스 로직 실행
+    int result = myPageService.switchIsSharedBySelectPlans(userIdx, planIndexes, mode);
+
+    // 응답 메세지 세팅
+    String msg = "";
+    switch (result) {
+      case 200 -> msg = "공개 여부 일괄 전환 완료";
+      case 404 -> msg = "루틴이 존재하지 않거나, 작성자가 아닙니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
+      default -> msg = "알 수 없는 오류가 발생했습니다.";
+    }
+
+    // 응답 메시지 설정
+    return ResponseEntity.status(handler.getHttpStatus(result))
+        .body(handler.createResponse(result, msg));
+  }
+
+  // 내가 참여한 챌린지 조회
+  @GetMapping("/list/myChall")
+  public ResponseEntity<Map<String, Object>> getMyChallList(@RequestHeader("Authorization") String authHeader) {
+
+    int result = 200;
+
+    // 응답 메세지 세팅
+    String msg = "";
+    switch (result) {
+      case 200 -> msg = "공개 여부 일괄 전환 완료";
+      case 404 -> msg = "루틴이 존재하지 않거나, 작성자가 아닙니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
+      default -> msg = "알 수 없는 오류가 발생했습니다.";
+    }
+
+    // 응답 메시지 설정
+    return ResponseEntity.status(handler.getHttpStatus(result))
+        .body(handler.createResponse(result, msg));
   }
 
 

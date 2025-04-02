@@ -3,6 +3,39 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.godLife.project.mapper.MyPageMapper">
+    <resultMap id="MyPageGetUserInfoResultMap" type="com.godLife.project.dto.response.MyPageUserInfosResponseDTO">
+        <id property="userId" column="USER_ID" />
+        <result property="userEmail" column="USER_EMAIL" />
+        <result property="userJoin" column="USER_JOIN" />
+        <result property="userPhone" column="USER_PHONE" />
+        <result property="userGender" column="USER_GENDER" />
+        <association property="jobInfos" javaType="com.godLife.project.dto.categories.JobCateDTO">
+            <result property="idx" column="JOB_IDX" />
+            <result property="name" column="JOB_NAME" />
+            <result property="iconKey" column="JOB_ICONKEY" />
+            <result property="icon" column="JOB_ICON" />
+            <result property="color" column="JOB_COLOR" />
+        </association>
+        <association property="targetInfos" javaType="com.godLife.project.dto.categories.TargetCateDTO">
+            <result property="idx" column="TARGET_IDX" />
+            <result property="name" column="TARGET_NAME" />
+            <result property="iconKey" column="TARGET_ICONKEY" />
+            <result property="icon" column="TARGET_ICON" />
+            <result property="color" column="TARGET_COLOR" />
+        </association>
+    </resultMap>
+    <!-- 회원 정보 추가 제공 -->
+    <select id="getUserInfos" parameterType="int" resultMap="MyPageGetUserInfoResultMap">
+        SELECT U.USER_EMAIL, U.USER_PHONE, U.USER_GENDER, U.USER_JOIN, U.USER_ID,
+        J.JOB_IDX, J.JOB_NAME, J.ICON_KEY AS JOB_ICONKEY, IJ.ICON AS JOB_ICON, IJ.COLOR AS JOB_COLOR,
+        T.TARGET_IDX, T.TARGET_NAME, T.ICON_KEY AS TARGET_ICONKEY, IT.ICON AS TARGET_ICON, IT.COLOR AS TARGET_COLOR
+        FROM USER_TABLE U
+        INNER JOIN JOB_CATEGORY J ON U.JOB_IDX = J.JOB_IDX
+        INNER JOIN ICON_TABLE IJ ON J.ICON_KEY = IJ.ICON_KEY
+        INNER JOIN TARGET_CATEGORY T ON T.TARGET_IDX = U.JOB_IDX
+        INNER JOIN ICON_TABLE IT ON T.ICON_KEY = IT.ICON_KEY
+        WHERE USER_IDX = #{userIdx} AND IS_DELETED = 'N'
+    </select>
 
     <!-- 회원 탈퇴 쿼리 -->
     <update id="deleteAccount" parameterType="int">
@@ -37,6 +70,39 @@
             , NICK_TAG = #{nickTag}
         </if>
         WHERE USER_IDX = #{userIdx} AND IS_DELETED = 'N'
+    </update>
+
+    <!-- 선택 루틴 일괄 삭제 -->
+    <update id="deleteSelectPlans" parameterType="map">
+        UPDATE PLAN_TABLE
+        SET IS_DELETED = 1, IS_ACTIVE = 0, IS_COMPLETED = 0, PLAN_SUB_START = NULL, PLAN_SUB_END = NULL
+        WHERE USER_IDX = #{userIdx} AND IS_DELETED = 0
+        AND PLAN_IDX IN
+        <foreach item="item" index="index" collection="planIndexes" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <!-- 선택 루틴 일괄 비/공개 전환 -->
+    <update id="switchIsSharedBySelectPlans" parameterType="map">
+        UPDATE PLAN_TABLE
+        SET
+        <choose>
+            <when test="mode == 'true'">
+                IS_SHARED = 1
+            </when>
+            <when test="mode == 'false'">
+                IS_SHARED = 0
+            </when>
+            <otherwise>
+                IS_SHARED = 1 - IS_SHARED
+            </otherwise>
+        </choose>
+        WHERE USER_IDX = #{userIdx}
+        AND PLAN_IDX IN
+        <foreach item="item" index="index" collection="planIndexes" open="(" separator="," close=")">
+            #{item}
+        </foreach>
     </update>
 
 </mapper>

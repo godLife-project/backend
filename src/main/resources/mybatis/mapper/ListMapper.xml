@@ -15,6 +15,7 @@
             <result property="forkCount" column="FORK_COUNT"/>
             <result property="isActive" column="IS_ACTIVE"/>
             <result property="isCompleted" column="IS_COMPLETED"/>
+            <result property="isShared" column="IS_SHARED"/>
         </association>
 
         <association property="fireInfos" javaType="com.godLife.project.dto.list.customDTOs.CustomFireDTO">
@@ -59,8 +60,19 @@
             <!-- 기본 모드 -->
             <otherwise>
                 <choose>
+                    <when test="mode == 'private' and status == 0">
+
+                    </when>
                     <when test="status != 3">
-                        AND P.IS_COMPLETED = 0
+                        <choose>
+                            <when test="status == 4">
+                                AND P.IS_COMPLETED = 1
+                                AND P.IS_ACTIVE = 1
+                            </when>
+                            <otherwise>
+                                AND P.IS_COMPLETED = 0
+                            </otherwise>
+                        </choose>
                         <if test="status == 1">
                             AND P.IS_ACTIVE = 1
                         </if>
@@ -70,6 +82,7 @@
                     </when>
                     <otherwise>
                         AND P.IS_COMPLETED = 1
+                        AND P.IS_ACTIVE = 0
                     </otherwise>
                 </choose>
             </otherwise>
@@ -138,10 +151,10 @@
     <!-- 공통 SELECT 컬럼 부분 -->
     <sql id="commonSelectColumns">
         <if test="mode == 'rank'">
-            P.IS_SHARED,
             P.IS_DELETED,
             P.CERT_EXP,
         </if>
+        P.IS_SHARED,
         P.PLAN_IDX,
         U.USER_NICK || ' ' || U.NICK_TAG AS USER_NICK,
         P.PLAN_TITLE,
@@ -262,7 +275,15 @@
                 FROM PLAN_TABLE P
                 <include refid="commonJoin" />
 
-                WHERE P.IS_SHARED = 1 AND P.IS_DELETED = 0
+                WHERE P.IS_DELETED = 0
+                <choose>
+                    <when test="mode == 'private'">
+                        AND P.USER_IDX = #{userIdx}
+                    </when>
+                    <otherwise>
+                        AND P.IS_SHARED = 1
+                    </otherwise>
+                </choose>
                 <include refid="statusFilter" />
                 <include refid="searchFilter" />
                 <include refid="targetCategoryFilter" />
@@ -331,7 +352,15 @@
         FROM PLAN_TABLE P
         <include refid="commonJoin" />
 
-        WHERE P.IS_SHARED = 1 AND P.IS_DELETED = 0
+        WHERE P.IS_DELETED = 0
+        <choose>
+            <when test="mode == 'private'">
+                AND P.USER_IDX = #{userIdx}
+            </when>
+            <otherwise>
+                AND P.IS_SHARED = 1
+            </otherwise>
+        </choose>
         <include refid="statusFilter" />
         <include refid="searchFilter" />
         <include refid="targetCategoryFilter" />

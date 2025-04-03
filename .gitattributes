@@ -1,2 +1,14 @@
-/mvnw text eol=lf
-*.cmd text eol=crlf
+#
+# https://help.github.com/articles/dealing-with-line-endings/
+#
+# Linux start script should use lf
+/gradlew        text eol=lf
+
+# These are Windows script files and should use crlf
+*.bat           text eol=crlf
+
+# Binary files should be left untouched
+*.jar           binary
+
+# Windows에서도 gradle-wrapper.properties 파일은 LF로 유지
+gradle/wrapper/gradle-wrapper.properties text eol=lf

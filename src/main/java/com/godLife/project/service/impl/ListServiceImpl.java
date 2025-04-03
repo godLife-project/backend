@@ -67,7 +67,7 @@ public class ListServiceImpl implements ListService {
   @Override
   public Map<String, Object> getAllPlansList(String mode, int page, int size, int status,
                                              List<Integer> target, List<Integer> job,
-                                             String sort, String order, String search) {
+                                             String sort, String order, String search, int userIdx) {
     // 페이지 번호가 음수일 경우 예외 처리
     if (page < 0) {
       Map<String, Object> errorResponse = new HashMap<>();
@@ -87,8 +87,8 @@ public class ListServiceImpl implements ListService {
         System.out.println(keywords);
       }
 
-      List<PlanListDTO> plans = listMapper.getAllPlanList(mode, offset, size, status, target, job, sort, order, keywords);
-      int totalPlans = listMapper.getTotalPlanCount(mode, status, target, job, keywords);
+      List<PlanListDTO> plans = listMapper.getAllPlanList(mode, offset, size, status, target, job, sort, order, keywords, userIdx);
+      int totalPlans = listMapper.getTotalPlanCount(mode, status, target, job, keywords, userIdx);
 
       Map<String, Object> response = new HashMap<>();
       response.put("plans", plans);

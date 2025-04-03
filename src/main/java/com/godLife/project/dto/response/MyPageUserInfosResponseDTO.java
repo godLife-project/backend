@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.godLife.project.dto.categories.JobCateDTO;
+import com.godLife.project.dto.categories.TargetCateDTO;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -24,6 +26,11 @@ public class MyPageUserInfosResponseDTO {
   private String userPhone;
   // 성별
   private int userGender;
+
+  // 직업
+  private JobCateDTO jobInfos;
+  // 목표
+  private TargetCateDTO targetInfos;
 
 
 }

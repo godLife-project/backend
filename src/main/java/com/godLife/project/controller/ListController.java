@@ -67,7 +67,7 @@ public class ListController {
     //System.out.println("--컨트롤러--");
     //System.out.println(page + " " +  size + " " + status + " " + target + " " + job + " " + sort + " " + order);
 
-    Map<String, Object> response = listService.getAllPlansList(mode, page - 1, size, status, target, job, sort, order, search);
+    Map<String, Object> response = listService.getAllPlansList(mode, page - 1, size, status, target, job, sort, order, search, 0);
 
     Object plans = response.get("plans");
 

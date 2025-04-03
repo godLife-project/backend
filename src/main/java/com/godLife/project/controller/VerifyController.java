@@ -1,5 +1,6 @@
 package com.godLife.project.controller;
 
+import com.godLife.project.dto.request.GetEmailRequestDTO;
 import com.godLife.project.dto.request.VerifyRequestDTO;
 import com.godLife.project.dto.request.myPage.ModifyEmailRequestDTO;
 import com.godLife.project.handler.GlobalExceptionHandler;
@@ -52,8 +53,8 @@ public class VerifyController {
   }
 
 
-  // 이메일 인증 번호 요청 엔드포인트
-  @PostMapping("/emails/sand/verification-requests")
+  // 이메일 인증 번호 요청 엔드포인트 (가입/수정)
+  @PostMapping("/emails/send/verification-requests")
   public ResponseEntity<Map<String, Object>> sendAuthCode(@Valid @RequestBody ModifyEmailRequestDTO emailRequestDTO,
                                              BindingResult valid) {
     if (valid.hasErrors()) {
@@ -66,11 +67,43 @@ public class VerifyController {
     return ResponseEntity.ok().build();
   }
 
-  // 이메일 인증 번호 검증 엔드포인트
+  // 이메일 인증 번호 요청 엔드포인트 (단순인증)
+  @PostMapping("/emails/send/just/verification-requests")
+  public ResponseEntity<Map<String, Object>> sendJustAuthCode(@Valid @RequestBody GetEmailRequestDTO emailRequestDTO,
+                                                          BindingResult valid) {
+    if (valid.hasErrors()) {
+      return ResponseEntity.badRequest().body(handler.getValidationErrors(valid));
+    }
+    String email = emailRequestDTO.getUserEmail();
+
+    verifyService.sendCodeToEmail(email);
+
+    return ResponseEntity.ok().build();
+  }
+
+  // 이메일 인증 번호 검증 엔드포인트 (가입/수정)
   @GetMapping("/emails/verifications")
   public ResponseEntity<Map<String, Object>> verificationEmail(@Valid @RequestBody ModifyEmailRequestDTO emailRequestDTO,
                                                                 BindingResult valid,
                                                                 @RequestParam("code") String code) {
+    if (valid.hasErrors()) {
+      return ResponseEntity.badRequest().body(handler.getValidationErrors(valid));
+    }
+    String email = emailRequestDTO.getUserEmail();
+
+    boolean result = verifyService.verifiedAuthCode(email, code);
+
+    Map<String, Object> response = new HashMap<>();
+    response.put("verified", result); // true/false 값 반환
+
+    return ResponseEntity.ok(response);
+  }
+
+  // 이메일 인증 번호 검증 엔드포인트 (단순인증)
+  @GetMapping("/emails/just/verifications")
+  public ResponseEntity<Map<String, Object>> justVerificationEmail(@Valid @RequestBody GetEmailRequestDTO emailRequestDTO,
+                                                               BindingResult valid,
+                                                               @RequestParam("code") String code) {
     if (valid.hasErrors()) {
       return ResponseEntity.badRequest().body(handler.getValidationErrors(valid));
     }

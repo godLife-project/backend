@@ -22,4 +22,5 @@ public class CustomPlanListDTO {
   private int forkCount;
   private int isActive;
   private int isCompleted;
+  private int isShared;
 }

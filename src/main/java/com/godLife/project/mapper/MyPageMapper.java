@@ -7,6 +7,8 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
+import java.util.List;
+
 @Mapper
 public interface MyPageMapper {
     // 회원 탈퇴
@@ -19,9 +21,6 @@ public interface MyPageMapper {
     String getEncryptPassword(int userIdx);
 
     // 회원 정보 조회
-    @Select("SELECT USER_EMAIL, USER_PHONE, USER_GENDER, USER_JOIN, USER_ID\n" +
-            "  FROM USER_TABLE\n" +
-            " WHERE USER_IDX = #{userIdx} AND IS_DELETED = 'N'")
     MyPageUserInfosResponseDTO getUserInfos(int userIdx);
 
     // 회원 정보 수정
@@ -32,10 +31,15 @@ public interface MyPageMapper {
     @Update("UPDATE USER_TABLE SET USER_EMAIL = #{userEmail} WHERE USER_IDX = #{userIdx} AND IS_DELETED = 'N'")
     int modifyEmail(ModifyEmailRequestDTO modifyEmailRequestDTO);
     // 직업/목표 수정
-    @Update("UPDATE USER_TABLE SET JOB_IDX = #{jobIdx} AND TARGET_IDX = #{targetIdx} WHERE USER_IDX = #{userIdx} AND IS_DELETED = 'N'")
+    @Update("UPDATE USER_TABLE SET JOB_IDX = #{jobIdx}, TARGET_IDX = #{targetIdx} WHERE USER_IDX = #{userIdx} AND IS_DELETED = 'N'")
     int modifyJobTarget(ModifyJobTargetRequestDTO modifyJobTargetRequestDTO);
 
     // 비밀번호 수정
     @Update("UPDATE USER_TABLE SET USER_PW = #{userPw} WHERE USER_IDX = #{userIdx} AND IS_DELETED = 'N'")
     int modifyPassword(GetUserPwRequestDTO userPwRequestDTO);
+
+    // 선택 루틴 일괄 삭제
+    int deleteSelectPlans(int userIdx, List<Integer> planIndexes);
+    // 선택 루틴 일괄 비/공개 전환
+    int switchIsSharedBySelectPlans(int userIdx, List<Integer> planIndexes, String mode);
 }

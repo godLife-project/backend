@@ -11,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -213,6 +215,38 @@ public class MyPageServiceImpl implements MyPageService {
             return 200;
         } catch (Exception e) {
             log.error("e: ", e);
+            return 500;
+        }
+    }
+
+    // 루틴 일괄 삭제
+    @Override
+    public int deleteSelectPlans(int userIdx, List<Integer> planIndexes) {
+        try {
+            int result = myPageMapper.deleteSelectPlans(userIdx, planIndexes);
+
+            if (result == 0) {
+                return 404;
+            }
+            return 200;
+        } catch (Exception e) {
+            log.error("e:" , e);
+            return 500;
+        }
+    }
+
+    // 선택 루틴 일괄 비/공개 전환
+    @Override
+    public int switchIsSharedBySelectPlans(int userIdx, List<Integer> planIndexes, String mode) {
+        try {
+            int result = myPageMapper.switchIsSharedBySelectPlans(userIdx, planIndexes, mode);
+
+            if (result == 0) {
+                return 404;
+            }
+            return 200;
+        } catch (Exception e) {
+            log.error("e:" , e);
             return 500;
         }
     }

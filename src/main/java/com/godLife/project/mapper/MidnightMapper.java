@@ -25,7 +25,7 @@ public interface MidnightMapper {
   void clearFireState();
 
   // 만료된 재발급 토큰 삭제 로직
-  @Delete("DELETE FROM REFRESH_TOKEN WHERE TO_DATE(EXPIRATION, 'YYYY-MM-DD HH24:MI:SS') < SYSDATE")
+  @Delete("DELETE FROM REFRESH_TOKEN WHERE EXPIRATION < SYSDATE")
   int deleteExpiredRefreshTokens();
 
   // 삭제 처리된 계정 완전 삭제

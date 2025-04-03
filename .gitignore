@@ -14,7 +14,7 @@ target/
 .sts4-cache
 
 ### IntelliJ IDEA ###
-.idea
+.idea/
 *.iws
 *.iml
 *.ipr
@@ -28,6 +28,7 @@ target/
 build/
 !**/src/main/**/build/
 !**/src/test/**/build/
+/out/
 
 ### VS Code ###
 .vscode/
@@ -35,5 +36,30 @@ build/
 ## 환경변수 파일 제외 ##
 .env
 application.properties
+application.yml
 config/application.properties
+config/application.yml
 src/main/resources/application.properties
+src/main/resources/application.yml
+
+## 로그 및 캐시 파일 제외 ##
+logs/
+*.log
+debug.log
+
+## 시스템 불필요 파일 제외 ##
+.DS_Store
+Thumbs.db
+
+## 테스트 리포트 및 커버리지 제외 ##
+/test-output/
+/coverage/
+
+## Docker 설정 파일 제외 (사용 시) ##
+docker-compose.override.yml
+
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build

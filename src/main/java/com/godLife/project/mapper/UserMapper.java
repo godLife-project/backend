@@ -2,10 +2,7 @@ package com.godLife.project.mapper;
 
 import com.godLife.project.dto.datas.UserDTO;
 import com.godLife.project.dto.request.GetNameNEmail;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.*;
 
 @Mapper
 public interface UserMapper {
@@ -15,15 +12,15 @@ public interface UserMapper {
     void insertUser(UserDTO joinUserDTO);
 
     // 아이디 중복 체크
-    @Select("SELECT COUNT(*) FROM USER_TABLE WHERE USER_ID = #{userId}")
+    @Select("SELECT COUNT(*) FROM USER_TABLE WHERE USER_ID = #{userId} AND IS_DELETED = 'N'")
     Boolean checkUserIdExist(String userId);
 
     // 이메일 중복 체크
-    @Select("SELECT COUNT(*) FROM USER_TABLE WHERE USER_EMAIL = #{userEmail}")
+    @Select("SELECT COUNT(*) FROM USER_TABLE WHERE USER_EMAIL = #{userEmail} AND IS_DELETED = 'N'")
     Boolean checkUserEmailExist(String userEmail);
 
     // 닉네임 중복 체크
-    @Select("SELECT COUNT(*) FROM USER_TABLE WHERE USER_NICK = #{userNick}")
+    @Select("SELECT COUNT(*) FROM USER_TABLE WHERE USER_NICK = #{userNick} AND IS_DELETED = 'N'")
     int checkUserNickExist(String userNick);
 
     // 로그인
@@ -34,6 +31,10 @@ public interface UserMapper {
     Integer getUserAuthority(@Param("userId") Long userId);
 
     // 아이디 찾기
-    @Select("SELECT USER_ID FROM USER_TABLE WHERE USER_NAME = #{userName} AND USER_EMAIL = #{userEmail}")
+    @Select("SELECT USER_ID FROM USER_TABLE WHERE USER_NAME = #{userName} AND USER_EMAIL = #{userEmail} AND IS_DELETED = 'N'")
     String getUserId(GetNameNEmail getNameNEmail);
+
+    // 비밀번호 찾기 (변경)
+    @Update("UPDATE USER_TABLE SET USER_PW = #{userPw} WHERE USER_EMAIL = #{userEmail} AND IS_DELETED = 'N'")
+    int findUserPw(String userPw, String userEmail);
 }

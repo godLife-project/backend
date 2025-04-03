@@ -3,6 +3,7 @@ package com.godLife.project.controller;
 import com.godLife.project.dto.datas.UserDTO;
 import com.godLife.project.dto.request.GetEmailRequestDTO;
 import com.godLife.project.dto.request.GetNameNEmail;
+import com.godLife.project.dto.request.myPage.GetUserPwRequestDTO;
 import com.godLife.project.handler.GlobalExceptionHandler;
 import com.godLife.project.service.impl.redis.RedisService;
 import com.godLife.project.service.interfaces.UserService;
@@ -109,6 +110,43 @@ public class UserController {
     }
     return ResponseEntity.ok().body(handler.createResponse(200, result));
 
+  }
+
+  // 비번 찾기
+  @PatchMapping("/find/userPw/{userEmail}")
+  public ResponseEntity<Map<String, Object>> findUserPw(@Valid @RequestBody GetUserPwRequestDTO request,
+                                                        BindingResult valid,
+                                                        @PathVariable String userEmail) {
+    if (valid.hasErrors()) {
+      return ResponseEntity.badRequest().body(handler.getValidationErrors(valid));
+    }
+
+    // 이메일 인증 여부 검증
+    String key = "EMAIL_VERIFIED: " + userEmail;
+    String verified = redisService.getData(key); // 인증 여부 조회
+
+    if (verified == null || !verified.equals("true")) {
+      return ResponseEntity.status(handler.getHttpStatus(412))
+          .body(handler.createResponse(412, "이메일 인증이 필요합니다."));
+    }
+
+    int result = userService.FindUserPw(request, userEmail);
+
+    // 응답 메세지 세팅
+    String msg = "";
+    switch (result) {
+      case 200 -> msg = "비밀번호 수정 완료";
+      case 400 -> msg = "비밀번호 확인 필드의 값이 누락되었습니다.";
+      case 404 -> msg = "탈퇴했거나, 존재하지 않는 유저입니다.";
+      case 422 -> msg = "비밀번호가 일치하지 않습니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
+      default -> msg = "알 수 없는 오류가 발생했습니다.";
+    }
+
+    redisService.deleteData(key);
+
+    // 응답 메시지 설정
+    return ResponseEntity.status(handler.getHttpStatus(result)).body(handler.createResponse(result, msg));
   }
 
 

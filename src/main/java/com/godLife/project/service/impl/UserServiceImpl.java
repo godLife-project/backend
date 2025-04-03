@@ -3,13 +3,16 @@ package com.godLife.project.service.impl;
 
 import com.godLife.project.dto.datas.UserDTO;
 import com.godLife.project.dto.request.GetNameNEmail;
+import com.godLife.project.dto.request.myPage.GetUserPwRequestDTO;
 import com.godLife.project.mapper.UserMapper;
 import com.godLife.project.service.interfaces.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -80,6 +83,33 @@ public class UserServiceImpl implements UserService {
         String visiblePart = str.substring(0, visible);
         String maskedPart = "*".repeat(str.length() - visible);
         return visiblePart + maskedPart;
+    }
+
+
+    // 비번 찾기
+    @Override
+    public int FindUserPw(GetUserPwRequestDTO userPwRequestDTO, String userEmail) {
+        String userPw = userPwRequestDTO.getUserPw();
+        String userPwConfirm = userPwRequestDTO.getUserPwConfirm();
+
+        if (userPwConfirm == null || userPwConfirm.isBlank()) { return 400; } // 비밀번호 확인 존재 여부
+        if (!userPw.equals(userPwConfirm)) { return 422; } // 변경 비밀번호와 비밀번호 확인 일치 여부 확인
+        if (!userMapper.checkUserEmailExist(userEmail)) { return 404;} // 이메일 등록 여부 확인
+
+        try {
+            String encryptedPassword = passwordEncoder.encode(userPw);
+
+            int result = userMapper.findUserPw(encryptedPassword, userEmail);
+            if (result == 0) {
+                return 404;
+            }
+
+            return 200;
+        } catch (Exception e) {
+            log.error("e: ", e);
+            return 500;
+        }
+
     }
 
 

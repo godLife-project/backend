@@ -59,10 +59,8 @@ public interface ChallengeMapper {
     // 인증을 통해 감소한 총 시간 조회
     Integer getElapsedClearTime(@Param("challIdx") Long challIdx);
 
-    // 사용자가 해당 챌린지에 참여 중인지 확인
-    boolean isUserJoined(@Param("challIdx") Long challIdx, @Param("userId") Long userId);
+    // 사용자 중복 참여 방지 코드
+    boolean isUserAlreadyJoined(@Param("challIdx") Long challIdx, @Param("userIdx") int userIdx);
 
-    // 챌린지의 시작 시간을 가져오는 메서드
-    LocalDateTime getChallengeStartTime(Long challIdx);
 
 }

@@ -19,6 +19,7 @@ import java.util.Map;
 
 @Slf4j
 @Service
+@Transactional
 public class ChallengeServiceImpl implements ChallengeService {
     private final ChallengeMapper challengeMapper;
     private final ChallJoinMapper challJoinMapper;
@@ -59,27 +60,31 @@ public class ChallengeServiceImpl implements ChallengeService {
     @Transactional(rollbackFor = Exception.class)
     public int createChallenge(ChallengeDTO challengeDTO) {
         try {
-            // 챌린지 기본값 설정 (권한 체크 없음)
-            challengeDTO.setChallState(ChallengeState.PUBLISHED.name());
-
-            // 관리자 개입형 (시작, 종료시간 설정)
+            // 관리자 개입형 처리
             if (challengeDTO.getUserJoin() == 0) {
-                if (challengeDTO.getChallStartTime() == null || challengeDTO.getDuration() == null) {
-                    throw new IllegalArgumentException("관리자 개입형 챌린지는 시작 시간과 기간(Duration)이 필요합니다.");
+                if (challengeDTO.getDuration() == null) {
+                    throw new IllegalArgumentException("관리자 개입형 챌린지는 기간(Duration)이 필요합니다.");
                 }
 
+                challengeDTO.setChallState(ChallengeState.IN_PROGRESS.getState());
+
+                // 현재 시간을 시작 시간으로 설정
+                LocalDateTime startTime = LocalDateTime.now();
+                challengeDTO.setChallStartTime(startTime);
+
                 // 종료 시간 설정
-                LocalDateTime startTime = challengeDTO.getChallStartTime();
                 Integer duration = challengeDTO.getDuration();
-                LocalDateTime endTime = startTime.plusDays(duration);
+                LocalDateTime endTime = calculateEndTime(startTime, duration);
 
                 challengeDTO.setChallEndTime(endTime);
-
-
-            } // 유저 참여형 (시작, 종료시간을 null로 유지)
+            }
+            // 유저 참여형 처리
             else if (challengeDTO.getUserJoin() == 1) {
+                challengeDTO.setChallState(ChallengeState.PUBLISHED.getState());
                 challengeDTO.setChallStartTime(null); // 참가자가 생길 때 설정
                 challengeDTO.setChallEndTime(null);
+            } else {
+                throw new IllegalArgumentException("userJoin 값은 0 또는 1이어야 합니다.");
             }
 
             // 챌린지 생성
@@ -87,33 +92,41 @@ public class ChallengeServiceImpl implements ChallengeService {
             return 201;
         } catch (Exception e) {
             log.error("e: ", e);
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly(); // 수동 롤백
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return 500;
         }
     }
 
-
-
+    // 챌린지 참여 시 시작 시간 업데이트
     public void updateChallengeStartTime(Long challIdx, Integer duration) throws Exception {
         ChallengeDTO challengeDTO = challengeMapper.challengeDetail(challIdx);
-        // 시작시간이 설정되지 않은 경우에만 업데이트
-        if (challengeDTO.getChallStartTime() == null) {
-            LocalDateTime startTime = LocalDateTime.now(); // 첫 참가자 시점으로 시작시간 업데이트
-            LocalDateTime endTime = startTime.plusDays(duration); // 시작시간 + 유지시간으로 종료시간 업데이트
-            ChallengeState newState = ChallengeState.IN_PROGRESS; // 챌린지 상태 업데이트
+
+        // 유저 참여형 챌린지에서만 적용
+        if (challengeDTO.getUserJoin() == 1 && challengeDTO.getChallStartTime() == null) {
+            LocalDateTime startTime = LocalDateTime.now();
+            LocalDateTime endTime = calculateEndTime(startTime, duration);
+
+            challengeDTO.setChallStartTime(startTime);
+            challengeDTO.setChallEndTime(endTime);
+            challengeDTO.setChallState(ChallengeState.IN_PROGRESS.getState());
 
             Map<String, Object> params = new HashMap<>();
             params.put("challIdx", challIdx);
             params.put("challStartTime", startTime);
             params.put("challEndTime", endTime);
-            params.put("challState", newState.name());
+            params.put("challState", challengeDTO.getChallState());
 
             challengeMapper.updateChallengeStartTime(params);
         }
+        else if (challengeDTO.getUserJoin() == 1 && challengeDTO.getChallStartTime() != null) {
+            throw new IllegalStateException("이미 진행 중인 챌린지입니다.");
+        }
+        else if (challengeDTO.getUserJoin() == 0) {
+            throw new IllegalArgumentException("관리자 개입형 챌린지는 이 메서드로 시작할 수 없습니다.");
+        }
     }
 
-
-    // 클라이언트에서 받는 값을 일수로 계산
+    // 종료 시간 계산 로직
     private LocalDateTime calculateEndTime(LocalDateTime challStartTime, int duration) {
         return challStartTime.plusDays(duration);
     }
@@ -139,7 +152,7 @@ public class ChallengeServiceImpl implements ChallengeService {
         challenge.setTotalClearTime(updatedClearTime); // 인증을 통한 총 클리어시간 감소 조회
 
         // 종료 시간이 되면 상태를 "완료됨"으로 변경
-        if (LocalDateTime.now().isAfter(challenge.getChallEndTime())
+        if (challenge.getChallEndTime() != null && LocalDateTime.now().isAfter(challenge.getChallEndTime())
                 && !challenge.getChallState().equals(ChallengeState.COMPLETED.getState())) {
             challenge.setChallState(ChallengeState.COMPLETED.getState());
         }
@@ -168,6 +181,12 @@ public class ChallengeServiceImpl implements ChallengeService {
         // 챌린지 상태가 "PUBLISHED" 또는 "IN_PROGRESS"일 때만 참여 가능
         if (!"PUBLISHED".equals(challenge.getChallState()) && !"진행중".equals(challenge.getChallState())) {
             throw new IllegalStateException("참여할 수 없는 챌린지입니다.");
+        }
+
+        //  중복 참여 확인 로직 추가
+        boolean isAlreadyJoined = challengeMapper.isUserAlreadyJoined(challIdx, userIdx);
+        if (isAlreadyJoined) {
+            throw new IllegalArgumentException("이미 참여한 챌린지입니다.");
         }
 
         // 챌린지 시작 시간이 null이면 (userJoin==1 이면) 첫 번째 유저의 참여 시점으로 시작 시간 설정
@@ -213,7 +232,7 @@ public class ChallengeServiceImpl implements ChallengeService {
         challengeMapper.addUserToChallenge(
                 challIdx,
                 userIdx,
-                joinRequest.getChallStartTime(),
+                now,
                 challEndTime,
                 joinRequest.getActivity()
         );

@@ -4,17 +4,28 @@
 
 <mapper namespace="com.godLife.project.mapper.ChallengeMapper">
 
-    <!-- 챌린지 생성 (관리자 전용) -->
+    <!-- 챌린지 생성 (유저 참여형일 때는 START_TIME과 END_TIME을 NULL로 저장) -->
     <insert id="createChallenge">
-        <selectKey keyProperty="challIdx" resultType="java.lang.Long" order="AFTER">
-            SELECT CHALL_SEQ.CURRVAL FROM DUAL
-        </selectKey>
         INSERT INTO CHALL_TABLE (
-        CHALL_IDX, CHALL_TITLE, CHALL_DESCRIPTION, CHALL_CATEGORY_IDX, MIN_PARTICIPATION_TIME, TOTAL_CLEAR_TIME, MAX_PARTICIPANTS,CHALL_CREATED_AT, CHALL_STATE,
-         CHALL_START_TIME, CHALL_END_TIME, USER_JOIN)
-        VALUES (CHALL_SEQ.NEXTVAL, #{challTitle}, #{challDescription}, #{challCategoryIdx}, #{minParticipationTime}, #{totalClearTime}, #{maxParticipants},
-        SYSDATE, #{challState}, #{challStartTime, jdbcType=TIMESTAMP},#{challEndTime, jdbcType=TIMESTAMP}, #{userJoin})
+        CHALL_IDX, CHALL_TITLE, CHALL_DESCRIPTION, CHALL_CATEGORY_IDX,
+        MIN_PARTICIPATION_TIME, TOTAL_CLEAR_TIME, MAX_PARTICIPANTS,
+        CHALL_CREATED_AT, CHALL_STATE, CHALL_START_TIME, CHALL_END_TIME, USER_JOIN
+        )
+        VALUES (
+        CHALL_SEQ.NEXTVAL, #{challTitle}, #{challDescription}, #{challCategoryIdx},
+        #{minParticipationTime}, #{totalClearTime}, #{maxParticipants},
+        SYSDATE, #{challState},  #{challStartTime}, #{challEndTime}, #{userJoin}
+        )
     </insert>
+
+    <!-- 유저 참여형 챌린지 최초 참여 시 정보 업데이트 -->
+    <update id="updateChallengeStartTime">
+        UPDATE CHALL_TABLE
+        SET CHALL_START_TIME = #{challStartTime},
+        CHALL_END_TIME = #{challEndTime},
+        CHALL_STATE = #{challState}
+        WHERE CHALL_IDX = #{challIdx}
+    </update>
 
 
     <!-- 챌린지 상세정보 조회 -->
@@ -34,15 +45,13 @@
         WHERE chall_idx = #{challIdx}
     </select>
 
-    <!-- 유저 참여형 챌린지 최초 참여 시 정보 업데이트 -->
-    <update id="updateChallengeStartTime">
-        UPDATE CHALL_TABLE
-        SET CHALL_START_TIME = #{challStartTime},
-            CHALL_END_TIME = #{challEndTime},
-            CHALL_STATE = #{challState}
-        WHERE CHALL_IDX = #{challIdx}
-    </update>
 
+    <!-- 중복 참여 Mapper -->
+    <select id="isUserAlreadyJoined" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM CHALL_JOIN
+        WHERE CHALL_IDX = #{challIdx} AND USER_IDX = #{userIdx}
+    </select>
     <!-- 유저 참여 기록 -->
     <insert id="addUserToChallenge">
         INSERT INTO CHALL_JOIN (CHALL_JOIN_IDX, chall_idx, user_idx, start_Time, end_Time, activity)

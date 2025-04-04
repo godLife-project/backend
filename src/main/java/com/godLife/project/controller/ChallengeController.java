@@ -143,33 +143,37 @@ public class ChallengeController {
 
   @PostMapping("/auth/join/{challIdx}")
   public ResponseEntity<Object> joinChallenge(@PathVariable Long challIdx,
+                                              @RequestHeader("Authorization") String authHeader,
                                               @RequestBody ChallengeJoinRequest joinRequest) {
     try {
+      int userIdx = handler.getUserIdxFromToken(authHeader);
+
       // 챌린지 참여 로직
-      ChallengeDTO challenge = challengeService.joinChallenge(challIdx, joinRequest.getUserIdx(), joinRequest);
+      ChallengeDTO challenge = challengeService.joinChallenge(challIdx, userIdx, joinRequest);
       return ResponseEntity.ok(challenge); // 참가한 챌린지 정보 반환
+
     } catch (IllegalArgumentException e) {
-      // 참가 인원 초과 등의 문제 발생 시 400 응답
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
               .body(handler.createResponse(400, e.getMessage()));
     } catch (Exception e) {
-      // 기타 예외는 500 응답
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
               .body(handler.createResponse(500, "챌린지 참여 중 오류가 발생했습니다."));
     }
   }
 
+
     // 챌린지 인증 (경과 시간 기록)
     @PostMapping("/auth/verify/{challIdx}")
     public ResponseEntity<?> verifyChallenge(
             @PathVariable Long challIdx,
-            @RequestParam int userIdx,
+            @RequestHeader("Authorization") String authHeader,
             @RequestBody VerifyDTO verifyDTO) {
+
+      int userIdx = handler.getUserIdxFromToken(authHeader);
 
       verifyDTO.setChallIdx(challIdx);
       verifyDTO.setUserIdx(userIdx);
 
-      // 인증 처리 (챌린지 정보는 서비스 내부에서 조회)
       challengeService.verifyChallenge(verifyDTO);
 
       return ResponseEntity.ok("챌린지 인증 완료");

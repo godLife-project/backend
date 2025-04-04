@@ -15,6 +15,7 @@
     FROM JOB_CATEGORY JC
     LEFT JOIN ICON_TABLE IT ON JC.ICON_KEY = IT.ICON_KEY
     WHERE JC.VISIBLE = 1
+    ORDER BY JC.JOB_IDX
   </select>
 
   <!-- 관심사 카테고리 조회 -->
@@ -27,6 +28,7 @@
     IT.COLOR
     FROM TARGET_CATEGORY TC
     LEFT JOIN ICON_TABLE IT ON TC.ICON_KEY = IT.ICON_KEY
+    ORDER BY TC.TARGET_IDX
   </select>
 
 </mapper>

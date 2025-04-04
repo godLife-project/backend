@@ -93,19 +93,19 @@ public class VerifyServiceImpl implements VerifyService {
     // (key = "AuthCode " + Email / value = AuthCode) 소멸시간 5분
     String key = AUTH_CODE_PREFIX + toEmail;
 
-    redisService.saveData(key, authCode, 300);
+    redisService.saveStringData(key, authCode, 'm', 5);
   }
 
   // 인증 코드 검증
   @Override
   public boolean verifiedAuthCode(String email, String authCode) {
     String key = AUTH_CODE_PREFIX + email;
-    String redisAuthCode = redisService.getData(key);
+    String redisAuthCode = redisService.getStringData(key);
 
     boolean result = redisService.checkExistsValue(key) && redisAuthCode.equals(authCode);
     if (result) { // 검증 성공 시 인증코드 삭제
       redisService.deleteData(key);
-      redisService.saveData("EMAIL_VERIFIED: " + email, "true", 600);
+      redisService.saveStringData("EMAIL_VERIFIED: " + email, "true", 'm', 10);
     }
     return result;
   }

@@ -117,7 +117,7 @@ public class MyPageController {
       return ResponseEntity.badRequest().body(handler.getValidationErrors(valid));
     }
     // 이메일 인증 여부 검증
-    String verified = redisService.getData("EMAIL_VERIFIED: " + modifyEmailRequestDTO.getUserEmail());
+    String verified = redisService.getStringData("EMAIL_VERIFIED: " + modifyEmailRequestDTO.getUserEmail());
     if (verified == null || !verified.equals("true")) {
       return ResponseEntity.status(handler.getHttpStatus(412))
           .body(handler.createResponse(412, "이메일 인증이 필요합니다."));

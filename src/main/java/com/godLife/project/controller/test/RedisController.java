@@ -1,11 +1,11 @@
 package com.godLife.project.controller.test;
 
+import com.godLife.project.dto.categories.TopCateDTO;
 import com.godLife.project.service.impl.redis.RedisService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 public class RedisController {
@@ -15,16 +15,19 @@ public class RedisController {
 
   @PostMapping("/save")
   public String saveData(@RequestParam String key, @RequestParam String value) {
-    redisService.saveData(key, value, 3600);
+    redisService.saveStringData(key, value, 'h', 1);
     return "Data saved to Redis";
   }
 
   @GetMapping("/get")
   public String getData(@RequestParam String key) {
-    return redisService.getData(key);
+    return redisService.getStringData(key);
   }
 
-  @PostMapping("/delete")
+  @GetMapping("/get-top")
+  public List<TopCateDTO> topMenu(@RequestParam String key) { return redisService.getListData(key, TopCateDTO.class); }
+
+  @DeleteMapping("/delete")
   public String deleteData(@RequestParam String key) {
     redisService.deleteData(key);
     return "Data deleted from Redis";

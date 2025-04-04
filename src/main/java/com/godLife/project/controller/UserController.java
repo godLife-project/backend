@@ -94,7 +94,7 @@ public class UserController {
 
     // 이메일 인증 여부 검증
     String key = "EMAIL_VERIFIED: " + request.getUserEmail();
-    String verified = redisService.getData(key); // 인증 여부 조회
+    String verified = redisService.getStringData(key); // 인증 여부 조회
 
     if (verified == null || !verified.equals("true")) {
       return ResponseEntity.status(handler.getHttpStatus(412))
@@ -123,7 +123,7 @@ public class UserController {
 
     // 이메일 인증 여부 검증
     String key = "EMAIL_VERIFIED: " + userEmail;
-    String verified = redisService.getData(key); // 인증 여부 조회
+    String verified = redisService.getStringData(key); // 인증 여부 조회
 
     if (verified == null || !verified.equals("true")) {
       return ResponseEntity.status(handler.getHttpStatus(412))

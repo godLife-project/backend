@@ -82,7 +82,7 @@ public class VerifyController {
   }
 
   // 이메일 인증 번호 검증 엔드포인트 (가입/수정)
-  @GetMapping("/emails/verifications")
+  @PostMapping("/emails/verifications")
   public ResponseEntity<Map<String, Object>> verificationEmail(@Valid @RequestBody ModifyEmailRequestDTO emailRequestDTO,
                                                                 BindingResult valid,
                                                                 @RequestParam("code") String code) {
@@ -100,7 +100,7 @@ public class VerifyController {
   }
 
   // 이메일 인증 번호 검증 엔드포인트 (단순인증)
-  @GetMapping("/emails/just/verifications")
+  @PostMapping("/emails/just/verifications")
   public ResponseEntity<Map<String, Object>> justVerificationEmail(@Valid @RequestBody GetEmailRequestDTO emailRequestDTO,
                                                                BindingResult valid,
                                                                @RequestParam("code") String code) {

@@ -362,6 +362,60 @@ public class MyPageController {
         .body(handler.createResponse(result, msg));
   }
 
+  // 내가 좋아요 한 루틴 조회
+  @GetMapping("/list/myLike")
+  public ResponseEntity<Map<String, Object>> getMyLikeList(@RequestParam(defaultValue = "1") int page,
+                                                           @RequestParam(defaultValue = "10") int size,
+                                                           @RequestParam(required = false) List<Integer> target,
+                                                           @RequestParam(required = false) List<Integer> job,
+                                                           @RequestParam(defaultValue = "desc") String order,
+                                                           @RequestParam(required = false) String search,
+                                                           @RequestHeader("Authorization") String authHeader) {
+    int userIdx = handler.getUserIdxFromToken(authHeader);
+    String mode = "myLike";
+    int status = 0;
+
+    Map<String, Object> response = listService.getLikePlanList(mode, page - 1, size, status, target, job, order, search, userIdx);
+
+    Object plans = response.get("plans");
+
+    if (plans instanceof List<?>) {
+      List<PlanListDTO> tempList = ((List<?>) plans).stream()
+          .filter(PlanListDTO.class::isInstance)  // PlanListDTO 타입만 필터링
+          .map(PlanListDTO.class::cast)
+          .toList();
+      if (tempList.isEmpty()) {
+        return ResponseEntity.status(handler.getHttpStatus(204)).build();
+      }
+    }
+
+    return ResponseEntity.ok(response);
+  }
+
+  // 선택 루틴 일괄 삭제
+  @DeleteMapping("/delete/likes")
+  public ResponseEntity<Map<String, Object>> deleteMyLikes(@RequestHeader("Authorization") String authHeader,
+                                                           @RequestParam List<Integer> planIndexes) {
+    // userIdx 조회
+    int userIdx = handler.getUserIdxFromToken(authHeader);
+
+    // 서비스 로직 실행
+    int result = myPageService.unLikeSelectPlans(userIdx, planIndexes);
+
+    // 응답 메세지 세팅
+    String msg = "";
+    switch (result) {
+      case 200 -> msg = "좋아요 일괄 취소 완료";
+      case 404 -> msg = "좋아요 취소할 루틴이 없습니다.";
+      case 500 -> msg = "서버 내부적으로 오류가 발생하여 요청을 수행하지 못했습니다.";
+      default -> msg = "알 수 없는 오류가 발생했습니다.";
+    }
+
+    // 응답 메시지 설정
+    return ResponseEntity.status(handler.getHttpStatus(result))
+        .body(handler.createResponse(result, msg));
+  }
+
 
 
 

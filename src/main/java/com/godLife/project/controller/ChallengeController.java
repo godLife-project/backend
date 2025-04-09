@@ -157,6 +157,7 @@ public class ChallengeController {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
               .body(handler.createResponse(400, e.getMessage()));
     } catch (Exception e) {
+      log.error("e: ", e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
               .body(handler.createResponse(500, "챌린지 참여 중 오류가 발생했습니다."));
     }

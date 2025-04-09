@@ -32,4 +32,5 @@ public class VerifyDTO {
 
     @Schema(description = "경과 시간(챌린지용)", example = "120")
     private int elapsedTime;
+
 }

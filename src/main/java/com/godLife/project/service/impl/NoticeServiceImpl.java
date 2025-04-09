@@ -16,8 +16,9 @@ public class NoticeServiceImpl implements NoticeService {
   }
 
   @Override
-  public List<NoticeDTO> getNoticeList(){
-    return noticeMapper.getNoticeList();
+  public List<NoticeDTO> getNoticeList(int page, int size) {
+    int offset = (page - 1) * size;
+    return noticeMapper.getNoticeList(offset, size);
   }
 
   // 상세 조회
@@ -25,9 +26,21 @@ public class NoticeServiceImpl implements NoticeService {
     return noticeMapper.getNoticeDetail(noticeIdx);
   }
 
+  // 팝업 공지 조회
+  public NoticeDTO getActivePopupNotice() {
+    return noticeMapper.getActivePopupNotice();
+  }
+
+  // 기존 공지 팝업 활성화
+  public int setNoticePopup(NoticeDTO noticeDTO) {
+    int result = noticeMapper.setNoticePopup(noticeDTO);
+    return result == 1 ? 200 : 404; // 업데이트 성공 → 200, 실패(공지 없음) → 404
+  }
+
   // 공지 작성
-  public int createNotice(NoticeDTO noticeDTO){
-    return noticeMapper.createNotice(noticeDTO);
+  public int createNotice(NoticeDTO noticeDTO) {
+    int result = noticeMapper.createNotice(noticeDTO);
+    return result == 1 ? 201 : 500; // 1이면 성공, 그 외는 서버 에러 처리
   }
 
   // 공지 수정

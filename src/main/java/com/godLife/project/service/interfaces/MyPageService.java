@@ -32,4 +32,7 @@ public interface MyPageService {
     // 루틴 일괄 비/공개 전환
     int switchIsSharedBySelectPlans(int userIdx, List<Integer> planIndexes, String mode);
 
+    // 루틴 일괄 좋아요 취소
+    int unLikeSelectPlans(int userIdx, List<Integer> planIndexes);
+
 }

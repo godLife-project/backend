@@ -251,4 +251,20 @@ public class MyPageServiceImpl implements MyPageService {
         }
     }
 
+    // 선택 루틴 일괄 좋아요 취소
+    @Override
+    public int unLikeSelectPlans(int userIdx, List<Integer> planIndexes) {
+        try {
+            int result = myPageMapper.unLikeSelectPlans(userIdx, planIndexes);
+
+            if (result == 0) {
+                return 404;
+            }
+            return 200;
+        } catch (Exception e) {
+            log.error("e:" , e);
+            return 500;
+        }
+    }
+
 }

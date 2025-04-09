@@ -42,4 +42,7 @@ public interface MyPageMapper {
     int deleteSelectPlans(int userIdx, List<Integer> planIndexes);
     // 선택 루틴 일괄 비/공개 전환
     int switchIsSharedBySelectPlans(int userIdx, List<Integer> planIndexes, String mode);
+
+    // 선택 루틴 일괄 좋아요 취소
+    int unLikeSelectPlans(int userIdx, List<Integer> planIndexes);
 }

@@ -32,6 +32,16 @@ public interface ListMapper {
                                    @Param("order") String order,
                                    @Param("keywords") Map<String, List<String>> keywords,
                                    @Param("userIdx") int userIdx);
+  // 좋아요 한 루틴 리스트 조회
+  List<PlanListDTO> getLikePlanList(@Param("mode") String mode,
+                                   @Param("offset") int offset,
+                                   @Param("size") int size,
+                                   @Param("target") List<Integer> target,
+                                   @Param("job") List<Integer> job,
+                                   @Param("order") String order,
+                                   @Param("keywords") Map<String, List<String>> keywords,
+                                   @Param("userIdx") int userIdx);
+
   // 루틴 리스트 총 게시글 수 조회
   int getTotalPlanCount(@Param("mode") String mode,
                         @Param("status") int status,

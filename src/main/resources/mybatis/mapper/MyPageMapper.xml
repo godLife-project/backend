@@ -105,4 +105,15 @@
         </foreach>
     </update>
 
+    <!-- 선택 루틴 일괄 좋아요 취소 -->
+    <update id="unLikeSelectPlans" parameterType="map">
+        DELETE FROM LIKE_TABLE
+        WHERE USER_IDX = #{userIdx}
+        AND PLAN_IDX IN
+        <foreach item="item" index="index" collection="planIndexes" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+
 </mapper>

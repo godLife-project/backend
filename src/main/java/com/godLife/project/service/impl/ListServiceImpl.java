@@ -8,6 +8,7 @@ import com.godLife.project.mapper.PlanMapper;
 import com.godLife.project.service.interfaces.ListService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -88,6 +89,49 @@ public class ListServiceImpl implements ListService {
       }
 
       List<PlanListDTO> plans = listMapper.getAllPlanList(mode, offset, size, status, target, job, sort, order, keywords, userIdx);
+      int totalPlans = listMapper.getTotalPlanCount(mode, status, target, job, keywords, userIdx);
+
+      Map<String, Object> response = new HashMap<>();
+      response.put("plans", plans);
+      response.put("currentPage", page + 1);
+      response.put("totalPages", (int) Math.ceil((double) totalPlans / size));
+      response.put("totalPosts", totalPlans);
+
+      return response;
+    } catch (Exception e) {
+      log.error("e: ", e);
+      // 예외 발생 시 반환할 응답
+      Map<String, Object> errorResponse = new HashMap<>();
+      errorResponse.put("error", "An error occurred while retrieving the plan list.");
+      errorResponse.put("message", e.getMessage()); // 예외 메시지 추가
+      errorResponse.put("status", "error"); // 에러 상태 추가
+      return errorResponse; // 실패 응답 반환
+    }
+  }
+
+  // 좋아요 한 루틴 리스트 조회
+  @Override
+  public Map<String, Object> getLikePlanList(String mode, int page, int size, int status, List<Integer> target,
+                                      List<Integer> job, String order, String search, int userIdx) {
+    // 페이지 번호가 음수일 경우 예외 처리
+    if (page < 0) {
+      Map<String, Object> errorResponse = new HashMap<>();
+      errorResponse.put("error", "유효하지 않은 페이지 번호");
+      errorResponse.put("message", "페이지 번호는 1부터 시작 되어야 합니다.");
+      return errorResponse;
+    }
+    try {
+      int offset = page * size;
+
+      //System.out.println("--서비스--");
+      //System.out.println(page + " " +  size + " " + status + " " + target + " " + job + " " + sort + " " + order);
+
+      Map<String, List<String>> keywords = new HashMap<>();
+      if (search != null) {
+        keywords = parseKeywords(search);
+        System.out.println(keywords);
+      }
+      List<PlanListDTO> plans = listMapper.getLikePlanList(mode, offset, size, target, job, order, keywords, userIdx);
       int totalPlans = listMapper.getTotalPlanCount(mode, status, target, job, keywords, userIdx);
 
       Map<String, Object> response = new HashMap<>();

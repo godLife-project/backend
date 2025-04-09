@@ -7,4 +7,5 @@ public class VerifyRequestDTO {
   private int activityIdx;
   private int userIdx;
   private int planIdx;
+
 }

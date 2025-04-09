@@ -1,8 +1,7 @@
 package com.godLife.project.controller;
 
 import com.godLife.project.dto.contents.ChallengeDTO;
-import com.godLife.project.dto.infos.VerifyDTO;
-import com.godLife.project.dto.request.ChallengeJoinRequest;
+import com.godLife.project.dto.verify.ChallengeVerifyDTO;
 import com.godLife.project.handler.GlobalExceptionHandler;
 import com.godLife.project.service.interfaces.ChallengeService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,10 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @RestController
@@ -66,9 +62,9 @@ public class ChallengeController {
   }
 
     @PutMapping("/auth/{challIdx}/start")
-    public ResponseEntity<String> updateChallengeStartTime(@PathVariable Long challIdx, @RequestParam Integer duration) {
+    public ResponseEntity<String> updateChallengeStartTime(@PathVariable Long challIdx) {
         try {
-            challengeService.updateChallengeStartTime(challIdx, duration);
+            challengeService.updateChallengeStartTime(challIdx);
             return ResponseEntity.ok("챌린지 시작 시간이 업데이트되었습니다.");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("챌린지 시작 시간 업데이트 실패: " + e.getMessage());
@@ -111,12 +107,18 @@ public class ChallengeController {
     int totalChallenges = challengeService.getTotalChallengesByCategory(challCategoryIdx);
     int totalPages = (int) Math.ceil((double) totalChallenges / size);
 
+    Map<String, Object> response;
+
     if (challenges.isEmpty()) {
-      return ResponseEntity.status(HttpStatus.NO_CONTENT)
-              .body(createResponse(204, "해당 카테고리에 챌린지가 없습니다."));
+      response = createResponse(200, "해당 카테고리에 챌린지가 없습니다.");
+      response.put("challenges", new ArrayList<>()); // 빈 리스트
+      response.put("totalPages", 0);
+      response.put("currentPage", page);
+      response.put("pageSize", size);
+      return ResponseEntity.ok(response);
     }
 
-    Map<String, Object> response = createResponse(200, "카테고리별 챌린지 조회 성공");
+    response = createResponse(200, "카테고리별 챌린지 조회 성공");
     response.put("challenges", challenges);
     response.put("totalPages", totalPages);
     response.put("currentPage", page);
@@ -143,13 +145,12 @@ public class ChallengeController {
 
   @PostMapping("/auth/join/{challIdx}")
   public ResponseEntity<Object> joinChallenge(@PathVariable Long challIdx,
-                                              @RequestHeader("Authorization") String authHeader,
-                                              @RequestBody ChallengeJoinRequest joinRequest) {
+                                              @RequestHeader("Authorization") String authHeader) {
     try {
       int userIdx = handler.getUserIdxFromToken(authHeader);
 
       // 챌린지 참여 로직
-      ChallengeDTO challenge = challengeService.joinChallenge(challIdx, userIdx, joinRequest);
+      ChallengeDTO challenge = challengeService.joinChallenge(challIdx, userIdx);
       return ResponseEntity.ok(challenge); // 참가한 챌린지 정보 반환
 
     } catch (IllegalArgumentException e) {
@@ -164,23 +165,24 @@ public class ChallengeController {
 
     // 챌린지 인증 (경과 시간 기록)
     @PostMapping("/auth/verify/{challIdx}")
-    public ResponseEntity<?> verifyChallenge(
+    public ResponseEntity<String> verifyChallenge(
             @PathVariable Long challIdx,
-            @RequestHeader("Authorization") String authHeader,
-            @RequestBody VerifyDTO verifyDTO) {
+            @RequestBody ChallengeVerifyDTO dto,
+            @RequestHeader("Authorization") String authHeader) {
 
       int userIdx = handler.getUserIdxFromToken(authHeader);
 
-      verifyDTO.setChallIdx(challIdx);
-      verifyDTO.setUserIdx(userIdx);
+      dto.setChallIdx(challIdx);
+      dto.setUserIdx((long) userIdx); // userIdx 세팅 누락 방지
 
-      challengeService.verifyChallenge(verifyDTO);
+      challengeService.verifyChallenge(dto);
 
-      return ResponseEntity.ok("챌린지 인증 완료");
+      return ResponseEntity.ok("인증이 완료되었습니다.");
     }
 
 
-    // 챌린지 수정
+
+  // 챌린지 수정
 
     @PatchMapping("/admin/modify")
     public ResponseEntity<Map<String, Object>> modifyChallenge(

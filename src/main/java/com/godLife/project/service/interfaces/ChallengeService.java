@@ -1,8 +1,7 @@
 package com.godLife.project.service.interfaces;
 
 import com.godLife.project.dto.contents.ChallengeDTO;
-import com.godLife.project.dto.infos.VerifyDTO;
-import com.godLife.project.dto.request.ChallengeJoinRequest;
+import com.godLife.project.dto.verify.ChallengeVerifyDTO;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,16 +23,16 @@ public interface ChallengeService {
     // 챌린지 생성
     int createChallenge(ChallengeDTO challengeDTO);
     // 유저 참여형 / 시작시간 업데이트
-    void updateChallengeStartTime(Long challIndx, Integer duration) throws Exception;
+    void updateChallengeStartTime(Long challIdx) throws Exception;
 
     //챌린지 상세 조회
     ChallengeDTO getChallengeDetail(Long challIdx);
 
     // 챌린지 참가
-    ChallengeDTO joinChallenge(Long challIdx, int userIdx, ChallengeJoinRequest joinRequest);
+    ChallengeDTO joinChallenge(Long challIdx, int userIdx);
 
     // 챌린지 인증
-    void verifyChallenge(VerifyDTO verifyDTO);
+    void verifyChallenge(ChallengeVerifyDTO challengeVerifyDTO);
 
     // 챌린지 존재 여부
     boolean existsById(Long challIdx);

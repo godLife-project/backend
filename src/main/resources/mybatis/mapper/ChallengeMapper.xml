@@ -9,12 +9,12 @@
         INSERT INTO CHALL_TABLE (
         CHALL_IDX, CHALL_TITLE, CHALL_DESCRIPTION, CHALL_CATEGORY_IDX,
         MIN_PARTICIPATION_TIME, TOTAL_CLEAR_TIME, MAX_PARTICIPANTS,
-        CHALL_CREATED_AT, CHALL_STATE, CHALL_START_TIME, CHALL_END_TIME, USER_JOIN
+        CHALL_CREATED_AT, CHALL_STATE, CHALL_START_TIME, CHALL_END_TIME, USER_JOIN, DURATION
         )
         VALUES (
         CHALL_SEQ.NEXTVAL, #{challTitle}, #{challDescription}, #{challCategoryIdx},
         #{minParticipationTime}, #{totalClearTime}, #{maxParticipants},
-        SYSDATE, #{challState},  #{challStartTime}, #{challEndTime}, #{userJoin}
+        SYSDATE, #{challState},  #{challStartTime}, #{challEndTime}, #{userJoin}, #{duration}
         )
     </insert>
 
@@ -33,7 +33,7 @@
         SELECT
             CHALL_IDX, CHALL_TITLE, CHALL_DESCRIPTION, CHALL_CATEGORY_IDX,
             MIN_PARTICIPATION_TIME, TOTAL_CLEAR_TIME, MAX_PARTICIPANTS,
-            CHALL_START_TIME, CHALL_END_TIME, CHALL_CREATED_AT, CHALL_STATE
+            CHALL_START_TIME, CHALL_END_TIME, CHALL_CREATED_AT, CHALL_STATE, DURATION,  USER_JOIN
         FROM Chall_table
         WHERE CHALL_IDX = #{challIdx}
     </select>
@@ -52,10 +52,11 @@
         FROM CHALL_JOIN
         WHERE CHALL_IDX = #{challIdx} AND USER_IDX = #{userIdx}
     </select>
-    <!-- 유저 참여 기록 -->
+
+    <!-- 유저 참여 -->
     <insert id="addUserToChallenge">
-        INSERT INTO CHALL_JOIN (CHALL_JOIN_IDX, chall_idx, user_idx, start_Time, end_Time, activity)
-        VALUES (CHALL_JOIN_SEQ.NEXTVAL ,#{challIdx}, #{userIdx}, #{startTime}, #{endTime}, #{activity})
+        INSERT INTO CHALL_JOIN (CHALL_JOIN_IDX, chall_idx, user_idx)
+        VALUES (CHALL_JOIN_SEQ.NEXTVAL ,#{challIdx}, #{userIdx})
     </insert>
 
     <!-- 최신순 챌린지 리스트 조회 (페이징 적용) -->
@@ -67,7 +68,10 @@
         CHALL_CATEGORY_IDX,
         MAX_PARTICIPANTS,
         CHALL_CREATED_AT,
-        CHALL_END_TIME
+        CHALL_START_TIME,
+        CHALL_END_TIME,
+        CHALL_STATE,
+        DURATION
         FROM CHALL_TABLE
         WHERE CHALL_END_TIME IS NULL OR CHALL_END_TIME > SYSDATE
         ORDER BY CHALL_CREATED_AT DESC
@@ -94,7 +98,8 @@
         CHALL_START_TIME,
         CHALL_END_TIME,
         CHALL_CREATED_AT,
-        CHALL_STATE
+        CHALL_STATE,
+        DURATION
         FROM CHALL_TABLE
         WHERE CHALL_CATEGORY_IDX = #{challCategoryIdx}
         ORDER BY CHALL_CREATED_AT DESC
@@ -109,13 +114,47 @@
     </select>
 
     <!-- 인증 기록 저장 -->
-    <insert id="insertVerifyRecord">
+    <insert id="insertVerify">
     INSERT INTO VERIFY_TABLE (
-        VERIFY_IDX, CHALL_IDX, USER_IDX, VERIFY_DATE, ELAPSED_TIME)
+        VERIFY_IDX, CHALL_IDX, USER_IDX,  VERIFY_DATE, ELAPSED_TIME)
     VALUES (
-        VERIFY_SEQ.NEXTVAL, #{challIdx}, #{userIdx}, #{verifyDate}, #{elapsedTime}
+        VERIFY_SEQ.NEXTVAL, #{challIdx}, #{userIdx}, SYSDATE, #{elapsedTime}
     )
     </insert>
+
+    <!-- challJoin 업데이트 메퍼 -->
+    <update id="updateChallJoin">
+        UPDATE CHALL_JOIN
+        SET START_TIME = #{startTime},
+        END_TIME = #{endTime},
+        ACTIVITY = #{activity}
+        WHERE CHALL_IDX = #{challIdx}
+        AND USER_IDX = #{userIdx}
+    </update>
+
+    <!-- 챌린지 참여 확인 -->
+    <select id="getJoinInfo" resultType="com.godLife.project.dto.infos.ChallengeJoinDTO">
+        SELECT
+        CHALL_JOIN_IDX,
+        CHALL_IDX,
+        USER_IDX,
+        START_TIME,
+        END_TIME,
+        ACTIVITY
+        FROM CHALL_JOIN
+        WHERE CHALL_IDX = #{challIdx}
+        AND USER_IDX = #{userIdx}
+    </select>
+
+    <!-- 하루 한번 인증 -->
+    <select id="countTodayVerification" resultType="int">
+        SELECT COUNT(*)
+        FROM verify_table
+        WHERE user_idx = #{userIdx}
+        AND chall_idx = #{challIdx}
+        AND verify_date BETWEEN #{startOfDay} AND #{endOfDay}
+    </select>
+
 
     <!-- 남은 클리어 시간 차감 및 상태 변경 -->
     <update id="updateClearTime">
@@ -133,8 +172,14 @@
 
     <!-- 인증을 통해 감소한 총 시간 조회 -->
     <select id="getElapsedClearTime" resultType="int">
-        SELECT COALESCE(SUM(ELAPSED_TIME), 0)  --인증 데이터가 없으면 NULL 을 반환하는게 아닌 0을 반환하여 오류 방지
+        SELECT COALESCE(SUM(ELAPSED_TIME), 0)
         FROM VERIFY_TABLE
+        WHERE CHALL_IDX = #{challIdx}
+    </select>
+
+    <select id="getTotalClearTime" resultType="int" parameterType="long">
+        SELECT TOTAL_CLEAR_TIME
+        FROM CHALL_TABLE
         WHERE CHALL_IDX = #{challIdx}
     </select>
 

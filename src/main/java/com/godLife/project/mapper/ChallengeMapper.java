@@ -1,7 +1,7 @@
 package com.godLife.project.mapper;
 
 import com.godLife.project.dto.contents.ChallengeDTO;
-import com.godLife.project.dto.infos.VerifyDTO;
+import com.godLife.project.dto.infos.ChallengeJoinDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -38,17 +38,38 @@ public interface ChallengeMapper {
     void updateChallengeStartTime(Map<String, Object> params);
     // 챌린지에 유저 추가 (사용자 참여 기록)
     void addUserToChallenge(@Param("challIdx") Long challIdx,
-                            @Param("userIdx") int userIdx,
-                            @Param("startTime") LocalDateTime startTime,
-                            @Param("endTime") LocalDateTime endTime,
-                            @Param("activity")  String activity);
+                            @Param("userIdx") int userIdx);
 
     // 인증 기록 저장
-    void insertVerifyRecord(VerifyDTO verifyDTO);
+    int insertVerify(
+            @Param("challIdx") Long challIdx,
+            @Param("userIdx") Long userIdx,
+            @Param("elapsedTime") Long elapsedTime
+    );
+    // 활동 정보 갱신
+    int updateChallJoin(
+            @Param("challIdx") Long challIdx,
+            @Param("userIdx") int userIdx,
+            @Param("startTime") LocalDateTime startTime,
+            @Param("endTime") LocalDateTime endTime,
+            @Param("activity") String activity
+    );
+    // 챌린지 참여 확인
+    ChallengeJoinDTO getJoinInfo(Long challIdx, Long userIdx);
+
+    // 하루 한번 인증
+    int countTodayVerification(@Param("userIdx") Long userIdx,
+                               @Param("challIdx") Long challIdx,
+                               @Param("startOfDay") LocalDateTime startOfDay,
+                               @Param("endOfDay") LocalDateTime endOfDay);
     // 남은 클리어시간 차감
     void updateClearTime(@Param("challIdx") Long challIdx, @Param("elapsedTime") int elapsedTime);
     // 클리어 시간 0 이하 시 챌린지 종료
     void finishChallenge(Long challIdx);
+    // 총 클리어 시간 확인
+    int getTotalClearTime(Long challIdx);
+
+
     // 챌린지 존재 여부 확인
     int existsById(@Param("challIdx") Long challIdx);
     // 챌린지 수정

@@ -6,7 +6,6 @@ import com.godLife.project.mapper.QnaMapper;
 import com.godLife.project.service.interfaces.QnaService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -22,8 +21,8 @@ public class QnaServiceImpl implements QnaService {
     try {
       qnaMapper.createQna(qnaDTO);
     } catch (Exception e) {
-      log.error("QnaService - createQna :: 1:1 문의 저장 중 오류 발생: {}", e.getMessage());
-      throw new CustomException("DB 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR, null);
+      log.error("QnaService - createQna :: 1:1 문의 저장 중 오류 발생: ", e);
+      throw new CustomException("DB 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

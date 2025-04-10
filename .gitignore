@@ -63,3 +63,6 @@ docker-compose.override.yml
 
 # Ignore Gradle build output directory
 build
+
+# 이미지 업로드 파일 제외
+uploads/

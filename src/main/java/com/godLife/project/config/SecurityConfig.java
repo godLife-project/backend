@@ -1,5 +1,6 @@
 package com.godLife.project.config;
 
+import com.godLife.project.handler.CustomAccessDeniedHandler;
 import com.godLife.project.jwt.CustomLogoutFilter;
 import com.godLife.project.jwt.JWTFilter;
 import com.godLife.project.jwt.JWTUtil;
@@ -45,12 +46,15 @@ public class SecurityConfig {
 
   private final UserService userService;
 
-  public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil, RefreshService refreshService, @Lazy UserService userService) {
+  private final CustomAccessDeniedHandler accessDeniedHandler;
+
+  public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil, RefreshService refreshService, @Lazy UserService userService, CustomAccessDeniedHandler accessDeniedHandler) {
 
     this.authenticationConfiguration = authenticationConfiguration;
     this.jwtUtil = jwtUtil;
     this.refreshService = refreshService;
     this.userService = userService;
+    this.accessDeniedHandler = accessDeniedHandler;
   }
 
   //AuthenticationManager Bean 등록
@@ -90,11 +94,13 @@ public class SecurityConfig {
         // 신고 관련
             .requestMatchers("/api/report/auth/**").authenticated()
         // 챌린지 관련
-        .requestMatchers("/api/challenges/auth/**").authenticated()
+            .requestMatchers("/api/challenges/auth/**").authenticated()
         // 마이페이지 관련
             .requestMatchers("/api/myPage/auth/**").authenticated()
         // QnA 관련
-        .requestMatchers("/api/qna/auth/**").authenticated()
+            .requestMatchers("/api/qna/auth/**").authenticated()
+        // 업로드 관련
+            .requestMatchers("/api/upload/auth/**").authenticated()
 
 
 
@@ -114,6 +120,11 @@ public class SecurityConfig {
 
     // 그 외 모든 접근 허용 (비 로그인 접근)
         .anyRequest().permitAll()
+    );
+
+    // 예외 처리 핸들러 등록
+    http.exceptionHandling(ex ->
+        ex.accessDeniedHandler(accessDeniedHandler)
     );
 
     // 필터 적용

@@ -10,16 +10,23 @@
         FROM (
         SELECT inner_result.*, ROWNUM AS rnum
         FROM (
-        SELECT notice_Idx AS noticeIdx,
-        notice_Title AS noticeTitle,
-        notice_Sub AS noticeSub,
-        notice_Date AS noticeDate
-        FROM NOTICE_TABLE
-        ORDER BY notice_Date DESC
+        SELECT n.notice_Idx AS noticeIdx,
+        n.notice_Title AS noticeTitle,
+        n.notice_Sub AS noticeSub,
+        n.notice_Date AS noticeDate,
+        a.user_name AS writeName   -- 작성자 이름 추가
+        FROM NOTICE_TABLE n
+        JOIN USER_TABLE a ON n.user_idx = a.user_idx
+        ORDER BY n.notice_Date DESC
         ) inner_result
         WHERE ROWNUM &lt;= #{offset} + #{size}
         )
         WHERE rnum &gt; #{offset}
+    </select>
+
+    <!-- 공지사항 개수 조회 -->
+    <select id="totalNoticeCount" resultType="int">
+        SELECT COUNT(*) FROM NOTICE_TABLE
     </select>
 
     <!-- 공지사항 상세 조회 -->
@@ -30,11 +37,12 @@
     </select>
 
     <!-- 활성화된 팝업 공지사항 조회 -->
-    <select id="getActivePopupNotice" resultType="com.godLife.project.dto.contents.NoticeDTO">
-        SELECT * FROM NOTICE_TABLE
+    <select id="getActivePopupNoticeList" resultType="com.godLife.project.dto.contents.NoticeDTO">
+        SELECT *
+        FROM NOTICE_TABLE
         WHERE IS_POPUP = 'Y'
         AND POPUP_START_DATE &lt; SYSDATE
-        AND POPUP_END_DATE >= SYSDATE
+        AND POPUP_END_DATE &gt;= SYSDATE
     </select>
 
     <!-- 팝업 활성화 메퍼 -->
@@ -58,7 +66,8 @@
         UPDATE NOTICE_TABLE
         SET NOTICE_TITLE = #{noticeTitle},
             NOTICE_SUB = #{noticeSub},
-            NOTICE_MODIFY = SYSDATE
+            NOTICE_MODIFY = SYSDATE,
+            IS_POPUP = #{isPopup}
         WHERE NOTICE_IDX = #{noticeIdx}
     </update>
 

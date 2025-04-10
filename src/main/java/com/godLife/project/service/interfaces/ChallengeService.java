@@ -41,5 +41,8 @@ public interface ChallengeService {
     // 챌린지 삭제
     int deleteChallenge(ChallengeDTO challengeDTO);
 
+    // 챌린지 검색 (제목, 카테고리)
+    List<ChallengeDTO> searchChallenges(String title, String category, int offset, int size, String sort);
+
 
 }

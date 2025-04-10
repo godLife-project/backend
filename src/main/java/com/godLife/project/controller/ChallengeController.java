@@ -277,4 +277,17 @@ public class ChallengeController {
             .body(handler.createResponse(deleteResult, msg));
   }
 
+  // 챌린지 검색 API (제목, 카테고리)
+  @GetMapping("/search")
+  public List<ChallengeDTO> searchChallenges(
+          @RequestParam(required = false) String title,
+          @RequestParam(required = false) String category,
+          @RequestParam(defaultValue = "0") int page,
+          @RequestParam(defaultValue = "10") int size,
+          @RequestParam(defaultValue = "chall_id DESC") String sort
+  ) {
+    int offset = page * size;
+    return challengeService.searchChallenges(title, category, offset, size, sort);
+  }
+
 }

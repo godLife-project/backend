@@ -55,4 +55,6 @@ public class NoticeDTO {
     @JsonDeserialize(using = LocalDateTimeDeserializer.class) // 역직렬화
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime popupEndDate;
+
+    private String writeName; // 작성자 이름
 }

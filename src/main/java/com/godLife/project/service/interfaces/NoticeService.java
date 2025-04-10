@@ -8,10 +8,11 @@ import java.util.List;
 @Service
 public interface NoticeService {
   List<NoticeDTO> getNoticeList(int page, int size);
+  int totalNoticeCount(); // 전체 공지 개수 조회
   // 공지 상세조회
   NoticeDTO getNoticeDetail(int noticeIdx);
   // 팝업 공지사항 조회
-  NoticeDTO getActivePopupNotice();
+  List<NoticeDTO> getActivePopupNoticeList();
   // 기존 공지 팝업 활성화
   int setNoticePopup(NoticeDTO noticeDTO);
   // 공지 작성

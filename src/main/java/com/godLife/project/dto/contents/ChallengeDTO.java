@@ -1,6 +1,7 @@
 package com.godLife.project.dto.contents;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
@@ -25,9 +26,11 @@ public class ChallengeDTO {
     private int challCategoryIdx;
 
     @Schema(description = "최소 참여 시간 제한", example = "1")
+    @JsonIgnore
     private int minParticipationTime;
 
     @Schema(description = "총 클리어 시간", example = "24")
+    @JsonIgnore
     private int totalClearTime;
 
     @Schema(description = "최대 참여 인원", example = "8")
@@ -37,6 +40,7 @@ public class ChallengeDTO {
     @JsonSerialize(using = LocalDateTimeSerializer.class) // 직렬화
     @JsonDeserialize(using = LocalDateTimeDeserializer.class) // 역직렬화
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonIgnore
     private LocalDateTime challStartTime;
 
     @Schema(description = "챌린지 종료 시간", example = "2025-02-16 HH:mm:ss")
@@ -52,12 +56,15 @@ public class ChallengeDTO {
     private LocalDateTime challCreatedAt;
 
     @Schema(description = "챌린지 상태", example = "게시중")
+    @JsonIgnore
     private String challState;
 
     @Schema(description = "챌린지 형태", example = "관리자 개입형")
+    @JsonIgnore
     private int userJoin;
 
     @Schema(description = "챌린지 유지시간", example = "7일")
+    @JsonIgnore
     private Integer duration;
 
     private int currentParticipants; // 현재 참여자 수

@@ -15,10 +15,14 @@ public class NoticeServiceImpl implements NoticeService {
     this.noticeMapper = noticeMapper;
   }
 
+  // 공지사항 전체 조회
   @Override
   public List<NoticeDTO> getNoticeList(int page, int size) {
     int offset = (page - 1) * size;
     return noticeMapper.getNoticeList(offset, size);
+  }
+  public int totalNoticeCount() {
+    return noticeMapper.totalNoticeCount();
   }
 
   // 상세 조회
@@ -27,8 +31,8 @@ public class NoticeServiceImpl implements NoticeService {
   }
 
   // 팝업 공지 조회
-  public NoticeDTO getActivePopupNotice() {
-    return noticeMapper.getActivePopupNotice();
+  public List<NoticeDTO> getActivePopupNoticeList() {
+    return noticeMapper.getActivePopupNoticeList();
   }
 
   // 기존 공지 팝업 활성화

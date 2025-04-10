@@ -183,7 +183,7 @@ public class ChallengeServiceImpl implements ChallengeService {
         ChallengeDTO challenge = challengeMapper.challengeDetail(challIdx);
 
         // 챌린지 상태가 참여 가능한 상태인지 확인
-        if (!"PUBLISHED".equals(challenge.getChallState()) && !"진행중".equals(challenge.getChallState())) {
+        if (!"게시중".equals(challenge.getChallState()) && !"진행중".equals(challenge.getChallState())) {
             throw new IllegalStateException("참여할 수 없는 챌린지입니다.");
         }
 
@@ -335,7 +335,10 @@ public class ChallengeServiceImpl implements ChallengeService {
             return 500;
         }
         return 200; // 삭제 성공
+    }
 
+    public List<ChallengeDTO> searchChallenges(String title, String category, int offset, int size, String sort) {
+        return challengeMapper.searchChallenges(title, category, offset, size, sort);
     }
 }
 

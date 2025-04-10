@@ -83,5 +83,14 @@ public interface ChallengeMapper {
     // 사용자 중복 참여 방지 코드
     boolean isUserAlreadyJoined(@Param("challIdx") Long challIdx, @Param("userIdx") int userIdx);
 
+    // 챌린지 검색 (제목, 카테고리)
+    List<ChallengeDTO> searchChallenges(
+            @Param("title") String title,
+            @Param("category") String category,
+            @Param("offset") int offset,
+            @Param("size") int size,
+            @Param("sort") String sort
+    );
+
 
 }

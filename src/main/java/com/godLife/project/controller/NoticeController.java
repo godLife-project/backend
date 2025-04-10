@@ -33,15 +33,24 @@ public class NoticeController {
   @GetMapping
   public ResponseEntity<Map<String, Object>> getNoticeList(@RequestParam(defaultValue = "1") int page,
                                                            @RequestParam(defaultValue = "10") int size) {
-    Map<String, Object> message = new HashMap<>();
     try {
       List<NoticeDTO> notices = noticeService.getNoticeList(page, size);
-      return ResponseEntity.ok().body(handler.createResponse(200, notices));
+      int totalNotices = noticeService.totalNoticeCount(); // 전체 개수 구해서 페이지 계산
+      int totalPages = (int) Math.ceil((double) totalNotices / size);
 
+      Map<String, Object> response = new HashMap<>();
+      response.put("status", 200);
+      response.put("message", "공지사항 조회 성공");
+      response.put("data", notices);
+      response.put("totalPages", totalPages);
+      response.put("currentPage", page);
+      response.put("pageSize", size);
+
+      return ResponseEntity.ok(response);
     } catch (Exception e) {
-      String msg = "서버 내부 오류로 인해 공지 목록을 불러올 수 없습니다.";
-      System.out.println(e);
-      return ResponseEntity.status(handler.getHttpStatus(500)).body(handler.createResponse(500, msg));
+      String msg = "서버 오류로 인해 공지사항을 불러올 수 없습니다.";
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+              .body(Map.of("status", 500, "message", msg));
     }
   }
 
@@ -71,7 +80,7 @@ public class NoticeController {
 
   @GetMapping("/popup")
   public ResponseEntity<Map<String, Object>> getPopupNotice() {
-    NoticeDTO popupNotice = noticeService.getActivePopupNotice();
+    List<NoticeDTO> popupNotice = noticeService.getActivePopupNoticeList();
 
     if (popupNotice != null) {
       Map<String, Object> response = handler.createResponse(200, "팝업 공지사항 조회 성공");

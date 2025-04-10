@@ -184,20 +184,20 @@ public class ChallengeServiceImpl implements ChallengeService {
 
         // 챌린지 상태가 참여 가능한 상태인지 확인
         if (!"PUBLISHED".equals(challenge.getChallState()) && !"진행중".equals(challenge.getChallState())) {
-            throw new IllegalStateException("참여할 수 없는 챌린지입니다.");
+            throw new IllegalStateException("참여할 수 없는 챌린지입니다. challIdx : " + challIdx);
         }
 
         // 중복 참여 여부 확인
         boolean isAlreadyJoined = challengeMapper.isUserAlreadyJoined(challIdx, userIdx);
         if (isAlreadyJoined) {
-            throw new IllegalArgumentException("이미 참여한 챌린지입니다.");
+            throw new IllegalArgumentException("이미 참여한 챌린지입니다. challIdx : " + challIdx);
         }
 
         // 참가 인원 수 확인
         int currentParticipants = challengeMapper.countParticipants(challIdx);
         int maxParticipants = challenge.getMaxParticipants();
         if (currentParticipants >= maxParticipants) {
-            throw new IllegalArgumentException("참가 인원 수가 초과되어 더 이상 참가할 수 없습니다.");
+            throw new IllegalArgumentException("참가 인원 수가 초과되어 더 이상 참가할 수 없습니다. challIdx : " + challIdx);
         }
 
         LocalDateTime now = LocalDateTime.now();

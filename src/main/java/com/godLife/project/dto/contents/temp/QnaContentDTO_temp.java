@@ -1,4 +1,4 @@
-package com.godLife.project.dto.contents;
+package com.godLife.project.dto.contents.temp;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -10,7 +10,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class QnaContentDTO {
+public class QnaContentDTO_temp {
   @Schema(description = "질문 컨텐츠 인덱스", example = "1")
   private Long qContentIdx;
 

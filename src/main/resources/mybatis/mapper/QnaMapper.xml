@@ -4,26 +4,11 @@
 
 <mapper namespace="com.godLife.project.mapper.QnaMapper">
 
-    <!-- 질문 추가 -->
-    <insert id="insertQuestion">
-        INSERT INTO QNA_TABLE (QNA_IDX, Q_IDX, Q_TITLE, Q_DATE, Q_CATEGORY)
-        VALUES (QNA_SEQ.NEXTVAL, #{qIdx}, #{qTitle}, SYSDATE, #{qCategory})
+    <!-- 1:1 문의 작성 -->
+    <insert id="createQna" parameterType="com.godLife.project.dto.contents.QnaDTO">
+        INSERT INTO QNA_TABLE(QNA_IDX, Q_USER_IDX, TITLE, CONTENT, CREATED_AT, CATEGORY, QNA_STATUS)
+        VALUES(QNA_SEQ.NEXTVAL, #{qUserIdx}, #{title}, #{content}, SYSDATE, #{category}, 'WAIT')
     </insert>
 
-    <!-- 질문 내용 추가 -->
-    <insert id="insertQnaContent">
-        INSERT INTO QNA_CONTENT (Q_CONTENT_IDX, QUESTION_IDX, RESPONSE_IDX, RESPONSE_SUB, CREATED_AT)
-        VALUES (QNA_CONTENT_SEQ.NEXTVAL, #{questionIdx}, #{responseIdx}, #{responseSub}, SYSDATE)
-    </insert>
-
-    <!-- 특정 질문 조회 -->
-    <select id="selectQuestionById" resultType="com.godLife.project.dto.contents.QnADTO">
-        SELECT * FROM QNA_TABLE WHERE QNA_IDX = #{qnaIdx}
-    </select>
-
-    <!-- 질문에 대한 메시지 목록 조회 -->
-    <select id="getQnaContent" resultType="com.godLife.project.dto.contents.QnaContentDTO">
-        SELECT * FROM QNA_CONTENT WHERE QUESTION_IDX = #{questionIdx} ORDER BY CREATED_AT
-    </select>
 
 </mapper>

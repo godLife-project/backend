@@ -190,14 +190,14 @@ public class ChallengeServiceImpl implements ChallengeService {
         // 중복 참여 여부 확인
         boolean isAlreadyJoined = challengeMapper.isUserAlreadyJoined(challIdx, userIdx);
         if (isAlreadyJoined) {
-            throw new IllegalArgumentException("이미 참여한 챌린지입니다.");
+            throw new IllegalArgumentException("이미 참여한 챌린지입니다. challIdx : " + challIdx);
         }
 
         // 참가 인원 수 확인
         int currentParticipants = challengeMapper.countParticipants(challIdx);
         int maxParticipants = challenge.getMaxParticipants();
         if (currentParticipants >= maxParticipants) {
-            throw new IllegalArgumentException("참가 인원 수가 초과되어 더 이상 참가할 수 없습니다.");
+            throw new IllegalArgumentException("참가 인원 수가 초과되어 더 이상 참가할 수 없습니다. challIdx : " + challIdx);
         }
 
         LocalDateTime now = LocalDateTime.now();

@@ -1,4 +1,4 @@
-package com.godLife.project.dto.contents;
+package com.godLife.project.dto.contents.temp;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -10,7 +10,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class QnADTO {
+public class QnADTO_temp {
     @Schema(description = "qna 고유 인덱스", example = "1")
     private Long qnaIdx;
 

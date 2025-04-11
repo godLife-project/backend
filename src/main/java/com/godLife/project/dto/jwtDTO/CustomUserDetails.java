@@ -15,6 +15,10 @@ public class CustomUserDetails implements UserDetails {
     this.userDTO = userDTO;
   }
 
+  public int getAuthorityIdx() {
+    return userDTO.getAuthorityIdx();
+  }
+
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
 

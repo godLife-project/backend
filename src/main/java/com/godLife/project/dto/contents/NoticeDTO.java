@@ -4,12 +4,15 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -45,16 +48,16 @@ public class NoticeDTO {
     private String isPopup; // 'Y' 또는 'N'
 
     @Schema(description = "팝업 활성 시작시간", example = "2025-02-16 HH:mm:ss")
-    @JsonSerialize(using = LocalDateTimeSerializer.class) // 직렬화
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class) // 역직렬화
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime popupStartDate;
+    @JsonSerialize(using = LocalDateSerializer.class) // 직렬화
+    @JsonDeserialize(using = LocalDateDeserializer.class) // 역직렬화
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate popupStartDate;
 
     @Schema(description = "팝업 활성 종료시간", example = "2025-02-16 HH:mm:ss")
-    @JsonSerialize(using = LocalDateTimeSerializer.class) // 직렬화
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class) // 역직렬화
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime popupEndDate;
+    @JsonSerialize(using = LocalDateSerializer.class) // 직렬화
+    @JsonDeserialize(using = LocalDateDeserializer.class) // 역직렬화
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate popupEndDate;
 
     private String writeName; // 작성자 이름
 }

@@ -1,7 +1,10 @@
 package com.godLife.project.handler;
 
+import com.godLife.project.dto.error.ErrorResponse;
+import com.godLife.project.exception.CustomException;
 import com.godLife.project.jwt.JWTUtil;
 import com.godLife.project.mapper.VerifyMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +13,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,6 +42,35 @@ public class GlobalExceptionHandler {
 
     return ResponseEntity.badRequest().body(errorResponse);
   }
+
+  // 커스텀 예외 처리 메소드
+  @ExceptionHandler(CustomException.class)
+  public ResponseEntity<ErrorResponse> handleCustomException(CustomException ex, HttpServletRequest request) {
+    String path = ex.getPath() != null ? ex.getPath() : request.getRequestURI();
+
+    ErrorResponse error = new ErrorResponse(
+        LocalDateTime.now(),
+        ex.getStatus().value(),
+        ex.getStatus().getReasonPhrase(),
+        ex.getMessage(),
+        path // 요청 URI
+    );
+    return new ResponseEntity<>(error, ex.getStatus());
+  }
+
+  // 전역 예외 처리 메소드
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<ErrorResponse> handleGeneralException(Exception e, HttpServletRequest request) {
+    ErrorResponse error = new ErrorResponse(
+        LocalDateTime.now(),
+        HttpStatus.INTERNAL_SERVER_ERROR.value(),
+        HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+        "서버 내부 오류가 발생했습니다.",
+        request.getRequestURI() // 요청 경로
+    );
+    return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
 
   // HTTP 상태 코드 반환
   public HttpStatus getHttpStatus(int result) {

@@ -37,4 +37,5 @@ public interface UserMapper {
     // 비밀번호 찾기 (변경)
     @Update("UPDATE USER_TABLE SET USER_PW = #{userPw} WHERE USER_EMAIL = #{userEmail} AND IS_DELETED = 'N'")
     int findUserPw(String userPw, String userEmail);
+
 }

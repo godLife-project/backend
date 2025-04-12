@@ -59,15 +59,15 @@ public class RoutineScheduler {
     try {
       // 인증률 90퍼 미만 루틴 경험치 감소 로직
       routineScheduleService.verifyAndDecreaseExpIfUnder90();
-      System.out.println("1...인증률 90% 미만 루틴의 경험치를 일괄 감소 했습니다.");
+      log.info("1...인증률 90% 미만 루틴의 경험치를 일괄 감소 했습니다.");
       routineScheduleService.clearComboWhenAllFireIsActivatedOfPlan();
-      System.out.println("2...진행중인 루틴의 불꽃을 모두 활성화 하지 못한 유저의 콤보를 초기화 했습니다.");
+      log.info("2...진행중인 루틴의 불꽃을 모두 활성화 하지 못한 유저의 콤보를 초기화 했습니다.");
       routineScheduleService.clearAllFireStateWhenMidnight();
-      System.out.println("3...진행중인 루틴의 불꽃 활성화 상태를 초기화 했습니다.");
+      log.info("3...진행중인 루틴의 불꽃 활성화 상태를 초기화 했습니다.");
       int AccountClearResult = routineScheduleService.clearAccountDelete();
-      System.out.println("4...탈퇴한 유저중 데이터 유지 만료일이 지난 계정을 삭제 처리했습니다.....삭제된 유저 수 ::> " + AccountClearResult);
+      log.info("4...탈퇴한 유저중 데이터 유지 만료일이 지난 계정을 삭제 처리했습니다.....삭제된 유저 수 ::> {}", AccountClearResult);
     } catch (Exception e) {
-      log.error("e: ", e);
+      log.error("RoutineScheduler - dailyRoutineCheck :: 알 수 없는 오류 발생: ", e);
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly(); // 수동 롤백
     }
 
@@ -77,6 +77,6 @@ public class RoutineScheduler {
   @Scheduled(cron = "0 0 0/2 * * ?")
   public void checkEveryTwoHours() {
     int result = routineScheduleService.deleteExpiredRefreshTokens();
-    System.out.println(".....만료 된 모든 재발급 토큰을 삭제했습니다.....삭제된 토큰 수 ::> " + result);
+    log.info(".....만료 된 모든 재발급 토큰을 삭제했습니다.....삭제된 토큰 수 ::> {}", result);
   }
 }

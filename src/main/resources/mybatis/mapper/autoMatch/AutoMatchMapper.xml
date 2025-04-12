@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godLife.project.mapper.autoMatch.AutoMatchMapper">
+
+    <!-- 매칭 할 상담원 조회 -->
+    <select id="getServiceAdminIdx" resultType="java.lang.Integer">
+        SELECT USER_IDX
+        FROM SERVICE_CENTER
+        WHERE STATUS = 1
+        AND MATCHED <![CDATA[ < ]]> 10
+        ORDER BY MATCHED
+        FETCH FIRST 1 ROWS ONLY
+    </select>
+
+    <!-- 신규 문의 제외 다른 대기중인 문의 있는지 확인 -->
+    <select id="getAnotherWaitQnaIdx" parameterType="int" resultType="java.lang.Integer">
+        SELECT QNA_IDX
+        FROM QNA_TABLE
+        WHERE QNA_STATUS = 'WAIT'
+        AND QNA_IDX != #{qnaIdx}
+        ORDER BY CREATED_AT
+        FETCH FIRST 1 ROWS ONLY
+    </select>
+    <!-- 문의 등록 시 단일 문의 자동 매칭 -->
+    <update id="autoMatchSingleQna" parameterType="map">
+        UPDATE QNA_TABLE
+        SET A_USER_IDX = #{adminIdx},
+        QNA_STATUS = 'CONNECT'
+        WHERE QNA_STATUS = 'WAIT'
+        AND QNA_IDX = #{qnaIdx}
+    </update>
+
+    <!-- 매칭 성공 시 상담원 matched 숫자 증가 -->
+    <update id="increaseMatchedCount" parameterType="java.lang.Integer">
+        UPDATE SERVICE_CENTER
+        SET MATCHED = MATCHED + 1
+        WHERE USER_IDX = #{adminIdx}
+    </update>
+
+</mapper>

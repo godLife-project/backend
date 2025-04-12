@@ -5,6 +5,7 @@ import com.godLife.project.jwt.CustomLogoutFilter;
 import com.godLife.project.jwt.JWTFilter;
 import com.godLife.project.jwt.JWTUtil;
 import com.godLife.project.jwt.LoginFilter;
+import com.godLife.project.service.interfaces.admin.ServiceAdminService;
 import com.godLife.project.service.interfaces.UserService;
 import com.godLife.project.service.interfaces.jwtInterface.RefreshService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,13 +49,16 @@ public class SecurityConfig {
 
   private final CustomAccessDeniedHandler accessDeniedHandler;
 
-  public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil, RefreshService refreshService, @Lazy UserService userService, CustomAccessDeniedHandler accessDeniedHandler) {
+  private final ServiceAdminService serviceAdminService;
+
+  public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil, RefreshService refreshService, @Lazy UserService userService, CustomAccessDeniedHandler accessDeniedHandler, ServiceAdminService serviceAdminService) {
 
     this.authenticationConfiguration = authenticationConfiguration;
     this.jwtUtil = jwtUtil;
     this.refreshService = refreshService;
     this.userService = userService;
     this.accessDeniedHandler = accessDeniedHandler;
+    this.serviceAdminService = serviceAdminService;
   }
 
   //AuthenticationManager Bean 등록
@@ -111,11 +115,12 @@ public class SecurityConfig {
             .requestMatchers("/api/admin").hasAuthority("7")
         // 관리자 권한 챌린지 작성
             .requestMatchers("/api/challenges/admin/create").hasAnyAuthority("2", "3", "4", "5", "6", "7")
-        .requestMatchers("/api/admin").hasAuthority("7")
         // 관리자 권한 챌린지 관련
         .requestMatchers("/api/challenges/admin/**").hasAnyAuthority("2", "3", "4", "5", "6", "7")
         // 관리자 권한 공지사항 관련
         .requestMatchers("/api/notice/admin/**").hasAnyAuthority("2", "3", "4", "5", "6", "7")
+        // 서비스 관리자 권한
+            .requestMatchers("/api/service/admin/**").hasAnyAuthority("3", "4", "6", "7")
 
 
     // 그 외 모든 접근 허용 (비 로그인 접근)
@@ -129,8 +134,8 @@ public class SecurityConfig {
 
     // 필터 적용
     http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
-    http.addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshService, userService), UsernamePasswordAuthenticationFilter.class);
-    http.addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshService), LogoutFilter.class);
+    http.addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshService, userService, serviceAdminService), UsernamePasswordAuthenticationFilter.class);
+    http.addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshService, serviceAdminService), LogoutFilter.class);
 
     // 세션 비활성화
     http.sessionManagement((session) -> session

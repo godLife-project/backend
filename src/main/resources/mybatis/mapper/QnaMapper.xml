@@ -6,8 +6,11 @@
 
     <!-- 1:1 문의 작성 -->
     <insert id="createQna" parameterType="com.godLife.project.dto.contents.QnaDTO">
+        <selectKey keyProperty="qnaIdx" resultType="int" order="BEFORE">
+            SELECT QNA_SEQ.NEXTVAL FROM DUAL
+        </selectKey>
         INSERT INTO QNA_TABLE(QNA_IDX, Q_USER_IDX, TITLE, CONTENT, CREATED_AT, CATEGORY, QNA_STATUS)
-        VALUES(QNA_SEQ.NEXTVAL, #{qUserIdx}, #{title}, #{content}, SYSDATE, #{category}, 'WAIT')
+        VALUES(#{qnaIdx}, #{qUserIdx}, #{title}, #{content}, SYSDATE, #{category}, 'WAIT')
     </insert>
 
 

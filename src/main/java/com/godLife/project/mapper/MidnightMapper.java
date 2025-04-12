@@ -30,4 +30,7 @@ public interface MidnightMapper {
 
   // 삭제 처리된 계정 완전 삭제
   int clearAccount(int expire);
+
+  // REFRESH 토큰이 만료된 고객관리자 로그아웃 처리
+  void clearServiceCenterByIsExpired();
 }

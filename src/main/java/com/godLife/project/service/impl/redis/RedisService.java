@@ -86,4 +86,19 @@ public class RedisService {
   public boolean checkExistsValue(String key) {
     return redisTemplate.hasKey(key);
   }
+
+  // 레디스 큐 생성 (왼쪽)
+  public void leftPushToRedisQueue(String queueKey, String whatIdx) {
+    redisTemplate.opsForList().leftPush(queueKey, whatIdx);
+  }
+
+  // 레디스 큐 생성 (오른쪽)
+  public void rightPushToRedisQueue(String queueKey, String whatIdx) {
+    redisTemplate.opsForList().rightPush(queueKey, whatIdx);
+  }
+
+  // 레디스 큐에서 꺼내기 (timeoutSeconds = 0 이면 무한 대기)
+  public String brPopFromRedisQueue(String queueKey, long timeoutSeconds) {
+    return redisTemplate.opsForList().rightPop(queueKey, Duration.ofSeconds(timeoutSeconds));
+  }
 }

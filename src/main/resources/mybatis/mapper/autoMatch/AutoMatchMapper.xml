@@ -14,15 +14,6 @@
         FETCH FIRST 1 ROWS ONLY
     </select>
 
-    <!-- 신규 문의 제외 다른 대기중인 문의 있는지 확인 -->
-    <select id="getAnotherWaitQnaIdx" parameterType="int" resultType="java.lang.Integer">
-        SELECT QNA_IDX
-        FROM QNA_TABLE
-        WHERE QNA_STATUS = 'WAIT'
-        AND QNA_IDX != #{qnaIdx}
-        ORDER BY CREATED_AT
-        FETCH FIRST 1 ROWS ONLY
-    </select>
     <!-- 문의 등록 시 단일 문의 자동 매칭 -->
     <update id="autoMatchSingleQna" parameterType="map">
         UPDATE QNA_TABLE

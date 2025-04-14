@@ -12,7 +12,7 @@
 
     <!-- 모든 FAQ를 조회하는 select 쿼리 -->
     <select id="selectAllFaq" resultType="com.godLife.project.dto.contents.FaQDTO">
-        SELECT FAQ_IDX, FAQ_TITLE, FAQ_ANSWER, FAQ_CATEGORY
+        SELECT FAQ_IDX, FAQ_TITLE, FAQ_CATEGORY
         FROM FAQ_TABLE
     </select>
 

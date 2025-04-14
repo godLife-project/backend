@@ -64,6 +64,7 @@ public class NoticeController {
         throw new NoSuchElementException("조회하려는 공지가 존재하지 않습니다.");
       }
 
+
       return ResponseEntity.ok().body(handler.createResponse(200, notice));
 
     } catch (NoSuchElementException e) {

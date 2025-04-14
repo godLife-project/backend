@@ -65,9 +65,10 @@ public class ChallengeServiceImpl implements ChallengeService {
             throw new IllegalArgumentException("해당 챌린지를 찾을 수 없습니다: challIdx=" + challIdx);
         }
 
-        // 현재 참여자 수 반영
+        // 현재 참여자 수
         int participantCount = challengeMapper.countParticipants(challIdx);
         challenge.setCurrentParticipants(participantCount);
+
 
         // 인증을 통해 감소된 클리어 시간 반영
         int elapsedClearTime = challengeMapper.getElapsedClearTime(challIdx); // 인증을 통해 사용된 시간 조회
@@ -79,6 +80,10 @@ public class ChallengeServiceImpl implements ChallengeService {
                 && !challenge.getChallState().equals(ChallengeState.COMPLETED.getState())) {
             challenge.setChallState(ChallengeState.COMPLETED.getState());
         }
+
+        // 참가자 상세 정보 조회 및 설정
+        List<ChallengeJoinDTO> participants = challengeMapper.getChallengeParticipants(challIdx);
+        challenge.setParticipants(participants);
 
         // DB 상태 업데이트 (최소화된 한 번의 업데이트)
         Map<String, Object> params = new HashMap<>();
@@ -178,7 +183,7 @@ public class ChallengeServiceImpl implements ChallengeService {
 
     // ----------------- 챌린지 참여 -----------------
     @Override
-    public ChallengeDTO joinChallenge(Long challIdx, int userIdx) {
+    public ChallengeDTO joinChallenge(Long challIdx, int userIdx, String activity, int activityTime) {
         // 챌린지 기본 정보 조회
         ChallengeDTO challenge = challengeMapper.challengeDetail(challIdx);
 
@@ -227,7 +232,9 @@ public class ChallengeServiceImpl implements ChallengeService {
         // 사용자 참여 기록 저장
         challengeMapper.addUserToChallenge(
                 challIdx,
-                userIdx
+                userIdx,
+                activity,
+                activityTime
         );
 
         return challenge;
@@ -269,20 +276,28 @@ public class ChallengeServiceImpl implements ChallengeService {
             throw new IllegalArgumentException("활동명을 입력해야 합니다.");
         }
 
-        // 5. 활동 시간 계산 (분 단위)
+        // 5. 인증 가능 시간인지 확인
+        LocalDateTime availableAuthTime = joinInfo.getStartTime().plusMinutes(joinInfo.getActivityTime());
+        LocalDateTime now = LocalDateTime.now();
+
+        if (now.isBefore(availableAuthTime)) {
+            throw new IllegalStateException("아직 인증할 수 없습니다. 인증 가능 시각: " + availableAuthTime);
+        }
+
+        // 6. 활동 시간 계산 (분 단위)
         long elapsedTime = Duration.between(
                 challengeVerifyDTO.getStartTime(),
                 challengeVerifyDTO.getEndTime()
         ).getSeconds() / 60;
 
-        // 6. 인증 기록 저장
+        // 7. 인증 기록 저장
         challengeMapper.insertVerify(
                 challengeVerifyDTO.getChallIdx(),
                 challengeVerifyDTO.getUserIdx(),
                 elapsedTime
         );
 
-        // 7. 활동 정보 갱신
+        // 8. 활동 정보 갱신
         challengeMapper.updateChallJoin(
                 challengeVerifyDTO.getChallIdx(),
                 Math.toIntExact(challengeVerifyDTO.getUserIdx()),
@@ -291,7 +306,7 @@ public class ChallengeServiceImpl implements ChallengeService {
                 challengeVerifyDTO.getActivity()
         );
 
-        // 8. 챌린지 남은 시간 차감
+        // 9. 챌린지 남은 시간 차감
         challengeMapper.updateClearTime(
                 challengeVerifyDTO.getChallIdx(),
                 (int) elapsedTime
@@ -337,8 +352,8 @@ public class ChallengeServiceImpl implements ChallengeService {
         return 200; // 삭제 성공
     }
 
-    public List<ChallengeDTO> searchChallenges(String title, String category, int offset, int size, String sort) {
-        return challengeMapper.searchChallenges(title, category, offset, size, sort);
+    public List<ChallengeDTO> searchChallenges(String challTitle, String challCategory, int offset, int size, String sort) {
+        return challengeMapper.searchChallenges(challTitle, challCategory, offset, size, sort);
     }
 }
 

@@ -1,15 +1,16 @@
 package com.godLife.project.dto.contents;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.godLife.project.dto.infos.ChallengeJoinDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class ChallengeDTO {
@@ -26,11 +27,9 @@ public class ChallengeDTO {
     private int challCategoryIdx;
 
     @Schema(description = "최소 참여 시간 제한", example = "1")
-    @JsonIgnore
     private int minParticipationTime;
 
     @Schema(description = "총 클리어 시간", example = "24")
-    @JsonIgnore
     private int totalClearTime;
 
     @Schema(description = "최대 참여 인원", example = "8")
@@ -64,4 +63,7 @@ public class ChallengeDTO {
     private Integer duration;
 
     private int currentParticipants; // 현재 참여자 수
+
+    // 참가자 정보 리스트
+    private List<ChallengeJoinDTO> participants;
 }

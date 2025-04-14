@@ -12,6 +12,8 @@ public class ChallengeJoinRequest {
   private int duration; // 지속 시간
   private LocalDateTime StartTime; // 챌린지 시작 시간
   private LocalDateTime EndTime; // 챌린지 종료
+  private String activity;
+  private int activityTime;
 
 
   // 생성자, Getter, Setter

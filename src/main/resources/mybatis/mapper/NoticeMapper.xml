@@ -14,7 +14,8 @@
         n.notice_Title AS noticeTitle,
         n.notice_Sub AS noticeSub,
         n.notice_Date AS noticeDate,
-        a.user_name AS writeName   -- 작성자 이름 추가
+        n.notice_Modify AS noticeModify,
+        a.user_name AS writeName
         FROM NOTICE_TABLE n
         JOIN USER_TABLE a ON n.user_idx = a.user_idx
         ORDER BY n.notice_Date DESC
@@ -29,11 +30,19 @@
         SELECT COUNT(*) FROM NOTICE_TABLE
     </select>
 
-    <!-- 공지사항 상세 조회 -->
+    <!-- 공지사항 상세 조회 (작성자 이름 포함) -->
     <select id="getNoticeDetail" resultType="com.godLife.project.dto.contents.NoticeDTO">
-        SELECT NOTICE_IDX, NOTICE_TITLE, NOTICE_SUB, NOTICE_DATE, NOTICE_MODIFY
-        FROM NOTICE_TABLE
-        WHERE NOTICE_IDX = #{noticeIdx}
+        SELECT
+        N.NOTICE_IDX,
+        N.NOTICE_TITLE,
+        N.NOTICE_SUB,
+        N.NOTICE_DATE,
+        N.NOTICE_MODIFY,
+        N.USER_IDX,
+        U.USER_NAME AS write_Name
+        FROM NOTICE_TABLE N
+        LEFT JOIN USER_TABLE U ON N.USER_IDX = U.USER_IDX
+        WHERE N.NOTICE_IDX = #{noticeIdx}
     </select>
 
     <!-- 활성화된 팝업 공지사항 조회 -->

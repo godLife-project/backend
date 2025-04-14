@@ -31,6 +31,9 @@ public interface ChallengeMapper {
     // 챌린지 상세조회
     ChallengeDTO challengeDetail(Long challIdx);
 
+    // 상세조회시 참가자 조회
+    List<ChallengeJoinDTO> getChallengeParticipants(Long challIdx);
+
     // 현재 참여자수 조회
     int countParticipants(Long challIdx);
 
@@ -38,7 +41,10 @@ public interface ChallengeMapper {
     void updateChallengeStartTime(Map<String, Object> params);
     // 챌린지에 유저 추가 (사용자 참여 기록)
     void addUserToChallenge(@Param("challIdx") Long challIdx,
-                            @Param("userIdx") int userIdx);
+                            @Param("userIdx") int userIdx,
+                            @Param("activity") String activity,
+                            @Param("activityTime") int activityTime);
+
 
     // 인증 기록 저장
     int insertVerify(
@@ -85,8 +91,8 @@ public interface ChallengeMapper {
 
     // 챌린지 검색 (제목, 카테고리)
     List<ChallengeDTO> searchChallenges(
-            @Param("title") String title,
-            @Param("category") String category,
+            @Param("challTitle") String challTitle,
+            @Param("challCategory") String challCategory,
             @Param("offset") int offset,
             @Param("size") int size,
             @Param("sort") String sort

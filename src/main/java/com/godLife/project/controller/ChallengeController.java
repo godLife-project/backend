@@ -1,6 +1,7 @@
 package com.godLife.project.controller;
 
 import com.godLife.project.dto.contents.ChallengeDTO;
+import com.godLife.project.dto.request.ChallengeJoinRequest;
 import com.godLife.project.dto.verify.ChallengeVerifyDTO;
 import com.godLife.project.handler.GlobalExceptionHandler;
 import com.godLife.project.service.interfaces.ChallengeService;
@@ -60,16 +61,6 @@ public class ChallengeController {
               .body(handler.createResponse(500, "예기치 못한 오류가 발생했습니다."));
     }
   }
-
-    @PutMapping("/auth/{challIdx}/start")
-    public ResponseEntity<String> updateChallengeStartTime(@PathVariable Long challIdx) {
-        try {
-            challengeService.updateChallengeStartTime(challIdx);
-            return ResponseEntity.ok("챌린지 시작 시간이 업데이트되었습니다.");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("챌린지 시작 시간 업데이트 실패: " + e.getMessage());
-        }
-    }
 
 
   @Operation(summary = "최신 챌린지 조회 API", description = "최신순으로 조회하며 종료된 챌린지는 조회하지 않음")
@@ -143,15 +134,20 @@ public class ChallengeController {
   }
 
 
+  // 챌린지 참여
   @PostMapping("/auth/join/{challIdx}")
   public ResponseEntity<Object> joinChallenge(@PathVariable Long challIdx,
-                                              @RequestHeader("Authorization") String authHeader) {
+                                              @RequestHeader("Authorization") String authHeader,
+                                              @RequestBody ChallengeJoinRequest joinRequest) {
     try {
       int userIdx = handler.getUserIdxFromToken(authHeader);
-
-      // 챌린지 참여 로직
-      ChallengeDTO challenge = challengeService.joinChallenge(challIdx, userIdx);
-      return ResponseEntity.ok(challenge); // 참가한 챌린지 정보 반환
+      ChallengeDTO challenge = challengeService.joinChallenge(
+              challIdx,
+              userIdx,
+              joinRequest.getActivity(),
+              joinRequest.getActivityTime()
+      );
+      return ResponseEntity.ok(challenge);
 
     } catch (IllegalArgumentException e) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -280,14 +276,14 @@ public class ChallengeController {
   // 챌린지 검색 API (제목, 카테고리)
   @GetMapping("/search")
   public List<ChallengeDTO> searchChallenges(
-          @RequestParam(required = false) String title,
-          @RequestParam(required = false) String category,
+          @RequestParam(required = false) String challTitle,
+          @RequestParam(required = false) String challCategory,
           @RequestParam(defaultValue = "0") int page,
           @RequestParam(defaultValue = "10") int size,
-          @RequestParam(defaultValue = "chall_id DESC") String sort
+          @RequestParam(defaultValue = "chall_idx DESC") String sort
   ) {
     int offset = page * size;
-    return challengeService.searchChallenges(title, category, offset, size, sort);
+    return challengeService.searchChallenges(challTitle, challCategory, offset, size, sort);
   }
 
 }

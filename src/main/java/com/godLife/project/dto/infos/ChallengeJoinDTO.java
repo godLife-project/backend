@@ -35,4 +35,10 @@ public class ChallengeJoinDTO {
 
     @Schema(description = "활동명", example = "조깅")
     private String activity;
+
+    @Schema(description = "활동 목표시간", example = "2시간")
+    private int activityTime;
+
+    @Schema(description = "유저 닉네임", example = "유저1")
+    private String userNick;
 }

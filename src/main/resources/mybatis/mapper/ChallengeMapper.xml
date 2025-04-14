@@ -105,6 +105,19 @@
         WHERE CHALL_IDX = #{challIdx}
     </select>
 
+    <!-- 상세조회시 참가자 조회-->
+    <select id="getChallengeParticipants" resultType="com.godLife.project.dto.infos.ChallengeJoinDTO">
+        SELECT cj.CHALL_JOIN_IDX,
+        cj.CHALL_IDX,
+        cj.USER_IDX,
+        u.USER_NICK AS userNick,
+        cj.ACTIVITY,
+        cj.ACTIVITY_TIME
+        FROM CHALL_JOIN cj
+        JOIN USER_TABLE u ON cj.USER_IDX = u.USER_IDX
+        WHERE cj.CHALL_IDX = #{challIdx}
+    </select>
+
 
     <!-- 중복 참여 Mapper -->
     <select id="isUserAlreadyJoined" resultType="boolean">
@@ -115,9 +128,10 @@
 
     <!-- 유저 참여 -->
     <insert id="addUserToChallenge">
-        INSERT INTO CHALL_JOIN (CHALL_JOIN_IDX, chall_idx, user_idx)
-        VALUES (CHALL_JOIN_SEQ.NEXTVAL ,#{challIdx}, #{userIdx})
+        INSERT INTO CHALL_JOIN (CHALL_JOIN_IDX, chall_idx, user_idx, activity, activity_time)
+        VALUES (CHALL_JOIN_SEQ.NEXTVAL ,#{challIdx}, #{userIdx}, #{activity}, #{activityTime})
     </insert>
+
 
     <!-- 참여인원 확인 메퍼 -->
     <select id="countParticipants" resultType="int">
@@ -233,10 +247,10 @@
         SELECT *
         FROM chall_table
         WHERE 1=1
-        <if test="title != null and title != ''">
+        <if test="challTitle != null and challTitle != ''">
             AND LOWER(chall_name) LIKE '%' || LOWER(#{challTitle}) || '%'
         </if>
-        <if test="category != null and category != ''">
+        <if test="challCategory != null and challCategory != ''">
             AND LOWER(category) LIKE '%' || LOWER(#{challCategory}) || '%'
         </if>
         ORDER BY ${sort}

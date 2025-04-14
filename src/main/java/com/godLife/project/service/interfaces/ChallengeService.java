@@ -22,14 +22,12 @@ public interface ChallengeService {
 
     // 챌린지 생성
     int createChallenge(ChallengeDTO challengeDTO);
-    // 유저 참여형 / 시작시간 업데이트
-    void updateChallengeStartTime(Long challIdx) throws Exception;
 
     //챌린지 상세 조회
     ChallengeDTO getChallengeDetail(Long challIdx);
 
     // 챌린지 참가
-    ChallengeDTO joinChallenge(Long challIdx, int userIdx);
+    ChallengeDTO joinChallenge(Long challIdx, int userIdx, String activity, int activityTime);
 
     // 챌린지 인증
     void verifyChallenge(ChallengeVerifyDTO challengeVerifyDTO);
@@ -42,7 +40,9 @@ public interface ChallengeService {
     int deleteChallenge(ChallengeDTO challengeDTO);
 
     // 챌린지 검색 (제목, 카테고리)
-    List<ChallengeDTO> searchChallenges(String title, String category, int offset, int size, String sort);
+    List<ChallengeDTO> searchChallenges(String challTitle,
+                                        String challCategory,
+                                        int offset, int size, String sort);
 
 
 }

@@ -116,6 +116,8 @@ public class SecurityConfig {
         .requestMatchers("/api/challenges/admin/**").hasAnyAuthority("2", "3", "4", "5", "6", "7")
         // 관리자 권한 공지사항 관련
         .requestMatchers("/api/notice/admin/**").hasAnyAuthority("2", "3", "4", "5", "6", "7")
+        //관리자 페이지 관련
+        .requestMatchers("/api/admin/**").hasAnyAuthority("2", "3", "4", "5", "6", "7")
 
 
     // 그 외 모든 접근 허용 (비 로그인 접근)

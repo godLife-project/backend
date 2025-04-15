@@ -3,20 +3,20 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.godLife.project.mapper.FaqMapper">
 
-    <!-- 특정 FAQ를 Idx로 조회하는 select 쿼리 -->
+    <!-- FAQ LIST 조회 (전체) -->
+    <select id="selectAllFaq" resultType="com.godLife.project.dto.contents.FaQDTO">
+        SELECT FAQ_IDX, FAQ_TITLE, FAQ_CATEGORY
+        FROM FAQ_TABLE
+    </select>
+
+    <!-- FAQ 상세 조회 -->
     <select id="selectFaqById" parameterType="java.lang.Integer" resultType="com.godLife.project.dto.contents.FaQDTO">
         SELECT FAQ_IDX, FAQ_TITLE, FAQ_ANSWER, FAQ_CATEGORY
         FROM FAQ_TABLE
         WHERE FAQ_IDX = #{faqIdx}
     </select>
 
-    <!-- 모든 FAQ를 조회하는 select 쿼리 -->
-    <select id="selectAllFaq" resultType="com.godLife.project.dto.contents.FaQDTO">
-        SELECT FAQ_IDX, FAQ_TITLE, FAQ_CATEGORY
-        FROM FAQ_TABLE
-    </select>
-
-    <!-- FAQ 작성 쿼리 -->
+    <!-- FAQ 작성 -->
     <insert id="insertFaq" parameterType="com.godLife.project.dto.contents.FaQDTO">
         INSERT INTO FAQ_TABLE (FAQ_IDX, FAQ_TITLE, FAQ_ANSWER, FAQ_CATEGORY)
         VALUES (Faq_SEQ.NEXTVAL, #{faqTitle}, #{faqAnswer}, #{faqCategory})

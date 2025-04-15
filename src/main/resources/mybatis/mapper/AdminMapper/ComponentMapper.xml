@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godLife.project.mapper.AdminMapper.ComponentMapper">
+
+                    <!--            목표 카테고리 CRUD Mapper         -->
+
+    <!-- 조회 -->
+    <select id="targetCategoryList" resultType="com.godLife.project.dto.categories.TargetCateDTO">
+        SELECT
+        t.TARGET_IDX AS idx,
+        t.TARGET_NAME AS name,
+        t.ICON_KEY AS iconKey,
+        NVL(i.ICON, 'default-icon') AS icon,
+        NVL(i.COLOR, '#999999') AS color
+        FROM TARGET_CATEGORY t
+        LEFT JOIN ICON_TABLE i ON t.ICON_KEY = i.ICON_KEY
+    </select>
+    <!-- 추가 -->
+    <insert id="insertTargetCategory" parameterType="com.godLife.project.dto.categories.TargetCateDTO">
+        INSERT INTO TARGET_CATEGORY (TARGET_IDX, TARGET_NAME, ICON_KEY)
+        VALUES (TARGET_CATEGORY_SEQ.NEXTVAL, #{name}, #{iconKey})
+    </insert>
+    <!-- 수정 -->
+    <update id="updateTargetCategory" parameterType="com.godLife.project.dto.categories.TargetCateDTO">
+        UPDATE target_category
+        <set>
+            <if test="name != null">
+                target_name = #{name},
+            </if>
+            <if test="iconKey != null">
+                icon_key = #{iconKey},
+            </if>
+        </set>
+        WHERE target_idx = #{idx}
+    </update>
+    <!-- 삭제 -->
+    <delete id="deleteTargetCategory" parameterType="int">
+        DELETE FROM TARGET_CATEGORY
+        WHERE TARGET_IDX = #{idx}
+    </delete>
+    <!-- 중복 카테고리 확인 -->
+    <select id = "countByTargetCateName" parameterType="String" resultType="int">
+        SELECT COUNT(*)
+        FROM TARGET_CATEGORY
+        WHERE TARGET_NAME = #{name}
+    </select>
+
+                     <!--            직업 카테고리 CRUD Mapper         -->
+    <!-- 조회 -->
+    <select id="getAllJobCategories" resultType="com.godLife.project.dto.categories.JobCateDTO">
+        SELECT
+        j.JOB_IDX AS idx,
+        j.JOB_NAME AS name,
+        j.ICON_KEY AS iconKey,
+        NVL(i.ICON, 'default-icon') AS icon,
+        NVL(i.COLOR, '#999999') AS color
+        FROM JOB_CATEGORY j
+        LEFT JOIN ICON_TABLE i ON j.ICON_KEY = i.ICON_KEY
+    </select>
+
+    <!-- 작성 -->
+    <insert id="insertJobCategory" parameterType="com.godLife.project.dto.categories.JobCateDTO">
+        INSERT INTO JOB_CATEGORY (JOB_IDX, JOB_NAME, ICON_KEY)
+        VALUES (JOB_SEQ.NEXTVAL, #{name}, #{iconKey})
+    </insert>
+
+    <!-- 수정 -->
+    <update id="updateJobCategory" parameterType="com.godLife.project.dto.categories.JobCateDTO">
+        UPDATE JOB_CATEGORY
+        <set>
+            <if test="name != null">
+                job_name = #{name},
+            </if>
+            <if test="iconKey != null">
+                icon_key = #{iconKey},
+            </if>
+        </set>
+        WHERE JOB_IDX = #{idx}
+    </update>
+
+    <!-- 삭제 -->
+    <delete id="deleteJobCategory" parameterType="int">
+            DELETE FROM JOB_CATEGORY WHERE JOB_IDX = #{idx}
+    </delete>
+    <!-- 중복 카테고리 확인 -->
+    <select id = "countByJobCateName" parameterType="String" resultType="int">
+        SELECT COUNT(*)
+        FROM JOB_CATEGORY
+        WHERE JOB_NAME = #{name}
+    </select>
+
+</mapper>

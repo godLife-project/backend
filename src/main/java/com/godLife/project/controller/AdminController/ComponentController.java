@@ -2,6 +2,7 @@ package com.godLife.project.controller.AdminController;
 
 import com.godLife.project.dto.categories.JobCateDTO;
 import com.godLife.project.dto.categories.TargetCateDTO;
+import com.godLife.project.dto.datas.FireDTO;
 import com.godLife.project.handler.GlobalExceptionHandler;
 import com.godLife.project.service.interfaces.AdminInterface.ComponentService;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,8 @@ public class ComponentController {
   public ComponentController(ComponentService componentService) {
     this.componentService = componentService;
   }
+
+  //                                  목표 카테고리
 
   // 목표 카테고리 조회
   @GetMapping("targetCategory")
@@ -118,7 +121,7 @@ public class ComponentController {
   }
 
 
-  //                직업 카테고리
+  //                                  직업 카테고리
   // 직업 카테고리 조회
   @GetMapping("jobCategory")
   public ResponseEntity<Map<String, Object>> jobCategoryList() {
@@ -196,6 +199,89 @@ public class ComponentController {
     }
   }
 
+
+  //                                  등급(불꽃) 관리 테이블
+  @GetMapping("fire")
+  public ResponseEntity<Map<String, Object>> selectAllFireGrades(FireDTO fireDTO){
+    try{
+      List<FireDTO> fireDTOList = componentService.selectAllFireGrades();
+
+      if (fireDTOList.isEmpty()) {
+        return ResponseEntity.status(handler.getHttpStatus(404))
+                .body(handler.createResponse(404, "등록된 등급(불꽃)이 없습니다."));
+      }
+
+      Map<String, Object> response = handler.createResponse(200, "등급(불꽃) 조회 성공");
+      response.put("fire", fireDTOList);
+
+      return ResponseEntity.ok(response);
+    } catch (Exception e) {
+      log.error("등급(불꽃) 조회 실패: {}", e.getMessage());
+      return ResponseEntity.status(handler.getHttpStatus(500))
+              .body(handler.createResponse(500, "서버 오류로 인해 등급(불꽃) 조회에 실패했습니다."));
+    }
+  }
+
+  // 등급(불꽃) 추가
+  @PostMapping("fire")
+  public ResponseEntity<Map<String, Object>> insertFire(@RequestBody FireDTO fireDTO) {
+    try {
+      int result = componentService.insertFire(fireDTO);
+
+      if (result == 409) {
+        return ResponseEntity.status(handler.getHttpStatus(409))
+                .body(handler.createResponse(409, "이미 존재하는 등급 이름입니다."));
+      }
+
+      return ResponseEntity.status(handler.getHttpStatus(201))
+              .body(handler.createResponse(201, "등급(불꽃) 등록 성공"));
+
+    } catch (Exception e) {
+      log.error("등급(불꽃) 등록 실패: {}", e.getMessage(), e);
+      return ResponseEntity.status(handler.getHttpStatus(500))
+              .body(handler.createResponse(500, "등급(불꽃) 등록 중 서버 오류가 발생했습니다."));
+    }
+  }
+
+  // 등급(불꽃) 수정
+  @PatchMapping("/fire/{lvIdx}")
+  public ResponseEntity<Map<String, Object>> updateFire(
+          @PathVariable("lvIdx") int lvIdx,
+          @RequestBody FireDTO fireDTO) {
+    try {
+      fireDTO.setLvIdx((long) lvIdx);
+      int result = componentService.updateFire(fireDTO);
+
+      if (result > 0) {
+        return ResponseEntity.ok(handler.createResponse(200, "등급(불꽃) 수정 성공"));
+      } else {
+        return ResponseEntity.status(handler.getHttpStatus(404))
+                .body(handler.createResponse(404, "수정할 등급(불꽃)을 찾을 수 없습니다."));
+      }
+    } catch (Exception e) {
+      log.error("불꽃(등급) 수정 오류: {}", e.getMessage(), e);
+      return ResponseEntity.status(handler.getHttpStatus(500))
+              .body(handler.createResponse(500, "서버 오류 발생"));
+    }
+  }
+
+  // 등급(불꽃) 삭제
+  @DeleteMapping("/fire/{lvIdx}")
+  public ResponseEntity<Map<String, Object>> deleteFire(@PathVariable("lvIdx") int lvIdx) {
+    try {
+      int result = componentService.deleteFire(lvIdx);
+      if (result > 0) {
+        return ResponseEntity.ok(handler.createResponse(200, "등급(불꽃) 삭제 성공"));
+      } else {
+        return ResponseEntity.status(handler.getHttpStatus(404))
+                .body(handler.createResponse(404, "삭제할 등급(불꽃)을 찾을 수 없습니다."));
+      }
+    } catch (Exception e) {
+      log.error("등급(불꽃) 삭제 오류: {}", e.getMessage(), e);
+      return ResponseEntity.status(handler.getHttpStatus(500))
+              .body(handler.createResponse(500, "서버 오류 발생"));
+    }
+  }
 }
 
 

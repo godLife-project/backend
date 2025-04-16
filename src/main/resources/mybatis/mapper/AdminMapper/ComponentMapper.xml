@@ -46,6 +46,14 @@
         FROM TARGET_CATEGORY
         WHERE TARGET_NAME = #{name}
     </select>
+    <!-- 수정시 중복체크 자기자신 제외 -->
+    <select id="countTargetCateNameExceptSelf" resultType="int">
+        SELECT COUNT(*)
+        FROM TARGET_CATEGORY
+        WHERE NAME = #{name}
+        AND TARGET_IDX != #{idx}
+    </select>
+
 
                      <!--            직업 카테고리 CRUD Mapper         -->
     <!-- 조회 -->
@@ -89,6 +97,97 @@
         SELECT COUNT(*)
         FROM JOB_CATEGORY
         WHERE JOB_NAME = #{name}
+    </select>
+    <!-- 수정시 중복체크 자기자신 제외 -->
+    <select id="countJobCateNameExceptSelf" resultType="int">
+        SELECT COUNT(*)
+        FROM JOB_CATEGORY
+        WHERE NAME = #{name}
+        AND JOB_IDX != #{Idx}
+    </select>
+
+
+
+                    <!--            등급 관리 테이블 CRUD Mapper         -->
+    <!-- 전체 불꽃 등급 목록 조회 -->
+    <select id="selectAllFireGrades" resultType="com.godLife.project.dto.datas.FireDTO">
+        SELECT
+        LV_IDX as lvIdx,
+        MIN_EXP as minExp,
+        MAX_EXP as maxExp,
+        FIRE_NAME as fireName,
+        FIRE_COLOR as fireColor,
+        FIRE_EFFECT as fireEffect
+        FROM
+            FIRE_TABLE
+        ORDER BY
+            MIN_EXP ASC
+    </select>
+
+    <!-- 등급 추가 -->
+    <insert id="insertFire" parameterType="com.godLife.project.dto.datas.FireDTO">
+        INSERT INTO FIRE_TABLE (LV_IDX, MIN_EXP, MAX_EXP, FIRE_NAME, FIRE_COLOR, FIRE_EFFECT)
+        VALUES (FIRE_SEQ.NEXTVAL, #{minExp}, #{maxExp}, #{fireName}, #{fireColor}, #{fireEffect})
+    </insert>
+
+    <!-- 등급 수정 -->
+    <!-- 수정 -->
+    <update id="updateFire" parameterType="com.godLife.project.dto.datas.FireDTO">
+        UPDATE FIRE_TABLE
+        <set>
+            <if test="minExp != null">
+                MIN_EXP = #{minExp},
+            </if>
+            <if test="maxExp != null">
+                MAX_EXP = #{maxExp},
+            </if>
+            <if test="fireName != null">
+                FIRE_NAME = #{fireName},
+            </if>
+            <if test="fireColor != null">
+                FIRE_COLOR = #{fireColor},
+            </if>
+            <if test="fireEffect != null">
+                FIRE_EFFECT = #{fireEffect},
+            </if>
+        </set>
+        WHERE LV_IDX = #{lvIdx}
+    </update>
+
+    <!-- 등급(불꽃) 삭제 -->
+    <delete id="deleteFire" parameterType="int">
+        DELETE FROM FIRE_TABLE WHERE LV_IDX = #{lvIdx}
+    </delete>
+
+    <!-- 중복 등급(불꽃) 확인 -->
+    <select id = "countByFireName" parameterType="String" resultType="int">
+        SELECT COUNT(*)
+        FROM FIRE_TABLE
+        WHERE FIRE_NAME = #{fireName}
+    </select>
+    <!-- 이름 중복 체크 (수정용 - 자기 자신 제외) -->
+    <select id="countByTargetCateNameExceptId" resultType="int">
+        SELECT COUNT(*)
+        FROM FIRE_TABLE
+        WHERE FIRE_NAME = #{fireName}
+        AND LV_IDX != #{lvIdx}
+    </select>
+    <!-- EXP 범위 중복 체크 (추가용) -->
+    <select id="countExpOverlap" resultType="int">
+        SELECT COUNT(*)
+        FROM FIRE_TABLE
+        WHERE NOT (
+        MAX_EXP &lt; #{minExp} OR MIN_EXP &gt; #{maxExp}
+        )
+    </select>
+    <!-- EXP 범위 중복 체크 (수정용 - 자기 자신 제외) -->
+    <select id="countExpOverlapExceptId" resultType="int">
+        SELECT COUNT(*)
+        FROM FIRE_TABLE
+        WHERE NOT (
+        MAX_EXP &lt; #{minExp} OR MIN_EXP &gt; #{maxExp}
+        )
+        AND LV_IDX != #{lvIdx}
     </select>
 
 </mapper>

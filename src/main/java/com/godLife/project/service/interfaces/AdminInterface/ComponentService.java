@@ -2,6 +2,7 @@ package com.godLife.project.service.interfaces.AdminInterface;
 
 import com.godLife.project.dto.categories.JobCateDTO;
 import com.godLife.project.dto.categories.TargetCateDTO;
+import com.godLife.project.dto.datas.FireDTO;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,4 +21,11 @@ public interface ComponentService {
   int insertJobCategory(JobCateDTO jobCateDTO);    // 직업 카테고리 생성
   int updateJobCategory(JobCateDTO jobCateDTO);   // 직업 카테고리 수정
   int deleteJobCategory(int jobIdx);             // 직업 카테고리 삭제
+
+  // 등급(불꽃) 관리 테이블
+  List<FireDTO> selectAllFireGrades();            // 등급(불꽃) 조회
+  int insertFire(FireDTO fireDTO);                // 등급(불꽃) 추가
+  int updateFire(FireDTO fireDTO);                // 등급(불꽃) 수정
+  int deleteFire(int lvIdx);                      // 등급(불꽃) 삭제
+
 }

@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 public class FireDTO {
     @Schema(description = "등급 인덱스", example = "1")
-    private int lvIdx;
+    private Long lvIdx;
 
     @Schema(description = "최소 인증 경험치", example = "3")
     private int minExp;

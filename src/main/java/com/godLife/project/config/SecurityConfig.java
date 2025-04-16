@@ -5,7 +5,7 @@ import com.godLife.project.jwt.CustomLogoutFilter;
 import com.godLife.project.jwt.JWTFilter;
 import com.godLife.project.jwt.JWTUtil;
 import com.godLife.project.jwt.LoginFilter;
-import com.godLife.project.service.interfaces.admin.ServiceAdminService;
+import com.godLife.project.service.interfaces.adminInterface.ServiceAdminService;
 import com.godLife.project.service.interfaces.UserService;
 import com.godLife.project.service.interfaces.jwtInterface.RefreshService;
 import jakarta.servlet.http.HttpServletRequest;

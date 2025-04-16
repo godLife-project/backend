@@ -1,7 +1,11 @@
 package com.godLife.project.jwt;
 
-import io.jsonwebtoken.Jwts;
+import com.godLife.project.exception.UnauthorizedException;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.SignatureException;
+import io.jsonwebtoken.security.WeakKeyException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -48,5 +52,25 @@ public class JWTUtil {
         .expiration(new Date(System.currentTimeMillis() + expiredMs))
         .signWith(secretKey)
         .compact();
+  }
+
+  public String extractJwt(final StompHeaderAccessor accessor) {
+    return accessor.getFirstNativeHeader("Authorization");
+  }
+
+  public void validateToken(final String token) {
+    try {
+      Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token);
+    } catch (SecurityException | MalformedJwtException | SignatureException | WeakKeyException e) {
+      throw UnauthorizedException.of(e.getClass().getName(), "잘못된 JWT 서명입니다.");
+    } catch (ExpiredJwtException e) {
+      throw UnauthorizedException.of(e.getClass().getName(), "만료된 JWT 토큰입니다.");
+    } catch (UnsupportedJwtException e) {
+      throw UnauthorizedException.of(e.getClass().getName(), "지원되지 않는 JWT 토큰입니다.");
+    } catch (IllegalArgumentException e) {
+      throw UnauthorizedException.of(e.getClass().getName(), "JWT 토큰이 잘못되었습니다.");
+    } catch (JwtException e) {
+      throw UnauthorizedException.of(e.getClass().getName(), "JWT 처리 중 오류가 발생했습니다.");
+    }
   }
 }

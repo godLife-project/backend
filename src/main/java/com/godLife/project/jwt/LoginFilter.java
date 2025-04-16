@@ -3,7 +3,7 @@ package com.godLife.project.jwt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.godLife.project.dto.datas.UserDTO;
 import com.godLife.project.dto.response.LoginResponseDTO;
-import com.godLife.project.service.interfaces.admin.ServiceAdminService;
+import com.godLife.project.service.interfaces.adminInterface.ServiceAdminService;
 import com.godLife.project.service.interfaces.UserService;
 import com.godLife.project.service.interfaces.jwtInterface.RefreshService;
 import jakarta.servlet.FilterChain;

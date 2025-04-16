@@ -1,4 +1,4 @@
-package com.godLife.project.service.interfaces.admin;
+package com.godLife.project.service.interfaces.adminInterface;
 
 public interface ServiceAdminService {
 

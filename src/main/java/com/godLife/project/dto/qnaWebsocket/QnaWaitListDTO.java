@@ -1,4 +1,4 @@
-package com.godLife.project.dto.list.websocket;
+package com.godLife.project.dto.qnaWebsocket;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -10,7 +10,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class QnaListMessageDTO {
+public class QnaWaitListDTO {
   private int qnaIdx;
   private int qUserIdx;
   private String title;

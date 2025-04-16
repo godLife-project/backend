@@ -1,17 +1,13 @@
 package com.godLife.project.service.impl.admin;
 
-import com.godLife.project.dto.serviceAdmin.StatusParam;
 import com.godLife.project.exception.CustomException;
 import com.godLife.project.mapper.admin.ServiceAdminMapper;
-import com.godLife.project.service.interfaces.admin.ServiceAdminService;
+import com.godLife.project.service.interfaces.adminInterface.ServiceAdminService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 @Slf4j

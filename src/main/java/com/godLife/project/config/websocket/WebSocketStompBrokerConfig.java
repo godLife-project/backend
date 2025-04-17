@@ -2,6 +2,7 @@ package com.godLife.project.config.websocket;
 
 import com.godLife.project.handler.websocket.StompExceptionHandler;
 import com.godLife.project.handler.websocket.StompHandler;
+import com.godLife.project.jwt.JWTUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
@@ -17,6 +18,7 @@ public class WebSocketStompBrokerConfig implements WebSocketMessageBrokerConfigu
 
   private final StompHandler stompHandler;
   private final StompExceptionHandler stompExceptionHandler;
+  private final JWTUtil jwtUtil;
 
   @Override
   public void configureMessageBroker(MessageBrokerRegistry config) {

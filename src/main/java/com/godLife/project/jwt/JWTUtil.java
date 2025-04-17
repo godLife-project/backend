@@ -6,6 +6,10 @@ import io.jsonwebtoken.security.SignatureException;
 import io.jsonwebtoken.security.WeakKeyException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -72,5 +76,14 @@ public class JWTUtil {
     } catch (JwtException e) {
       throw UnauthorizedException.of(e.getClass().getName(), "JWT 처리 중 오류가 발생했습니다.");
     }
+  }
+
+  public Authentication getAuthentication(String token) {
+    String username = getUsername(token);
+    String role = getRole(token);
+
+    GrantedAuthority authority = new SimpleGrantedAuthority(role);
+
+    return new UsernamePasswordAuthenticationToken(username, null, java.util.Collections.singletonList(authority));
   }
 }

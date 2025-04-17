@@ -16,6 +16,4 @@ public interface UserService {
     String FindUserIdByNameNEmail(GetNameNEmail getNameNEmail, boolean isMasked);
     // 비번 찾기
     int FindUserPw(GetUserPwRequestDTO userPwRequestDTO, String userEmail);
-
-
 }

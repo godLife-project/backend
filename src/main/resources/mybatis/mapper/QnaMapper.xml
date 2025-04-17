@@ -6,9 +6,22 @@
 
     <!-- 1:1 문의 작성 -->
     <insert id="createQna" parameterType="com.godLife.project.dto.contents.QnaDTO">
+        <selectKey keyProperty="qnaIdx" resultType="int" order="BEFORE">
+            SELECT QNA_SEQ.NEXTVAL FROM DUAL
+        </selectKey>
         INSERT INTO QNA_TABLE(QNA_IDX, Q_USER_IDX, TITLE, CONTENT, CREATED_AT, CATEGORY, QNA_STATUS)
-        VALUES(QNA_SEQ.NEXTVAL, #{qUserIdx}, #{title}, #{content}, SYSDATE, #{category}, 'WAIT')
+        VALUES(#{qnaIdx}, #{qUserIdx}, #{title}, #{content}, SYSDATE, #{category}, 'WAIT')
     </insert>
+
+    <!-- 매칭된 문의 리스트 조회 -->
+    <select id="getlistAllMatchedQna" parameterType="int" resultType="com.godLife.project.dto.qnaWebsocket.QnaMatchedListDTO">
+        SELECT Q.QNA_IDX, U.USER_NAME, Q.TITLE, Q.CREATED_AT, Q.CATEGORY, Q.Q_COUNT, Q.QNA_STATUS
+        FROM QNA_TABLE Q
+        INNER JOIN USER_TABLE U ON Q.Q_USER_IDX = U.USER_IDX
+        WHERE Q.QNA_STATUS NOT IN ('WAIT', 'COMPLETE')
+        AND Q.A_USER_IDX = #{adminIdx}
+        ORDER BY Q.CREATED_AT
+    </select>
 
 
 </mapper>

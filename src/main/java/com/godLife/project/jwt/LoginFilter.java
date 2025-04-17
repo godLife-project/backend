@@ -3,6 +3,7 @@ package com.godLife.project.jwt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.godLife.project.dto.datas.UserDTO;
 import com.godLife.project.dto.response.LoginResponseDTO;
+import com.godLife.project.service.interfaces.adminInterface.ServiceAdminService;
 import com.godLife.project.service.interfaces.UserService;
 import com.godLife.project.service.interfaces.jwtInterface.RefreshService;
 import jakarta.servlet.FilterChain;
@@ -19,8 +20,10 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 @Slf4j
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
@@ -33,13 +36,16 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
   private final UserService userService;
 
-  public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, RefreshService refreshService, UserService userService) {
+  private final ServiceAdminService serviceAdminService;
+
+  public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, RefreshService refreshService, UserService userService, ServiceAdminService serviceAdminService) {
 
     super.setFilterProcessesUrl("/api/user/login");
     this.authenticationManager = authenticationManager;
     this.jwtUtil = jwtUtil;
     this.refreshService = refreshService;
     this.userService = userService;
+    this.serviceAdminService = serviceAdminService;
   }
 
   @Override
@@ -121,6 +127,12 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     loginUserDTO.setUserLv(tempUserDTO.getUserLv());        // 유저 레벨
     if (tempUserDTO.getAuthorityIdx() >= 2) {
       loginUserDTO.setRoleStatus(true);                     // 유저 권한이 아닐 경우 true
+
+      List<Integer> validAuthList = Arrays.asList(3, 4, 6, 7);
+      if (validAuthList.contains(tempUserDTO.getAuthorityIdx())) {
+        log.info("고객서비스 접근 권한 확인..고객센터 테이블에 데이터를 저장합니다.");
+        serviceAdminService.setCenterLoginByAdmin3467(tempUserDTO.getUserIdx());  // 권한이 3,4,6,7 이면 고객센터 로그인 처리
+      }
     }
 
 

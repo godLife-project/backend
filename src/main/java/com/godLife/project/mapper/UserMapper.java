@@ -27,8 +27,8 @@ public interface UserMapper {
     UserDTO findByUserid(String username);
 
     // 관리자 권환 확인
-    @Select("SELECT authority_idx FROM users WHERE user_id = #{userId}")
-    Integer getUserAuthority(@Param("userId") Long userId);
+    @Select("SELECT AUTHORITY_IDX FROM USER_TABLE WHERE USER_ID = #{userId}")
+    String getUserAuthority(@Param("userId") String userId);
 
     // 아이디 찾기
     @Select("SELECT USER_ID FROM USER_TABLE WHERE USER_NAME = #{userName} AND USER_EMAIL = #{userEmail} AND IS_DELETED = 'N'")
@@ -37,4 +37,5 @@ public interface UserMapper {
     // 비밀번호 찾기 (변경)
     @Update("UPDATE USER_TABLE SET USER_PW = #{userPw} WHERE USER_EMAIL = #{userEmail} AND IS_DELETED = 'N'")
     int findUserPw(String userPw, String userEmail);
+
 }

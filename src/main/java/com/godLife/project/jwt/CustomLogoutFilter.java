@@ -1,5 +1,6 @@
 package com.godLife.project.jwt;
 
+import com.godLife.project.service.interfaces.adminInterface.ServiceAdminService;
 import com.godLife.project.service.interfaces.jwtInterface.RefreshService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
@@ -9,21 +10,20 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 
+@Slf4j
+@RequiredArgsConstructor
 public class CustomLogoutFilter extends GenericFilterBean {
 
   private final JWTUtil jwtUtil;
   private final RefreshService refreshService;
-
-  public CustomLogoutFilter(JWTUtil jwtUtil, RefreshService refreshService) {
-
-    this.jwtUtil = jwtUtil;
-    this.refreshService = refreshService;
-  }
+  private final ServiceAdminService serviceAdminService;
 
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -53,6 +53,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
     if (refresh == null) {
 
       sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Refresh 토큰이 쿠키에 없습니다.");
+      log.warn("logoutFilter - NoRefresh :: 쿠키에 Refresh 토큰이 없습니다.");
       return;
     }
 
@@ -63,6 +64,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
 
       //response status code
       sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Refresh 토큰이 만료되었습니다.");
+      log.warn("logoutFilter - isExpired :: Refresh 토큰이 이미 만료 되었습니다.");
       return;
     }
 
@@ -72,6 +74,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
 
       //response status code
       sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST, "유효하지 않은 Refresh 토큰입니다.");
+      log.warn("logoutFilter - isValid :: Refresh 토큰이 유효하지 않습니다.");
       return;
     }
 
@@ -81,10 +84,12 @@ public class CustomLogoutFilter extends GenericFilterBean {
 
       //response status code
       sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "해당 Refresh 토큰이 DB에 존재하지 않습니다.");
+      log.warn("logoutFilter - NoDatabase :: DB에 Refresh 토큰이 없습니다.");
       return;
     }
 
     //로그아웃 진행
+    serviceAdminService.setCenterLogoutByAdmin3467(refresh);
     //Refresh 토큰 DB에서 제거
     refreshService.deleteByRefresh(refresh);
 
@@ -95,7 +100,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
     response.addCookie(cookie);
 
     // 성공 응답
-    System.out.println("refresh 토큰 삭제 로그아웃완료");
+    log.info("logoutFilter - NoDatabase :: refresh 토큰 삭제,, 로그아웃완료");
 
     response.setStatus(HttpServletResponse.SC_OK);
     response.setContentType("application/json");
@@ -108,7 +113,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
   private String getRefreshTokenFromCookies(HttpServletRequest request) {
     Cookie[] cookies = request.getCookies();
     if (cookies == null)  {
-      System.out.println("쿠키 없음");
+      log.warn("logoutFilter - NoDatabase :: 쿠키 없음");
       return null;
     }
 

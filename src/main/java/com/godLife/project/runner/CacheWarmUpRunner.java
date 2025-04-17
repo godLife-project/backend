@@ -1,12 +1,15 @@
 package com.godLife.project.runner;
 
 import com.godLife.project.mapper.CategoryMapper;
+import com.godLife.project.mapper.QnaMapper;
 import com.godLife.project.service.impl.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -15,6 +18,7 @@ public class CacheWarmUpRunner implements ApplicationRunner {
 
   private final RedisService redisService;
   private final CategoryMapper categoryMapper;
+  private final QnaMapper qnaMapper;
 
   @Override
   public void run(ApplicationArguments args) {
@@ -35,6 +39,13 @@ public class CacheWarmUpRunner implements ApplicationRunner {
     redisService.saveListData("category::fire", categoryMapper.getAllFireInfos(), 'n', 0);
     log.info("유저 레벨 정보 워밍업 준비..");
     redisService.saveListData("category::userLv", categoryMapper.getAllUserLevelInfos(), 'n', 0);
+    log.info("대기중 문의 큐에 업로드 준비..");
+    List<Integer> qnaIndexes = qnaMapper.getlistWaitQnaIdx();
+    if (qnaIndexes != null && !qnaIndexes.isEmpty()) {
+      for (int qnaIdx : qnaIndexes) {
+        redisService.leftPushToRedisQueue("qna_queue", String.valueOf(qnaIdx));
+      }
+    }
     log.info("워밍업 완료!!!");
   }
 }

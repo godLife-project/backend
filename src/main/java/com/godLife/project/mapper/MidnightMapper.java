@@ -3,6 +3,7 @@ package com.godLife.project.mapper;
 import com.godLife.project.dto.scheduler.VerifyUnder90DTO;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
@@ -30,4 +31,7 @@ public interface MidnightMapper {
 
   // 삭제 처리된 계정 완전 삭제
   int clearAccount(int expire);
+
+  // REFRESH 토큰이 만료된 고객관리자 로그아웃 처리
+  void clearServiceCenterByIsExpired();
 }

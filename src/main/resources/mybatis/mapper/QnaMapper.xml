@@ -4,6 +4,23 @@
 
 <mapper namespace="com.godLife.project.mapper.QnaMapper">
 
+    <resultMap id="listMatchedQnA" type="com.godLife.project.dto.qnaWebsocket.QnaMatchedListDTO">
+        <!-- Q_COUNT는 QnaMatchedListDTO의 int 필드 -->
+        <result property="qCount" column="Q_COUNT" />
+
+        <!-- qnaInfos는 QnaWaitListDTO를 참조 -->
+        <association property="qnaInfos" javaType="com.godLife.project.dto.qnaWebsocket.QnaWaitListDTO">
+            <id property="qnaIdx" column="QNA_IDX" />
+            <result property="qUserIdx" column="Q_USER_IDX" />
+            <result property="userName" column="USER_NAME" />
+            <result property="title" column="TITLE" />
+            <result property="createdAt" column="CREATED_AT" />
+            <result property="modifiedAt" column="MODIFIED_AT" />
+            <result property="category" column="CATEGORY" />
+            <result property="qnaStatus" column="QNA_STATUS" />
+        </association>
+    </resultMap>
+
     <!-- 1:1 문의 작성 -->
     <insert id="createQna" parameterType="com.godLife.project.dto.contents.QnaDTO">
         <selectKey keyProperty="qnaIdx" resultType="int" order="BEFORE">
@@ -13,9 +30,18 @@
         VALUES(#{qnaIdx}, #{qUserIdx}, #{title}, #{content}, SYSDATE, #{category}, 'WAIT')
     </insert>
 
+    <!-- 'WAIT' 상태 문의 리스트용 정보 가져오기 -->
+    <select id="getlistAllWaitQna" resultType="com.godLife.project.dto.qnaWebsocket.QnaWaitListDTO">
+        SELECT Q.QNA_IDX, Q.Q_USER_IDX, U.USER_NAME, Q.TITLE, Q.CREATED_AT, Q.MODIFIED_AT, Q.CATEGORY, Q.QNA_STATUS
+        FROM QNA_TABLE Q
+        INNER JOIN USER_TABLE U ON Q.Q_USER_IDX = U.USER_IDX
+        WHERE Q.QNA_STATUS = 'WAIT'
+        ORDER BY Q.CREATED_AT
+    </select>
+
     <!-- 매칭된 문의 리스트 조회 -->
-    <select id="getlistAllMatchedQna" parameterType="int" resultType="com.godLife.project.dto.qnaWebsocket.QnaMatchedListDTO">
-        SELECT Q.QNA_IDX, U.USER_NAME, Q.TITLE, Q.CREATED_AT, Q.CATEGORY, Q.Q_COUNT, Q.QNA_STATUS
+    <select id="getlistAllMatchedQna" parameterType="int" resultMap="listMatchedQnA">
+        SELECT Q.QNA_IDX, Q.Q_USER_IDX, U.USER_NAME, Q.TITLE, Q.CREATED_AT, Q.MODIFIED_AT, Q.CATEGORY, Q.QNA_STATUS, Q.Q_COUNT
         FROM QNA_TABLE Q
         INNER JOIN USER_TABLE U ON Q.Q_USER_IDX = U.USER_IDX
         WHERE Q.QNA_STATUS NOT IN ('WAIT', 'COMPLETE')

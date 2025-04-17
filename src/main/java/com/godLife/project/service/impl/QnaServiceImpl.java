@@ -10,6 +10,7 @@ import com.godLife.project.exception.WebSocketBusinessException;
 import com.godLife.project.mapper.QnaMapper;
 import com.godLife.project.service.impl.redis.RedisService;
 import com.godLife.project.service.interfaces.QnaService;
+import com.godLife.project.utils.HtmlSanitizer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.javassist.NotFoundException;
@@ -69,6 +70,24 @@ public class QnaServiceImpl implements QnaService {
     } catch (Exception e) {
       throw new WebSocketBusinessException("매칭된 QnA 리스트를 불러오는 중 오류 발생", 5001);
     }
+  }
 
+  // qna 본문 조회
+  @Override
+  public String getQnaContent(int qnaIdx) {
+    try {
+      String rawContent = qnaMapper.getQnaContent(qnaIdx);
+
+      if (rawContent == null || rawContent.isBlank()) {
+        throw new CustomException("조회하려는 문의가 존재하지 않습니다.", HttpStatus.NOT_FOUND);
+      }
+
+      return HtmlSanitizer.sanitize(rawContent);
+    } catch (CustomException e) {
+      throw e;
+    } catch (Exception e) {
+      log.error("QnaService - getQnaContent :: 문의 본문 조회 중 오류 발생: ", e);
+      throw new CustomException("DB 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }

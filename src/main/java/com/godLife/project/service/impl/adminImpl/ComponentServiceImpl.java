@@ -1,4 +1,4 @@
-package com.godLife.project.service.impl.AdminImpl;
+package com.godLife.project.service.impl.adminImpl;
 
 import com.godLife.project.dto.categories.JobCateDTO;
 import com.godLife.project.dto.categories.TargetCateDTO;
@@ -10,7 +10,7 @@ import java.util.List;
 
 @Service
 public class ComponentServiceImpl implements ComponentService {
-  private ComponentMapper componentMapper;
+  private final ComponentMapper componentMapper;
 
   public ComponentServiceImpl(ComponentMapper componentMapper){this.componentMapper = componentMapper;}
 

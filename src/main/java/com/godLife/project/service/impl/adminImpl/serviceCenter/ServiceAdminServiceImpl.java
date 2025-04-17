@@ -1,8 +1,8 @@
-package com.godLife.project.service.impl.admin;
+package com.godLife.project.service.impl.adminImpl.serviceCenter;
 
 import com.godLife.project.exception.CustomException;
-import com.godLife.project.mapper.admin.ServiceAdminMapper;
-import com.godLife.project.service.interfaces.adminInterface.ServiceAdminService;
+import com.godLife.project.mapper.AdminMapper.ServiceAdminMapper;
+import com.godLife.project.service.interfaces.AdminInterface.serviceCenter.ServiceAdminService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class ServiceServiceAdminServiceImpl implements ServiceAdminService {
+public class ServiceAdminServiceImpl implements ServiceAdminService {
 
   private final ServiceAdminMapper serviceAdminMapper;
 

@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 public class QnaWaitListDTO {
   private int qnaIdx;
   private int qUserIdx;
+  private String userName;
   private String title;
 
   @JsonSerialize(using = LocalDateTimeSerializer.class) // 직렬화

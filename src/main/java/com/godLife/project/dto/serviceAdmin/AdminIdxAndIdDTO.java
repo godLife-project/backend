@@ -3,7 +3,7 @@ package com.godLife.project.dto.serviceAdmin;
 import lombok.Data;
 
 @Data
-public class StatusParam {
+public class AdminIdxAndIdDTO {
   private int userIdx;
-  private Integer status;
+  private String userId;
 }

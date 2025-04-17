@@ -5,10 +5,11 @@
 <mapper namespace="com.godLife.project.mapper.autoMatch.AutoMatchMapper">
 
     <!-- 매칭 할 상담원 조회 -->
-    <select id="getServiceAdminIdx" resultType="java.lang.Integer">
-        SELECT USER_IDX
-        FROM SERVICE_CENTER
-        WHERE STATUS = 1
+    <select id="getServiceAdminIdx" resultType="com.godLife.project.dto.serviceAdmin.AdminIdxAndIdDTO">
+        SELECT S.USER_IDX, U.USER_ID
+        FROM SERVICE_CENTER S
+        INNER JOIN USER_TABLE U ON S.USER_IDX = U.USER_IDX
+        WHERE S.STATUS = 1
         AND MATCHED <![CDATA[ < ]]> 10
         ORDER BY MATCHED
         FETCH FIRST 1 ROWS ONLY

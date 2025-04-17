@@ -1,8 +1,13 @@
 package com.godLife.project.listener;
 
-import com.godLife.project.mapper.admin.ServiceAdminMapper;
+import com.godLife.project.dto.qnaWebsocket.QnaMatchedListDTO;
+import com.godLife.project.dto.serviceAdmin.AdminIdxAndIdDTO;
+import com.godLife.project.enums.WSDestination;
+import com.godLife.project.mapper.AdminMapper.ServiceAdminMapper;
 import com.godLife.project.mapper.autoMatch.AutoMatchMapper;
 import com.godLife.project.service.impl.redis.RedisService;
+import com.godLife.project.service.impl.websocketImpl.WebSocketMessageService;
+import com.godLife.project.service.interfaces.QnaService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.DisposableBean;
@@ -10,6 +15,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.QueryTimeoutException;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -22,6 +28,8 @@ public class QnaQueueListener implements InitializingBean, DisposableBean {
   private final RedisService redisService;
   private final AutoMatchMapper autoMatchMapper;
   private final ServiceAdminMapper serviceAdminMapper;
+  private final WebSocketMessageService messageService;
+  private final QnaService qnaService;
 
   private static final String QNA_QUEUE_KEY = "qna_queue";
 
@@ -57,12 +65,17 @@ public class QnaQueueListener implements InitializingBean, DisposableBean {
 
             if (result != null) {
               int qnaIdx = Integer.parseInt(result);
-              Integer adminIdx = autoMatchMapper.getServiceAdminIdx(); // 매칭 가능 상담원 조회
+              AdminIdxAndIdDTO adminInfo = autoMatchMapper.getServiceAdminIdx(); // 매칭 가능 상담원 조회
 
-              if (adminIdx != null) {
-                autoMatchMapper.autoMatchSingleQna(qnaIdx, adminIdx); // 상담원 자동 매칭 시도
-                serviceAdminMapper.setMatchedByQuestionCount(adminIdx); // 매칭된 상담원 매칭 문의 수 증가
-                log.info("QnaQueueListener - autoMatch :: 문의 담당자에게 매칭되었습니다. ::> 매칭된 문의 - {} / 담당자 - {}", qnaIdx ,adminIdx);
+              if (adminInfo != null) {
+                autoMatchMapper.autoMatchSingleQna(qnaIdx, adminInfo.getUserIdx()); // 상담원 자동 매칭 시도
+                serviceAdminMapper.setMatchedByQuestionCount(adminInfo.getUserIdx()); // 매칭된 상담원 매칭 문의 수 증가
+                List<QnaMatchedListDTO> matchedList = qnaService.getlistAllMatchedQna(adminInfo.getUserIdx());
+
+                // 관리자에게 매칭 리스트 업데이트
+                messageService.sendToUser(adminInfo.getUserId(), WSDestination.SUB_GET_MATCHED_QNA_LIST.getDestination(), matchedList);
+
+                log.info("QnaQueueListener - autoMatch :: 문의 담당자에게 매칭되었습니다. ::> 매칭된 문의 - {} / 담당자 - {}", qnaIdx ,adminInfo);
 
               }
               else {

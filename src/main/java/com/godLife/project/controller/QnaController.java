@@ -43,5 +43,13 @@ public class QnaController {
     return ResponseEntity.status(HttpStatus.CREATED).build();
   }
 
+  // 1:1 문의 본문 조회
+  @GetMapping("/get/just/content/{qnaIdx}")
+  public ResponseEntity<Map<String, Object>> getJustQnaContent(@PathVariable int qnaIdx) {
+    String content = qnaService.getQnaContent(qnaIdx);
+
+    return ResponseEntity.ok().body(handler.createResponse(200, content));
+  }
+
 
 }

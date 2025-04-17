@@ -2,12 +2,11 @@ package com.godLife.project.controller.websocket;
 
 import com.godLife.project.dto.error.CustomWsErrorDTO;
 import com.godLife.project.dto.qnaWebsocket.QnaMatchedListDTO;
-import com.godLife.project.dto.qnaWebsocket.QnaWaitListDTO;
 import com.godLife.project.dto.qnaWebsocket.WaitListMessageDTO;
 import com.godLife.project.dto.test.TestChatDTO;
+import com.godLife.project.enums.WSDestination;
 import com.godLife.project.exception.WebSocketBusinessException;
 import com.godLife.project.handler.GlobalExceptionHandler;
-import com.godLife.project.mapper.QnaMapper;
 import com.godLife.project.service.interfaces.QnaService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,8 +31,8 @@ public class ChatController {
 
 
   // 채팅 기능
-  @MessageMapping("/chat/{roomNo}")
-  @SendTo("/sub/chat/{roomNo}")
+  @MessageMapping("/roomChat/{roomNo}")
+  @SendTo("/sub/roomChat/{roomNo}")
   public TestChatDTO broadcasting(final TestChatDTO request,
                                   @DestinationVariable(value = "roomNo") final String chatRoomNo) {
     request.setRoomNo(chatRoomNo);
@@ -50,15 +49,6 @@ public class ChatController {
     return qnaService.getlistAllWaitQna(chatRoomNo);
   }
 
-//  /// 구독중인 유저 중 데이터를 요청한 단일 유저에게
-//  // 매칭된 루틴 리스트 전송
-//  @MessageMapping("/get/matched/qna")
-//  @SendToUser("/queue/qna")
-//  public List<QnaMatchedListDTO> test(@Header("Authorization") String authHeader) {
-//    int adminIdx = handler.getUserIdxFromToken(authHeader);
-//    return  qnaService.getlistAllMatchedQna(adminIdx);
-//  }
-
   @MessageMapping("/get/matched/qna")
   public void sendMatchedQnaList(@Header("Authorization") String authHeader,
                                  Principal principal) {
@@ -68,14 +58,14 @@ public class ChatController {
     // 사용자 식별 ID를 얻는 방법: principal.getName() → WebSocket 인증된 사용자명
     messagingTemplate.convertAndSendToUser(
         principal.getName(),            // 유저 이름 (username)
-        "/queue/qna",                   // 구독 경로
+        WSDestination.SUB_GET_MATCHED_QNA_LIST.getDestination(),                   // 구독 경로
         matchedList                     // 전송할 데이터
     );
   }
 
   // 에러 메시지 처리
   @MessageExceptionHandler(WebSocketBusinessException.class)
-  @SendToUser("/queue/errors")
+  @SendToUser("/queue/admin/errors")
   public CustomWsErrorDTO handleBusinessException(WebSocketBusinessException e) {
     return new CustomWsErrorDTO(e.getMessage(), e.getCode());
   }

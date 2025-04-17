@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.godLife.project.mapper.admin.ServiceAdminMapper">
+<mapper namespace="com.godLife.project.mapper.AdminMapper.ServiceAdminMapper">
 
     <!-- 고객관리자 로그아웃 처리 -->
     <delete id="setCenterLogoutByAdmin3467" parameterType="String">

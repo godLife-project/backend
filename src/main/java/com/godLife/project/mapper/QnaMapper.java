@@ -19,9 +19,12 @@ public interface QnaMapper {
   List<Integer> getlistWaitQnaIdx();
 
   // 'WAIT' 상태 문의의 리스트용 정보 가져오기
-  @Select("SELECT QNA_IDX, Q_USER_IDX, TITLE, CREATED_AT, MODIFIED_AT, CATEGORY, QNA_STATUS FROM QNA_TABLE WHERE QNA_STATUS = 'WAIT'")
   List<QnaWaitListDTO> getlistAllWaitQna();
 
   // 매칭된 문의 리스트 조회
   List<QnaMatchedListDTO> getlistAllMatchedQna(int adminIdx);
+
+  // 문의 본문 조회
+  @Select("SELECT CONTENT FROM QNA_TABLE WHERE QNA_IDX = #{qnaIdx}")
+  String getQnaContent(int qnaIdx);
 }

@@ -2,6 +2,7 @@ package com.godLife.project.controller;
 
 import com.godLife.project.dto.contents.FaQDTO;
 import com.godLife.project.dto.infos.SearchQueryDTO;
+import com.godLife.project.dto.list.FaqListDTO;
 import com.godLife.project.handler.GlobalExceptionHandler;
 import com.godLife.project.service.interfaces.FaqService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ public class FaqController {
   // FAQ 조회
   @GetMapping
   public ResponseEntity<Map<String, Object>> getAllFaq() {
-    List<FaQDTO> faqList = faqService.selectAllFaq();
+    List<FaqListDTO> faqList = faqService.selectAllFaq();
 
     // FAQ 게시글이 없을 경우 404 상태 코드와 메세지 반환
     if (faqList.isEmpty()) {

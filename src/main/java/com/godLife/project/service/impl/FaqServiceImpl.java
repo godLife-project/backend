@@ -2,6 +2,7 @@ package com.godLife.project.service.impl;
 
 import com.godLife.project.dto.contents.FaQDTO;
 import com.godLife.project.dto.infos.SearchQueryDTO;
+import com.godLife.project.dto.list.FaqListDTO;
 import com.godLife.project.mapper.FaqMapper;
 import com.godLife.project.service.interfaces.FaqService;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,7 @@ public class FaqServiceImpl implements FaqService {
     return faqMapper.selectFaqById(faqIdx);
   }
   // 모든 FAQ 조회
-  public List<FaQDTO> selectAllFaq() {
+  public List<FaqListDTO> selectAllFaq() {
     return faqMapper.selectAllFaq();
   }
 

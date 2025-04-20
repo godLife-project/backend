@@ -1,6 +1,8 @@
 package com.godLife.project.controller.AdminController;
 
+import com.godLife.project.dto.categories.FaqCateDTO;
 import com.godLife.project.dto.categories.JobCateDTO;
+import com.godLife.project.dto.categories.QnaCateDTO;
 import com.godLife.project.dto.categories.TargetCateDTO;
 import com.godLife.project.dto.datas.FireDTO;
 import com.godLife.project.handler.GlobalExceptionHandler;
@@ -143,6 +145,7 @@ public class ComponentController {
               .body(handler.createResponse(500, "서버 오류로 인해 카테고리 조회에 실패했습니다."));
     }
   }
+
   // 직업 카테고리 추가
   @PostMapping("/jobCategory")
   public ResponseEntity<Map<String, Object>> createJobCategory(@RequestBody JobCateDTO jobCateDTO) {
@@ -160,6 +163,7 @@ public class ComponentController {
               .body(handler.createResponse(500, "서버 오류 발생"));
     }
   }
+
   // 직업 카테고리 수정
   @PatchMapping("/jobCategory/{jobIdx}")
   public ResponseEntity<Map<String, Object>> updateJobCategory(
@@ -181,6 +185,7 @@ public class ComponentController {
               .body(handler.createResponse(500, "서버 오류 발생"));
     }
   }
+
   // 직업 카테고리 삭제
   @DeleteMapping("/jobCategory/{jobIdx}")
   public ResponseEntity<Map<String, Object>> deleteJobCategory(@PathVariable("jobIdx") int jobIdx) {
@@ -202,8 +207,8 @@ public class ComponentController {
 
   //                                  등급(불꽃) 관리 테이블
   @GetMapping("fire")
-  public ResponseEntity<Map<String, Object>> selectAllFireGrades(FireDTO fireDTO){
-    try{
+  public ResponseEntity<Map<String, Object>> selectAllFireGrades(FireDTO fireDTO) {
+    try {
       List<FireDTO> fireDTOList = componentService.selectAllFireGrades();
 
       if (fireDTOList.isEmpty()) {
@@ -278,6 +283,174 @@ public class ComponentController {
       }
     } catch (Exception e) {
       log.error("등급(불꽃) 삭제 오류: {}", e.getMessage(), e);
+      return ResponseEntity.status(handler.getHttpStatus(500))
+              .body(handler.createResponse(500, "서버 오류 발생"));
+    }
+  }
+
+
+  //                                  FAQ 카테고리 관리 테이블
+  // FAQ 카테고리 조회
+  @GetMapping("/faqCategory")
+  public ResponseEntity<Map<String, Object>> selectFaqCate() {
+    try {
+      List<FaqCateDTO> faqCateDTOList = componentService.selectFaqCate();
+
+      if (faqCateDTOList.isEmpty()) {
+        return ResponseEntity.status(handler.getHttpStatus(404))
+                .body(handler.createResponse(404, "등록된 FAQ 카테고리가 없습니다."));
+      }
+
+      Map<String, Object> response = handler.createResponse(200, "FAQ 카테고리 조회 성공");
+      response.put("faqCategory", faqCateDTOList);
+
+      return ResponseEntity.ok(response);
+    } catch (Exception e) {
+      log.error("FAQ 카테고리 조회 실패: {}", e.getMessage());
+      return ResponseEntity.status(handler.getHttpStatus(500))
+              .body(handler.createResponse(500, "서버 오류로 인해 FAQ 카테고리 조회에 실패했습니다."));
+    }
+  }
+
+  // FAQ 추가
+  @PostMapping("/faqCategory")
+  public ResponseEntity<Map<String, Object>> insertFaqCate(@RequestBody FaqCateDTO faqCateDTO) {
+    try {
+      int result = componentService.insertFaqCate(faqCateDTO);
+
+      if (result == 409) {
+        return ResponseEntity.status(handler.getHttpStatus(409))
+                .body(handler.createResponse(409, "이미 존재하는 FAQ 카테고리 이름입니다."));
+      }
+
+      return ResponseEntity.status(handler.getHttpStatus(201))
+              .body(handler.createResponse(201, "FAQ 카테고리 등록 성공"));
+
+    } catch (Exception e) {
+      log.error("FAQ 카테고리 등록 실패: {}", e.getMessage(), e);
+      return ResponseEntity.status(handler.getHttpStatus(500))
+              .body(handler.createResponse(500, "FAQ 카테고리 등록 중 서버 오류가 발생했습니다."));
+    }
+  }
+
+  // FAQ 카테고리 수정
+  @PatchMapping("/faqCategory/{faqCategoryIdx}")
+  public ResponseEntity<Map<String, Object>> updateFaqCate(@PathVariable("faqCategoryIdx")int faqCategoryIdx,
+                                                           @RequestBody FaqCateDTO faqCateDTO){
+    try {
+      faqCateDTO.setFaqCategoryIdx(faqCategoryIdx);
+      int result = componentService.updateFaqCate(faqCateDTO);
+
+      if (result > 0) {
+        return ResponseEntity.ok(handler.createResponse(200, "FAQ 카테고리 수정 성공"));
+      } else {
+        return ResponseEntity.status(handler.getHttpStatus(404))
+                .body(handler.createResponse(404, "수정할 FAQ 카테고리를 찾을 수 없습니다."));
+      }
+    } catch (Exception e) {
+      log.error("FAQ 카테고리 수정 오류: {}", e.getMessage(), e);
+      return ResponseEntity.status(handler.getHttpStatus(500))
+              .body(handler.createResponse(500, "서버 오류 발생"));
+    }
+  }
+
+  // FAQ 카테고리 삭제
+  @DeleteMapping("faqCategory/{faqCategoryIdx}")
+  public ResponseEntity<Map<String, Object>> deleteFaqCate(@PathVariable("faqCategoryIdx") int faqCategoryIdx){
+    try {
+      int result = componentService.deleteFaqCate(faqCategoryIdx);
+      if (result > 0) {
+        return ResponseEntity.ok(handler.createResponse(200, "FAQ 카테고리 삭제 성공"));
+      } else {
+        return ResponseEntity.status(handler.getHttpStatus(404))
+                .body(handler.createResponse(404, "삭제할 FAQ 카테고리를 찾을 수 없습니다."));
+      }
+    } catch (Exception e) {
+      log.error("FAQ 카테고리 삭제 오류: {}", e.getMessage(), e);
+      return ResponseEntity.status(handler.getHttpStatus(500))
+              .body(handler.createResponse(500, "서버 오류 발생"));
+    }
+  }
+
+
+  //                                  QNA 카테고리 관리 테이블
+  // QNA 카테고리 조회
+  @GetMapping("/qnaCategory")
+  public ResponseEntity<Map<String, Object>> selectQnaCate() {
+    try {
+      List<QnaCateDTO> qnaCateDTOList = componentService.selectQnaCate();
+
+      if (qnaCateDTOList.isEmpty()) {
+        return ResponseEntity.status(handler.getHttpStatus(404))
+                .body(handler.createResponse(404, "등록된 QNA 카테고리가 없습니다."));
+      }
+
+      Map<String, Object> response = handler.createResponse(200, "QNA 카테고리 조회 성공");
+      response.put("faqCategory", qnaCateDTOList);
+
+      return ResponseEntity.ok(response);
+    } catch (Exception e) {
+      log.error("FAQ 카테고리 조회 실패: {}", e.getMessage());
+      return ResponseEntity.status(handler.getHttpStatus(500))
+              .body(handler.createResponse(500, "서버 오류로 인해 QNA 카테고리 조회에 실패했습니다."));
+    }
+  }
+
+  // QNA 추가
+  @PostMapping("/qnaCategory")
+  public ResponseEntity<Map<String, Object>> insertQnaCate(@RequestBody QnaCateDTO qnaCateDTO) {
+    try {
+      int result = componentService.insertQnaCate(qnaCateDTO);
+
+      if (result == 409) {
+        return ResponseEntity.status(handler.getHttpStatus(409))
+                .body(handler.createResponse(409, "이미 존재하는 QNA 카테고리 이름입니다."));
+      }
+
+      return ResponseEntity.status(handler.getHttpStatus(201))
+              .body(handler.createResponse(201, "QNA 카테고리 등록 성공"));
+
+    } catch (Exception e) {
+      log.error("FAQ 카테고리 등록 실패: {}", e.getMessage(), e);
+      return ResponseEntity.status(handler.getHttpStatus(500))
+              .body(handler.createResponse(500, "QNA 카테고리 등록 중 서버 오류가 발생했습니다."));
+    }
+  }
+
+  // QNA 카테고리 수정
+  @PatchMapping("/qnaCategory/{qnaCategoryIdx}")
+  public ResponseEntity<Map<String, Object>> updateQnaCate(@PathVariable("qnaCategoryIdx")int qnaCategoryIdx,
+                                                           @RequestBody QnaCateDTO qnaCateDTO){
+    try {
+      qnaCateDTO.setQnaCategoryIdx(qnaCategoryIdx);
+      int result = componentService.updateQnaCate(qnaCateDTO);
+
+      if (result > 0) {
+        return ResponseEntity.ok(handler.createResponse(200, "QNA 카테고리 수정 성공"));
+      } else {
+        return ResponseEntity.status(handler.getHttpStatus(404))
+                .body(handler.createResponse(404, "수정할 QNA 카테고리를 찾을 수 없습니다."));
+      }
+    } catch (Exception e) {
+      log.error("QNA 카테고리 수정 오류: {}", e.getMessage(), e);
+      return ResponseEntity.status(handler.getHttpStatus(500))
+              .body(handler.createResponse(500, "서버 오류 발생"));
+    }
+  }
+
+  // QNA 카테고리 삭제
+  @DeleteMapping("qnaCategory/{qnaCategoryIdx}")
+  public ResponseEntity<Map<String, Object>> deleteQnaCate(@PathVariable("qnaCategoryIdx") int qnaCategoryIdx){
+    try {
+      int result = componentService.deleteQnaCate(qnaCategoryIdx);
+      if (result > 0) {
+        return ResponseEntity.ok(handler.createResponse(200, "QNA 카테고리 삭제 성공"));
+      } else {
+        return ResponseEntity.status(handler.getHttpStatus(404))
+                .body(handler.createResponse(404, "삭제할 QNA 카테고리를 찾을 수 없습니다."));
+      }
+    } catch (Exception e) {
+      log.error("QNA 카테고리 삭제 오류: {}", e.getMessage(), e);
       return ResponseEntity.status(handler.getHttpStatus(500))
               .body(handler.createResponse(500, "서버 오류 발생"));
     }

@@ -131,7 +131,6 @@
     </insert>
 
     <!-- 등급 수정 -->
-    <!-- 수정 -->
     <update id="updateFire" parameterType="com.godLife.project.dto.datas.FireDTO">
         UPDATE FIRE_TABLE
         <set>
@@ -190,4 +189,81 @@
         AND LV_IDX != #{lvIdx}
     </select>
 
+
+                    <!--            FAQ CATEGORY 관리 테이블 CRUD Mapper         -->
+
+    <!-- FAQ_CATEGORY LIST 조회 -->
+    <select id="selectAllFaqCate" resultType="com.godLife.project.dto.categories.FaqCateDTO">
+        SELECT *
+        FROM FAQ_CATEGORY
+    </select>
+
+    <!-- FAQ_CATEGORY 추가 -->
+    <insert id="insertFaqCate" parameterType="com.godLife.project.dto.categories.FaqCateDTO">
+    INSERT INTO FAQ_CATEGORY (FAQ_CATEGORY_IDX, FAQ_CATEGORY_NAME)
+        VALUES (FAQ_CATEGORY_SEQ.NEXTVAL, #{faqCategoryName})
+    </insert>
+
+    <!-- FAQ_CATEGORY 수정 -->
+    <update id="updateFaqCate" parameterType="com.godLife.project.dto.categories.FaqCateDTO">
+        UPDATE FAQ_CATEGORY
+        SET FAQ_CATEGORY_NAME = #{faqCategoryName}
+        WHERE FAQ_CATEGORY_IDX = #{faqCategoryIdx}
+    </update>
+
+    <!-- FAQ_CATEGORY 삭제 -->
+    <delete id="deleteFaqCate" parameterType="int">
+    DELETE FROM FAQ_CATEGORY WHERE FAQ_CATEGORY_IDX = #{faqCategoryIdx}
+    </delete>
+
+    <!-- 참조 개수 조회 -->
+    <select id="countFaqByCategory" parameterType="int" resultType="int">
+        SELECT COUNT(*) FROM FAQ_TABLE WHERE FAQ_CATEGORY = #{faqCategoryIdx}
+    </select>
+
+    <!-- 중복 카테고리 확인 -->
+    <select id = "countByFaqName" parameterType="String" resultType="int">
+        SELECT COUNT(*)
+        FROM FAQ_CATEGORY
+        WHERE FAQ_CATEGORY_NAME = #{faqCategoryName}
+    </select>
+
+
+                <!--            QNA CATEGORY 관리 테이블 CRUD Mapper         -->
+
+    <!-- QNA_CATEGORY LIST 조회 -->
+    <select id="selectAllQnaCate" resultType="com.godLife.project.dto.categories.QnaCateDTO">
+        SELECT *
+        FROM QNA_CATEGORY
+    </select>
+
+    <!-- QNA_CATEGORY 추가 -->
+    <insert id="insertQnaCate" parameterType="com.godLife.project.dto.categories.QnaCateDTO">
+        INSERT INTO QNA_CATEGORY (QNA_CATEGORY_IDX, QNA_CATEGORY_NAME)
+        VALUES (QNA_CATEGORY_SEQ.NEXTVAL, #{qnaCategoryName})
+    </insert>
+
+    <!-- QNA_CATEGORY 수정 -->
+    <update id="updateQnaCate" parameterType="com.godLife.project.dto.categories.QnaCateDTO">
+        UPDATE QNA_CATEGORY
+        SET QNA_CATEGORY_NAME = #{qnaCategoryName}
+        WHERE QNA_CATEGORY_IDX = #{qnaCategoryIdx}
+    </update>
+
+    <!-- QNA_CATEGORY 삭제 -->
+    <delete id="deleteQnaCate" parameterType="int">
+        DELETE FROM QNA_CATEGORY WHERE QNA_CATEGORY_IDX = #{qnaCategoryIdx}
+    </delete>
+
+    <!-- 참조 개수 조회 -->
+    <select id="countQnaByCategory" parameterType="int" resultType="int">
+        SELECT COUNT(*) FROM QNA_TABLE WHERE CATEGORY = #{qnaCategoryIdx}
+    </select>
+
+    <!-- 중복 카테고리 확인 -->
+    <select id = "countByQnaName" parameterType="String" resultType="int">
+        SELECT COUNT(*)
+        FROM QNA_CATEGORY
+        WHERE QNA_CATEGORY_NAME = #{qnaCategoryName}
+    </select>
 </mapper>

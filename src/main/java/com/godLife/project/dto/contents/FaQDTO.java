@@ -15,5 +15,8 @@ public class FaQDTO {
   private String faqAnswer;
 
   @Schema(description = "FAQ 카테고리", example = "계정관련")
-  private String faqCategory;
+  private Integer faqCategory;
+
+  @Schema(description = "FAQ 카테고리 이름", example = "기술")
+  private String faqCategoryName;
 }

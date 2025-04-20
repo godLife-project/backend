@@ -3,17 +3,27 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.godLife.project.mapper.FaqMapper">
 
-    <!-- FAQ LIST 조회 (전체) -->
-    <select id="selectAllFaq" resultType="com.godLife.project.dto.contents.FaQDTO">
-        SELECT FAQ_IDX, FAQ_TITLE, FAQ_CATEGORY
-        FROM FAQ_TABLE
+    <!-- FAQ 전체 조회 -->
+    <select id="selectAllFaq" resultType="com.godLife.project.dto.list.FaqListDTO">
+        SELECT f.FAQ_IDX, f.FAQ_TITLE, fc.FAQ_CATEGORY_NAME
+        FROM FAQ_TABLE f
+        LEFT JOIN FAQ_CATEGORY fc ON f.FAQ_CATEGORY = fc.FAQ_CATEGORY_IDX
     </select>
 
     <!-- FAQ 상세 조회 -->
     <select id="selectFaqById" parameterType="java.lang.Integer" resultType="com.godLife.project.dto.contents.FaQDTO">
-        SELECT FAQ_IDX, FAQ_TITLE, FAQ_ANSWER, FAQ_CATEGORY
-        FROM FAQ_TABLE
-        WHERE FAQ_IDX = #{faqIdx}
+        SELECT
+        F.FAQ_IDX              AS faqIdx,
+        F.FAQ_TITLE            AS faqTitle,
+        F.FAQ_ANSWER           AS faqAnswer,
+        F.FAQ_CATEGORY         AS faqCategory,
+        C.FAQ_CATEGORY_NAME    AS faqCategoryName
+        FROM
+        FAQ_TABLE F
+        LEFT JOIN
+        FAQ_CATEGORY C ON F.FAQ_CATEGORY = C.FAQ_CATEGORY_IDX
+        WHERE
+        F.FAQ_IDX = #{faqIdx}
     </select>
 
     <!-- FAQ 작성 -->

@@ -1,6 +1,8 @@
 package com.godLife.project.service.impl.AdminImpl;
 
+import com.godLife.project.dto.categories.FaqCateDTO;
 import com.godLife.project.dto.categories.JobCateDTO;
+import com.godLife.project.dto.categories.QnaCateDTO;
 import com.godLife.project.dto.categories.TargetCateDTO;
 import com.godLife.project.dto.datas.FireDTO;
 import com.godLife.project.mapper.AdminMapper.ComponentMapper;
@@ -13,14 +15,17 @@ import java.util.List;
 public class ComponentServiceImpl implements ComponentService {
   private ComponentMapper componentMapper;
 
-  public ComponentServiceImpl(ComponentMapper componentMapper){this.componentMapper = componentMapper;}
+  public ComponentServiceImpl(ComponentMapper componentMapper) {
+    this.componentMapper = componentMapper;
+  }
 
   //                             목표 카테고리 관리 테이블
 
   // --------- 목표 카테고리 조회 ---------
-  public List<TargetCateDTO> targetCategoryList(){
+  public List<TargetCateDTO> targetCategoryList() {
     return componentMapper.targetCategoryList();
   }
+
   //  목표 카테고리 추가
   @Override
   public int insertTargetCategory(TargetCateDTO targetCateDTO) {
@@ -33,6 +38,7 @@ public class ComponentServiceImpl implements ComponentService {
 
     return componentMapper.insertTargetCategory(targetCateDTO);
   }
+
   //  목표 카테고리 수정
   @Override
   public int updateTargetCategory(TargetCateDTO targetCateDTO) {
@@ -49,7 +55,7 @@ public class ComponentServiceImpl implements ComponentService {
   }
 
   //  목표 카테고리 삭제
-  public int deleteTargetCategory(int targetCateIdx){
+  public int deleteTargetCategory(int targetCateIdx) {
     return componentMapper.deleteTargetCategory(targetCateIdx);
   }
 
@@ -91,7 +97,7 @@ public class ComponentServiceImpl implements ComponentService {
   //                            등급(불꽃) 관리 테이블
 
   // 등급(불꽃) 조회
-  public List<FireDTO> selectAllFireGrades(){
+  public List<FireDTO> selectAllFireGrades() {
     return componentMapper.selectAllFireGrades();
   }
 
@@ -137,4 +143,75 @@ public class ComponentServiceImpl implements ComponentService {
   public int deleteFire(int lvIdx) {
     return componentMapper.deleteFire(lvIdx);
   }
+
+
+  //                           FAQ 카테고리 관리 테이블
+  // FAQ 카테고리 LIST 조회
+  public List<FaqCateDTO> selectFaqCate() {
+    return componentMapper.selectAllFaqCate();
+  }
+
+  // FAQ 카테고리 추가
+  public int insertFaqCate(FaqCateDTO faqCateDTO) {
+    int count = componentMapper.countByFaqName(faqCateDTO.getFaqCategoryName());
+    if (count > 0) {
+      throw new IllegalStateException("이미 존재하는 카테고리 이름입니다.");
+    }
+    return componentMapper.insertFaqCate(faqCateDTO);
+  }
+
+  // FAQ 카테고리 수정
+  public int updateFaqCate(FaqCateDTO faqCateDTO) {
+    int count = componentMapper.countByFaqName(faqCateDTO.getFaqCategoryName());
+    if (count > 0) {
+      throw new IllegalStateException("이미 존재하는 카테고리 이름입니다.");
+    }
+    return componentMapper.updateFaqCate(faqCateDTO);
+  }
+
+  // FAQ 카테고리 삭제
+  public int deleteFaqCate(int faqCategoryIdx) {
+    int count = componentMapper.countFaqByCategory(faqCategoryIdx);
+
+    if (count > 0) {
+      throw new IllegalStateException("해당 카테고리는 현재 FAQ에서 사용 중입니다.");
+    }
+    return componentMapper.deleteFaqCate(faqCategoryIdx);
+  }
+
+
+  //                           QNA 카테고리 관리 테이블
+  // QNA 카테고리 LIST 조회
+  public List<QnaCateDTO> selectQnaCate() {
+    return componentMapper.selectAllQnaCate();
+  }
+
+  // QNA 카테고리 추가
+  public int insertQnaCate(QnaCateDTO qnaCateDTO) {
+    int count = componentMapper.countByQnaName(qnaCateDTO.getQnaCategoryName());
+    if (count > 0) {
+      throw new IllegalStateException("이미 존재하는 카테고리 이름입니다.");
+    }
+    return componentMapper.insertQnaCate(qnaCateDTO);
+  }
+
+  // QNA 카테고리 수정
+  public int updateQnaCate(QnaCateDTO qnaCateDTO) {
+    int count = componentMapper.countByQnaName(qnaCateDTO.getQnaCategoryName());
+    if (count > 0) {
+      throw new IllegalStateException("이미 존재하는 카테고리 이름입니다.");
+    }
+    return componentMapper.updateQnaCate(qnaCateDTO);
+  }
+
+  // QNA 카테고리 삭제
+  public int deleteQnaCate(int qnaCategoryIdx) {
+    int count = componentMapper.countQnaByCategory(qnaCategoryIdx);
+
+    if (count > 0) {
+      throw new IllegalStateException("해당 카테고리는 현재 QNA에서 사용 중입니다.");
+    }
+    return componentMapper.deleteQnaCate(qnaCategoryIdx);
+  }
 }
+

@@ -24,11 +24,4 @@
         AND QNA_IDX = #{qnaIdx}
     </update>
 
-    <!-- 매칭 성공 시 상담원 matched 숫자 증가 -->
-    <update id="increaseMatchedCount" parameterType="java.lang.Integer">
-        UPDATE SERVICE_CENTER
-        SET MATCHED = MATCHED + 1
-        WHERE USER_IDX = #{adminIdx}
-    </update>
-
 </mapper>

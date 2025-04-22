@@ -52,6 +52,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO findByUserId(String userId) { return userMapper.findByUserid(userId); }
 
+    // 유저 인덱스로 아이디 찾기
+    @Override
+    public String getUserIdByUserIdx(int userIdx) { return userMapper.getUserIdByUserIdx(userIdx); }
+
     // 아이디 찾기
     @Override
     public String FindUserIdByNameNEmail(GetNameNEmail getNameNEmail, boolean isMasked) {

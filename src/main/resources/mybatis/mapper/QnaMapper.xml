@@ -4,23 +4,6 @@
 
 <mapper namespace="com.godLife.project.mapper.QnaMapper">
 
-    <resultMap id="listMatchedQnA" type="com.godLife.project.dto.qnaWebsocket.QnaMatchedListDTO">
-        <!-- Q_COUNT는 QnaMatchedListDTO의 int 필드 -->
-        <result property="qCount" column="Q_COUNT" />
-
-        <!-- qnaInfos는 QnaWaitListDTO를 참조 -->
-        <association property="qnaInfos" javaType="com.godLife.project.dto.qnaWebsocket.QnaWaitListDTO">
-            <id property="qnaIdx" column="QNA_IDX" />
-            <result property="qUserIdx" column="Q_USER_IDX" />
-            <result property="userName" column="USER_NAME" />
-            <result property="title" column="TITLE" />
-            <result property="createdAt" column="CREATED_AT" />
-            <result property="modifiedAt" column="MODIFIED_AT" />
-            <result property="category" column="CATEGORY" />
-            <result property="qnaStatus" column="QNA_STATUS" />
-        </association>
-    </resultMap>
-
     <!-- 1:1 문의 작성 -->
     <insert id="createQna" parameterType="com.godLife.project.dto.contents.QnaDTO">
         <selectKey keyProperty="qnaIdx" resultType="int" order="BEFORE">
@@ -39,8 +22,16 @@
         ORDER BY Q.CREATED_AT
     </select>
 
+    <select id="getWaitSingleQna" parameterType="int" resultType="com.godLife.project.dto.qnaWebsocket.QnaWaitListDTO">
+        SELECT Q.QNA_IDX, Q.Q_USER_IDX, U.USER_NAME, Q.TITLE, Q.CREATED_AT, Q.MODIFIED_AT, Q.CATEGORY, Q.QNA_STATUS
+        FROM QNA_TABLE Q
+        INNER JOIN USER_TABLE U ON Q.Q_USER_IDX = U.USER_IDX
+        WHERE Q.QNA_STATUS = 'WAIT'
+        AND Q.QNA_IDX = #{qnaIdx}
+    </select>
+
     <!-- 매칭된 문의 리스트 조회 -->
-    <select id="getlistAllMatchedQna" parameterType="int" resultMap="listMatchedQnA">
+    <select id="getlistAllMatchedQna" parameterType="int" resultType="com.godLife.project.dto.qnaWebsocket.QnaMatchedListDTO">
         SELECT Q.QNA_IDX, Q.Q_USER_IDX, U.USER_NAME, Q.TITLE, Q.CREATED_AT, Q.MODIFIED_AT, Q.CATEGORY, Q.QNA_STATUS, Q.Q_COUNT
         FROM QNA_TABLE Q
         INNER JOIN USER_TABLE U ON Q.Q_USER_IDX = U.USER_IDX
@@ -48,6 +39,65 @@
         AND Q.A_USER_IDX = #{adminIdx}
         ORDER BY Q.CREATED_AT
     </select>
+
+    <!-- 매칭된 단일 문의 리스트 조회 -->
+    <select id="getMatchedSingleQna" parameterType="map" resultType="com.godLife.project.dto.qnaWebsocket.QnaMatchedListDTO">
+        SELECT Q.QNA_IDX, Q.Q_USER_IDX, U.USER_NAME, Q.TITLE, Q.CREATED_AT, Q.MODIFIED_AT, Q.CATEGORY, Q.QNA_STATUS, Q.Q_COUNT
+        FROM QNA_TABLE Q
+        INNER JOIN USER_TABLE U ON Q.Q_USER_IDX = U.USER_IDX
+        WHERE Q.QNA_STATUS NOT IN ('WAIT', 'COMPLETE')
+        AND Q.A_USER_IDX = #{adminIdx}
+        AND Q.QNA_IDX = #{qnaIdx}
+        ORDER BY Q.CREATED_AT
+    </select>
+
+    <!-- 문의 답변 달기 -->
+    <insert id="commentReply" parameterType="com.godLife.project.dto.contents.QnaReplyDTO">
+        INSERT INTO QNA_REPLY(QNA_REPLY_IDX, QNA_IDX, USER_IDX, CONTENT, CREATED_AT)
+        VALUES(QNA_CONTENT_SEQ.NEXTVAL, #{qnaIdx}, #{userIdx}, #{content}, SYSDATE)
+    </insert>
+
+    <!-- 문의 답변 수 증가 -->
+    <update id="increaseReplyCount" parameterType="map">
+        UPDATE QNA_TABLE
+        SET
+        <choose>
+            <when test="isWriter == true">
+                Q_COUNT = Q_COUNT + 1
+            </when>
+            <otherwise>
+                A_COUNT = A_COUNT + 1
+            </otherwise>
+        </choose>
+        , QNA_STATUS = #{setStatus}
+        WHERE QNA_IDX = #{qnaIdx}
+        AND QNA_STATUS NOT IN
+        <foreach collection="notStatus" open="(" separator=", " close=")" item="status">
+            #{status}
+        </foreach>
+    </update>
+
+    <!-- 1:1 문의 답변 조회 -->
+    <select id="getQnaReplyByQnaIdx" parameterType="int" resultType="com.godLife.project.dto.qnaWebsocket.QnaReplyListDTO">
+        SELECT ROW_NUMBER() OVER(ORDER BY CREATED_AT) AS QUEUE, USER_IDX, CONTENT, CREATED_AT, MODIFIED_AT
+        FROM QNA_REPLY
+        WHERE QNA_IDX = #{qnaIdx}
+        ORDER BY CREATED_AT
+    </select>
+
+    <!-- 답변 수 초기화 -->
+    <update id="setClearReplyCountByQnaIdx" parameterType="map">
+        UPDATE QNA_TABLE SET
+        <choose>
+            <when test="isWriter == true">
+                A_COUNT = 0
+            </when>
+            <otherwise>
+                Q_COUNT = 0
+            </otherwise>
+        </choose>
+        WHERE QNA_IDX = #{qnaIdx}
+    </update>
 
 
 </mapper>

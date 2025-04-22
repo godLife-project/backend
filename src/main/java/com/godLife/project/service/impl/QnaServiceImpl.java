@@ -1,24 +1,31 @@
 package com.godLife.project.service.impl;
 
 import com.godLife.project.dto.contents.QnaDTO;
+import com.godLife.project.dto.contents.QnaReplyDTO;
 import com.godLife.project.dto.qnaWebsocket.QnaMatchedListDTO;
+import com.godLife.project.dto.qnaWebsocket.QnaReplyListDTO;
 import com.godLife.project.dto.qnaWebsocket.QnaWaitListDTO;
-import com.godLife.project.dto.qnaWebsocket.WaitListMessageDTO;
+import com.godLife.project.dto.qnaWebsocket.listMessage.MatchedListMessageDTO;
+import com.godLife.project.dto.qnaWebsocket.listMessage.QnaDetailMessageDTO;
+import com.godLife.project.dto.qnaWebsocket.listMessage.WaitListMessageDTO;
+import com.godLife.project.enums.MessageStatus;
+import com.godLife.project.enums.QnaStatus;
+import com.godLife.project.enums.WSDestination;
 import com.godLife.project.exception.CustomException;
-import com.godLife.project.exception.UnauthorizedException;
 import com.godLife.project.exception.WebSocketBusinessException;
 import com.godLife.project.mapper.QnaMapper;
 import com.godLife.project.service.impl.redis.RedisService;
+import com.godLife.project.service.impl.websocketImpl.WebSocketMessageService;
 import com.godLife.project.service.interfaces.QnaService;
 import com.godLife.project.utils.HtmlSanitizer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.ibatis.javassist.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -28,6 +35,7 @@ public class QnaServiceImpl implements QnaService {
 
   private final QnaMapper qnaMapper;
   private final RedisService redisService;
+  private final WebSocketMessageService messageService;
 
   private static final String QNA_QUEUE_KEY = "qna_queue";
 
@@ -40,6 +48,16 @@ public class QnaServiceImpl implements QnaService {
       redisService.leftPushToRedisQueue(QNA_QUEUE_KEY, String.valueOf(qnaDTO.getQnaIdx())); // 큐에 저장
       log.info("QnaService - createQna :: 문의 등록 후 큐에 추가됨 - {}", qnaDTO.getQnaIdx());
 
+      // 관리자에게 전송할 객체 생성 및 데이터 전송
+      List<QnaWaitListDTO> waitItem = qnaMapper.getWaitSingleQna(qnaDTO.getQnaIdx());
+
+      WaitListMessageDTO waitQna = new WaitListMessageDTO();
+      waitQna.setWaitQnA(waitItem);
+      waitQna.setStatus(MessageStatus.ADD.getStatus());
+
+      // 관리자에게 실시간 대기중 문의 리스트 전송
+      messageService.sendToAll(WSDestination.SUB_GET_WAIT_QNA_LIST.getDestination(), waitQna);
+
     } catch (Exception e) {
       log.error("QnaService - createQna :: 1:1 문의 저장 중 오류 발생: ", e);
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly(); // 수동 롤백
@@ -49,12 +67,12 @@ public class QnaServiceImpl implements QnaService {
 
   // 대기중인 문의 리스트 조회 (전체)
   @Override
-  public WaitListMessageDTO getlistAllWaitQna(String chatRoomNo) {
+  public WaitListMessageDTO getlistAllWaitQna(String status) {
     try {
       List<QnaWaitListDTO> waitList = qnaMapper.getlistAllWaitQna();
       WaitListMessageDTO request = new WaitListMessageDTO();
-      request.setWaitQnaInfos(waitList);
-      request.setRoomNo(chatRoomNo);
+      request.setWaitQnA(waitList);
+      request.setStatus(status);
 
       return request;
     } catch (Exception e) {
@@ -64,9 +82,35 @@ public class QnaServiceImpl implements QnaService {
 
   // 매칭된 문의 리스트 조회 (개인)
   @Override
-  public List<QnaMatchedListDTO> getlistAllMatchedQna(int adminIdx) {
+  public MatchedListMessageDTO getlistAllMatchedQna(int adminIdx, String status) {
     try {
-      return qnaMapper.getlistAllMatchedQna(adminIdx);
+      List<QnaMatchedListDTO> matchedList = qnaMapper.getlistAllMatchedQna(adminIdx);
+      //System.out.println(matchedList);
+      MatchedListMessageDTO request = new MatchedListMessageDTO();
+      request.setMatchedQnA(matchedList);
+      request.setStatus(status);
+
+      return request;
+    } catch (Exception e) {
+      throw new WebSocketBusinessException("매칭된 QnA 리스트를 불러오는 중 오류 발생", 5001);
+    }
+  }
+
+  // 매칭된 단일 문의 리스트 조회 (개인)
+  @Override
+  public MatchedListMessageDTO getMatchedSingleQna(int adminIdx, int qnaIdx, String status) {
+    try {
+      List<QnaMatchedListDTO> matchedQnaDTO = qnaMapper.getMatchedSingleQna(adminIdx, qnaIdx);
+
+      if (matchedQnaDTO != null) {
+        MatchedListMessageDTO request = new MatchedListMessageDTO();
+        request.setMatchedQnA(matchedQnaDTO);
+        request.setStatus(status);
+
+        return request;
+      }
+
+      return null;
     } catch (Exception e) {
       throw new WebSocketBusinessException("매칭된 QnA 리스트를 불러오는 중 오류 발생", 5001);
     }
@@ -76,7 +120,7 @@ public class QnaServiceImpl implements QnaService {
   @Override
   public String getQnaContent(int qnaIdx) {
     try {
-      String rawContent = qnaMapper.getQnaContent(qnaIdx);
+      String rawContent = qnaMapper.getQnaContent(qnaIdx, QnaStatus.DELETED.getStatus());
 
       if (rawContent == null || rawContent.isBlank()) {
         throw new CustomException("조회하려는 문의가 존재하지 않습니다.", HttpStatus.NOT_FOUND);
@@ -88,6 +132,135 @@ public class QnaServiceImpl implements QnaService {
     } catch (Exception e) {
       log.error("QnaService - getQnaContent :: 문의 본문 조회 중 오류 발생: ", e);
       throw new CustomException("DB 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  // 문의 답변
+  @Override
+  @Transactional(rollbackFor = Exception.class)
+  public void commentReply(QnaReplyDTO qnaReplyDTO) {
+    try {
+      // 문의 존재 여부와 매칭 여부 검증
+      QnaDTO qnaParent = qnaValidator(qnaReplyDTO.getQnaIdx());
+
+      // 유저 검증
+      boolean isWriter = whoAreYou(qnaParent, qnaReplyDTO.getUserIdx());
+
+      // 답변 저장
+      qnaMapper.commentReply(qnaReplyDTO);
+
+      String setStatus = QnaStatus.RESPONDING.getStatus();
+
+      List<String> notStatus = new ArrayList<>();
+      notStatus.add(QnaStatus.WAIT.getStatus());
+      notStatus.add(QnaStatus.COMPLETE.getStatus());
+
+      // 답변 수 증가 (조회 시 초기화 됨. --> 알림용)
+      qnaMapper.increaseReplyCount(isWriter, qnaParent.getQnaIdx(), setStatus, notStatus);
+    } catch (CustomException e) {
+      throw e;
+    } catch (Exception e) {
+      log.error("QnaService - commentReply :: 답변 작성 중 에러 발생 :", e);
+      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly(); // 수동 롤백
+      throw new CustomException("답변 작성 중 예상치 못한 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  /**
+   * 문의가 존재하는지 확인 후, 매칭 여부를 검증합니다.
+   * 모두 통과 시 해당 문의의 기본 정보를 리턴합니다.
+   * @param qnaIdx 검증을 시도 할 문의의 인덱스 번호
+   * @return QnaDTO
+   */
+  private QnaDTO qnaValidator(int qnaIdx) {
+    QnaDTO qnaValidate = qnaMapper.getQnaInfosByQnaIdx(qnaIdx, QnaStatus.DELETED.getStatus());
+
+    // 문의 존재 유무 확인
+    if (qnaValidate == null) {
+      log.info("QnaService - commentReply :: 답변 작성 중 문의가 존재하지 않아 작성을 취소합니다. ### 취소된 문의Idx ::> {}", qnaIdx);
+      throw new CustomException("해당 문의는 삭제 되었거나 존재 하지 않습니다.", HttpStatus.NOT_FOUND);
+    }
+    // 문의 매칭 여부 확인
+    String status = qnaValidate.getQnaStatus();
+
+    if (status.equals(QnaStatus.WAIT.getStatus())) {
+      log.info("QnaService - commentReply :: 답변 작성 중 상담원과 연결 되지 않아 작성을 취소합니다. ### 취소된 문의Idx ::> {}", qnaIdx);
+      throw new CustomException("아직 상담원과 연결되지 않아 답변을 달 수 없습니다.", HttpStatus.PRECONDITION_FAILED);
+    }
+    if (status.equals(QnaStatus.COMPLETE.getStatus())) {
+      log.info("QnaService - commentReply :: 완료 처리 된 문의는 답변을 작성할 수 없습니다. ### 취소된 문의Idx ::> {}", qnaIdx);
+      throw new CustomException("응답 완료 상태의 문의는 추가 답변이 불가합니다. " +
+          "추가 질문이 있을 경우 문의를 새로 작성해주세요.", HttpStatus.PRECONDITION_FAILED);
+    }
+
+    return qnaValidate;
+  }
+
+  /**
+   * 문의 작성자가 답변을 다는지, 답변자가 답변을 다는지 bool 값으로 구분합니다.
+   * @param qnaDTO 비교할 문의 대상입니다.
+   * @param userIdx 어떤 유저가 답변을 작성하는지 나타냅니다.
+   * @return bool :: True-유저 / False-관리자
+   */
+  private boolean whoAreYou(QnaDTO qnaDTO, int userIdx) {
+
+    if (qnaDTO.getQUserIdx() == userIdx) { // 문의 작성자 (유저) 인가?
+      // 작성자 맞음
+      return true;
+
+    } else if (qnaDTO.getAUserIdx() == userIdx) { // 작성자 아니면 답변자(매칭된 관리자) 인가?
+      // 답변자 맞음
+      return false;
+
+    } else { // 둘 다 아니면 작성 못함
+      throw new CustomException("작성자 혹은 담당 관리자가 아닙니다", HttpStatus.FORBIDDEN);
+    }
+  }
+
+  // 문의 상세 조회
+  @Override
+  @Transactional(rollbackFor = RuntimeException.class)
+  public QnaDetailMessageDTO getQnaDetails(int qnaIdx, String status, int userIdx) {
+    QnaDetailMessageDTO detailInfos = new QnaDetailMessageDTO();
+    detailInfos.setQnaIdx(qnaIdx);
+    detailInfos.setStatus(status);
+
+    try {
+      QnaDTO forValidate = qnaMapper.getQnaInfosByQnaIdx(qnaIdx, QnaStatus.DELETED.getStatus());
+      // 부모 문의 존재 유무 검증
+      if (forValidate == null) {
+        throw new CustomException("존재하지 않거나, 삭제된 문의 입니다.", HttpStatus.NOT_FOUND);
+      }
+      // 부모 문의 작성자/관리자 검증
+      boolean isWriter = whoAreYou(forValidate, userIdx);
+
+      String qnaBody = qnaMapper.getQnaContent(qnaIdx, QnaStatus.DELETED.getStatus());
+      if (qnaBody == null || qnaBody.isBlank()) {
+        throw new CustomException("존재하지 않거나, 삭제된 문의 입니다.", HttpStatus.NOT_FOUND);
+      }
+      detailInfos.setBody(HtmlSanitizer.sanitize(qnaBody)); // 본문 필터링 후 저장
+
+      List<QnaReplyListDTO> tempReply = qnaMapper.getQnaReplyByQnaIdx(qnaIdx);
+      List<QnaReplyListDTO> filteredReply = new ArrayList<>();
+
+      for (QnaReplyListDTO reply : tempReply) {
+        reply.setContent(HtmlSanitizer.sanitize(reply.getContent())); // 답변 필터링 후 세팅
+        filteredReply.add(reply);
+      }
+      detailInfos.setComments(filteredReply); // 답변 불러오기
+      qnaMapper.setClearReplyCountByQnaIdx(qnaIdx, isWriter); // 누적 답변 개수 초기화
+
+      return detailInfos;
+
+    } catch (CustomException e) {
+      log.info("QnaService - getQnaDetails :: {} ### HttpStatus : {}", e.getMessage(), e.getStatus());
+      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly(); // 수동 롤백
+      throw e;
+
+    } catch (Exception e) {
+      log.error("QnaService - getQnaDetails :: 예상치 못한 서버 오류가 발생했습니다 :", e);
+      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly(); // 수동 롤백
+      throw new CustomException("서버 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

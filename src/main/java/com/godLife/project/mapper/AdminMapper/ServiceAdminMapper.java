@@ -22,7 +22,4 @@ public interface ServiceAdminMapper {
   @Select("SELECT STATUS FROM SERVICE_CENTER WHERE USER_IDX = #{userIdx}")
   boolean getServiceAdminStatus(int userIdx);
 
-  // 상세보기용 문의 추가 정보 제공
-
-
 }

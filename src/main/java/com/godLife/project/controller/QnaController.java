@@ -2,11 +2,11 @@ package com.godLife.project.controller;
 
 
 import com.godLife.project.dto.contents.QnaDTO;
+import com.godLife.project.dto.contents.QnaReplyDTO;
 import com.godLife.project.handler.GlobalExceptionHandler;
 import com.godLife.project.service.interfaces.QnaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/qna")
+@RequestMapping("/api/qna/auth")
 @RequiredArgsConstructor
 public class QnaController {
 
@@ -26,7 +26,7 @@ public class QnaController {
 
 
   // 1:1 문의 작성
-  @PostMapping("/auth/create")
+  @PostMapping("/create")
   public ResponseEntity<Map<String, Object>> createQna(@RequestHeader("Authorization") String authHeader,
                                                        @Valid @RequestBody QnaDTO writeQna,
                                                        BindingResult valid) {
@@ -49,6 +49,23 @@ public class QnaController {
     String content = qnaService.getQnaContent(qnaIdx);
 
     return ResponseEntity.ok().body(handler.createResponse(200, content));
+  }
+
+  // 1:1 문의 답변 달기
+  @PostMapping("/comment/reply")
+  public ResponseEntity<Map<String, Object>> commentReply(@RequestHeader("Authorization") String authHeader,
+                                                          @Valid @RequestBody QnaReplyDTO qnaReplyDTO,
+                                                          BindingResult valid) {
+    if (valid.hasErrors()) {
+      return ResponseEntity.badRequest().body(handler.getValidationErrors(valid));
+    }
+
+    int userIdx = handler.getUserIdxFromToken(authHeader);
+    qnaReplyDTO.setUserIdx(userIdx);
+
+    qnaService.commentReply(qnaReplyDTO);
+
+    return ResponseEntity.status(HttpStatus.CREATED).build();
   }
 
 

@@ -23,6 +23,10 @@ public interface UserMapper {
     @Select("SELECT COUNT(*) FROM USER_TABLE WHERE USER_NICK = #{userNick} AND IS_DELETED = 'N'")
     int checkUserNickExist(String userNick);
 
+    // 유저인덱스로 유저 아이디 조회
+    @Select("SELECT USER_ID FROM USER_TABLE WHERE USER_IDX = #{userIdx}")
+    String getUserIdByUserIdx(int userIdx);
+
     // 로그인
     UserDTO findByUserid(String username);
 

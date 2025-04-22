@@ -5,20 +5,25 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.godLife.project.dto.contents.QnaReplyDTO;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 /**
- * QnaWaitListDTO 에서 qCount 추가 됨
+ * {@code QnaReplyDTO} 와 비슷하지만, {@code qnaReplyIdx} 와 {@code qnaIdx} 가 없고,
+ * {@code queue} 필드가 추가된 DTO 입니다.
+ * <p>답변 상세 보기 시, 답변을 큐 스택 처럼 보이도록 하기 위함입니다.</p>
+ * @see QnaReplyDTO
  */
 @Data
-public class QnaMatchedListDTO {
+public class QnaReplyListDTO {
 
-  private int qnaIdx;
-  private int qUserIdx;
-  private String userName;
-  private String title;
+  private int queue;
+
+  private int userIdx;
+
+  private String content;
 
   @JsonSerialize(using = LocalDateTimeSerializer.class) // 직렬화
   @JsonDeserialize(using = LocalDateTimeDeserializer.class) // 역직렬화
@@ -29,11 +34,4 @@ public class QnaMatchedListDTO {
   @JsonDeserialize(using = LocalDateTimeDeserializer.class) // 역직렬화
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime modifiedAt;
-
-  private int category;
-
-  private String qnaStatus;
-
-  private int qCount;
-
 }

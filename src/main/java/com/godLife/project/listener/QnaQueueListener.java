@@ -1,12 +1,14 @@
 package com.godLife.project.listener;
 
-import com.godLife.project.dto.qnaWebsocket.QnaMatchedListDTO;
+import com.godLife.project.dto.qnaWebsocket.listMessage.MatchedListMessageDTO;
+import com.godLife.project.dto.qnaWebsocket.listMessage.WaitListMessageDTO;
 import com.godLife.project.dto.serviceAdmin.AdminIdxAndIdDTO;
+import com.godLife.project.enums.MessageStatus;
 import com.godLife.project.enums.WSDestination;
-import com.godLife.project.mapper.AdminMapper.ServiceAdminMapper;
-import com.godLife.project.mapper.autoMatch.AutoMatchMapper;
 import com.godLife.project.service.impl.redis.RedisService;
 import com.godLife.project.service.impl.websocketImpl.WebSocketMessageService;
+import com.godLife.project.service.interfaces.AdminInterface.serviceCenter.ServiceAdminService;
+import com.godLife.project.service.interfaces.QnaMatchService;
 import com.godLife.project.service.interfaces.QnaService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +17,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.QueryTimeoutException;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -26,10 +27,10 @@ import java.util.concurrent.TimeUnit;
 public class QnaQueueListener implements InitializingBean, DisposableBean {
 
   private final RedisService redisService;
-  private final AutoMatchMapper autoMatchMapper;
-  private final ServiceAdminMapper serviceAdminMapper;
+  private final ServiceAdminService serviceAdminService;
   private final WebSocketMessageService messageService;
   private final QnaService qnaService;
+  private final QnaMatchService matchService;
 
   private static final String QNA_QUEUE_KEY = "qna_queue";
 
@@ -37,7 +38,20 @@ public class QnaQueueListener implements InitializingBean, DisposableBean {
 
   private int restartCount = 0;
 
+  private int waitCount = 0;
+
   private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+
+  // 스레드 깨우는 메서드
+  public void wakeUp(int userIdx, String username) {
+    synchronized (lock) {
+      restartCount = 0;
+      waitCount = 0;
+      lock.notify();
+      log.info("🔔 QnaQueueListener - wakeUp :: 외부 요청에 의해 스레드를 깨웠습니다. [관리자ID = {} / 관리자IDX = {}]", username, userIdx);
+    }
+  }
+
 
   @Override
   public void afterPropertiesSet() {
@@ -65,22 +79,34 @@ public class QnaQueueListener implements InitializingBean, DisposableBean {
 
             if (result != null) {
               int qnaIdx = Integer.parseInt(result);
-              AdminIdxAndIdDTO adminInfo = autoMatchMapper.getServiceAdminIdx(); // 매칭 가능 상담원 조회
+              AdminIdxAndIdDTO adminInfo = matchService.getAdminInfo(); // 매칭 가능 상담원 조회
 
               if (adminInfo != null) {
-                autoMatchMapper.autoMatchSingleQna(qnaIdx, adminInfo.getUserIdx()); // 상담원 자동 매칭 시도
-                serviceAdminMapper.setMatchedByQuestionCount(adminInfo.getUserIdx()); // 매칭된 상담원 매칭 문의 수 증가
-                List<QnaMatchedListDTO> matchedList = qnaService.getlistAllMatchedQna(adminInfo.getUserIdx());
+                boolean isMatched = matchService.matchSingleQna(qnaIdx, adminInfo.getUserIdx()); // 상담원 자동 매칭 시도
+                if (!isMatched) {
+                  continue;
+                }
+                serviceAdminService.refreshMatchCount(adminInfo.getUserIdx()); // 매칭된 상담원 매칭 문의 수 증가
+                MatchedListMessageDTO matchedQnA = qnaService.getMatchedSingleQna(adminInfo.getUserIdx(), qnaIdx, MessageStatus.ADD.getStatus());
+
+                // 모든 관리자에게 대기중 문의 리스트 중 매칭된 문의는 삭제
+                WaitListMessageDTO waitQna = matchService.setWaitListForMessage(qnaIdx, MessageStatus.REMOVE.getStatus());
 
                 // 관리자에게 매칭 리스트 업데이트
-                messageService.sendToUser(adminInfo.getUserId(), WSDestination.SUB_GET_MATCHED_QNA_LIST.getDestination(), matchedList);
+                if (matchedQnA != null) {
+                  messageService.sendToUser(adminInfo.getUserId(), WSDestination.SUB_GET_MATCHED_QNA_LIST.getDestination(), matchedQnA);
+                  log.info("QnaQueueListener - autoMatch :: 문의 담당자에게 매칭되었습니다. ::> 매칭된 문의 - {} / 담당자 - {}", qnaIdx ,adminInfo);
 
-                log.info("QnaQueueListener - autoMatch :: 문의 담당자에게 매칭되었습니다. ::> 매칭된 문의 - {} / 담당자 - {}", qnaIdx ,adminInfo);
-
+                  messageService.sendToAll(WSDestination.SUB_GET_WAIT_QNA_LIST.getDestination(), waitQna);
+                }
+                Thread.sleep(500);
               }
               else {
-                log.info("QnaQueueListener - autoMatch :: 매칭 가능한 문의 담당자가 없습니다. 5분 후 자동 매칭을 재개합니다.");
+                if (waitCount % 6 == 0) {
+                  log.info("QnaQueueListener - autoMatch :: 매칭 가능한 문의 담당자가 없습니다. 5분 후 자동 매칭을 재개합니다. (본 로그는 30분에 한번씩 출력됩니다.)");
+                }
                 redisService.rightPushToRedisQueue(QNA_QUEUE_KEY, String.valueOf(qnaIdx));
+                waitCount += 1;
 
                 // 5분 후 깨워줄 스레드 생성
                 scheduler.schedule(() -> {
@@ -107,7 +133,7 @@ public class QnaQueueListener implements InitializingBean, DisposableBean {
               synchronized (lock) {
                 lock.wait(); // 잠깐 대기
               }
-              restartCount = restartCount + 1;
+              restartCount += 1;
             } catch (InterruptedException ex) {
               Thread.currentThread().interrupt();
               log.info("QnaQueueListener - autoMatch :: 스레드 상태 복구 후 종료 처리됨.");

@@ -8,7 +8,9 @@ public enum WSDestination {
   // PUBLISHER
 
   // SUBSCRIBER
-  SUB_GET_MATCHED_QNA_LIST("/queue/matched/qna");
+  SUB_GET_MATCHED_QNA_LIST("/queue/matched/qna"),
+  SUB_GET_WAIT_QNA_LIST("/sub/waitList"),
+  SUB_QNA_MATCH_RESULT("/queue/isMatched/waitQna");
 
   private final String destination;
 

@@ -12,6 +12,9 @@ public interface UserService {
     // 유저 정보 조회
     UserDTO findByUserId(String userId);
 
+    // 유저 인덱스로 아이디 찾기
+    String getUserIdByUserIdx(int userIdx);
+
     // 아이디 찾기
     String FindUserIdByNameNEmail(GetNameNEmail getNameNEmail, boolean isMasked);
     // 비번 찾기

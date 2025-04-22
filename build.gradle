@@ -25,6 +25,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.springframework.security:spring-security-messaging'
 
+    // Redis 분산 락
+    implementation 'org.redisson:redisson-spring-boot-starter:3.45.1'
+
 
 
     // DevTools (Hot Reload)

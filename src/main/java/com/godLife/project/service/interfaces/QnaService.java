@@ -6,6 +6,8 @@ import com.godLife.project.dto.qnaWebsocket.listMessage.MatchedListMessageDTO;
 import com.godLife.project.dto.qnaWebsocket.listMessage.QnaDetailMessageDTO;
 import com.godLife.project.dto.qnaWebsocket.listMessage.WaitListMessageDTO;
 
+import java.util.List;
+
 public interface QnaService {
 
   /**
@@ -60,5 +62,23 @@ public interface QnaService {
    */
   void commentReply(QnaReplyDTO qnaReplyDTO);
 
+  /**
+   * <strong>문의 상세 보기 메서드 입니다.</strong>
+   * <p>선택한 문의의 본문과 그 문의에 달린 답변들을 모두 가져옵니다.</p>
+   * @param qnaIdx 조회할 문의의 인덱스 번호
+   * @param status 메세지 전송시 메세지 상태 값
+   * @param userIdx 상세보기 요청한 유저의 인덱스 번호
+   * @return {@code QnaDetailMessageDTO}
+   */
   QnaDetailMessageDTO getQnaDetails(int qnaIdx, String status, int userIdx);
+
+  /**
+   * <strong>1:1 문의(QnA)를 수정하기 위한 서비스 로직입니다.</strong>
+   * <p>{@code qnaIdx}, {@code title}, {@code content}, {@code category} 를 필수로 받아야 합니다.</p>
+   * <p>{@code qUserIdx} 는 jwt토큰에서 추출한 userIdx 를 넣어줘야 합니다.</p>
+   * <p>{@code exceptStatus} 에 제외 할 문의의 상태값을 지정합니다.</p>
+   * @param modifyDTO 삭제할 문의 DTO -> {@code QnaDTO}
+   * @param setStatus 조회 할 문의 상태 값 List
+   */
+  void modifyQnA(QnaDTO modifyDTO, List<String> setStatus);
 }

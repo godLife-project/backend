@@ -11,10 +11,12 @@ import com.godLife.project.enums.WSDestination;
 import com.godLife.project.exception.CustomException;
 import com.godLife.project.exception.WebSocketBusinessException;
 import com.godLife.project.handler.GlobalExceptionHandler;
+import com.godLife.project.service.impl.redis.RedisService;
 import com.godLife.project.service.impl.websocketImpl.WebSocketMessageService;
 import com.godLife.project.service.interfaces.AdminInterface.serviceCenter.ServiceAdminService;
 import com.godLife.project.service.interfaces.QnaMatchService;
 import com.godLife.project.service.interfaces.QnaService;
+import com.godLife.project.service.interfaces.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -38,6 +40,12 @@ public class ChatController {
   private final QnaMatchService matchService;
 
   private final ServiceAdminService serviceAdminService;
+
+  private final RedisService redisService;
+
+  private final UserService userService;
+
+  private static final String QNA_WATCHER = "qna-watcher-";
 
 
   // 채팅 기능
@@ -119,7 +127,6 @@ public class ChatController {
   public void getMatchedQnaDetail(@Header("Authorization") String authHeader,
                                                  @DestinationVariable(value = "qnaIdx") final int qnaIdx,
                                                  Principal principal) {
-    System.out.println("메세지 들어옴");
     int adminIdx = handler.getUserIdxFromToken(authHeader);
 
     try {
@@ -130,11 +137,15 @@ public class ChatController {
         throw new WebSocketBusinessException("유효하지 않은 jwt 토큰이거나, 존재하지 않은 관리자 입니다.", 4003);
       }
 
-      System.out.println("메세지 전송함");
-      QnaDetailMessageDTO response = qnaService.getQnaDetails(qnaIdx, MessageStatus.RELOAD.getStatus(), adminIdx);
+      // 상세보기 데이터
+      QnaDetailMessageDTO detailResponse = qnaService.getQnaDetails(qnaIdx, MessageStatus.RELOAD.getStatus(), adminIdx);
+      // 해당 문의 정보 데이터
+      MatchedListMessageDTO matchedResponse = qnaService.getMatchedSingleQna(adminIdx, qnaIdx, MessageStatus.UPDATE.getStatus());
 
-      messageService.sendToUser(principal.getName(), "/queue/set/qna/detail/"+qnaIdx, response);
+      messageService.sendToUser(principal.getName(), WSDestination.SUB_GET_MATCHED_QNA_LIST.getDestination(), matchedResponse);
+      messageService.sendToUser(principal.getName(), WSDestination.SUB_GET_QNA_DETAIL.getDestination() + qnaIdx, detailResponse);
 
+      redisService.saveStringData(QNA_WATCHER + principal.getName(), String.valueOf(qnaIdx), 'h', 2);
     } catch (CustomException e) {
       if (e.getStatus() == HttpStatus.NOT_FOUND) {
         throw new WebSocketBusinessException(e.getMessage(), 4004);
@@ -144,6 +155,12 @@ public class ChatController {
       }
       throw new WebSocketBusinessException(e.getMessage(), 5000);
     }
+  }
+
+  // 상세 보기 닫음
+  @MessageMapping("/close/detail")
+  public void detailClose(Principal principal) {
+    redisService.deleteData(QNA_WATCHER + principal.getName());
   }
 
   // 에러 메시지 처리

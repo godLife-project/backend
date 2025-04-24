@@ -11,17 +11,16 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * {@code QnaReplyDTO} 와 비슷하지만, {@code qnaReplyIdx} 와 {@code qnaIdx} 가 없고,
- * {@code queue} 필드가 추가된 DTO 입니다.
+ * {@code QnaReplyDTO} 와 비슷하지만, {@code qnaIdx} 가 없습니다
  * <p>답변 상세 보기 시, 답변을 큐 스택 처럼 보이도록 하기 위함입니다.</p>
  * @see QnaReplyDTO
  */
 @Data
 public class QnaReplyListDTO {
 
-  private int queue;
+  private int qnaReplyIdx;
 
-  private int userIdx;
+  private String userName;
 
   private String content;
 

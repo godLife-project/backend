@@ -3,6 +3,7 @@ package com.godLife.project.controller;
 
 import com.godLife.project.dto.contents.QnaDTO;
 import com.godLife.project.dto.contents.QnaReplyDTO;
+import com.godLife.project.enums.QnaStatus;
 import com.godLife.project.handler.GlobalExceptionHandler;
 import com.godLife.project.service.interfaces.QnaService;
 import jakarta.validation.Valid;
@@ -12,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -66,6 +69,28 @@ public class QnaController {
     qnaService.commentReply(qnaReplyDTO);
 
     return ResponseEntity.status(HttpStatus.CREATED).build();
+  }
+
+  // 1:1 문의 수정
+  @PatchMapping("/modify")
+  public ResponseEntity<Map<String, Object>> modifyQnA(@RequestHeader("Authorization") String authHeader,
+                                                       @Valid @RequestBody QnaDTO modifyQna,
+                                                       BindingResult valid) {
+    if (valid.hasErrors()) {
+      return ResponseEntity.badRequest().body(handler.getValidationErrors(valid));
+    }
+
+    int userIdx = handler.getUserIdxFromToken(authHeader);
+    modifyQna.setQUserIdx(userIdx);
+
+    List<String> setStatus = new ArrayList<>();
+    setStatus.add(QnaStatus.WAIT.getStatus());
+    setStatus.add(QnaStatus.CONNECT.getStatus());
+
+    // 문의 수정
+    qnaService.modifyQnA(modifyQna, setStatus);
+
+    return ResponseEntity.ok().body(handler.createResponse(200, "문의 수정 완료"));
   }
 
 

@@ -17,6 +17,7 @@ import com.godLife.project.mapper.QnaMapper;
 import com.godLife.project.service.impl.redis.RedisService;
 import com.godLife.project.service.impl.websocketImpl.WebSocketMessageService;
 import com.godLife.project.service.interfaces.QnaService;
+import com.godLife.project.service.interfaces.UserService;
 import com.godLife.project.utils.HtmlSanitizer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,8 +37,10 @@ public class QnaServiceImpl implements QnaService {
   private final QnaMapper qnaMapper;
   private final RedisService redisService;
   private final WebSocketMessageService messageService;
+  private final UserService userService;
 
   private static final String QNA_QUEUE_KEY = "qna_queue";
+  private static final String QNA_WATCHER = "qna-watcher-";
 
 
   @Override
@@ -140,8 +143,11 @@ public class QnaServiceImpl implements QnaService {
   @Transactional(rollbackFor = Exception.class)
   public void commentReply(QnaReplyDTO qnaReplyDTO) {
     try {
+      // 문의 인덱스 저장
+      int qnaParentIdx = qnaReplyDTO.getQnaIdx();
+
       // 문의 존재 여부와 매칭 여부 검증
-      QnaDTO qnaParent = qnaValidator(qnaReplyDTO.getQnaIdx());
+      QnaDTO qnaParent = qnaValidator(qnaParentIdx);
 
       // 유저 검증
       boolean isWriter = whoAreYou(qnaParent, qnaReplyDTO.getUserIdx());
@@ -155,8 +161,48 @@ public class QnaServiceImpl implements QnaService {
       notStatus.add(QnaStatus.WAIT.getStatus());
       notStatus.add(QnaStatus.COMPLETE.getStatus());
 
-      // 답변 수 증가 (조회 시 초기화 됨. --> 알림용)
-      qnaMapper.increaseReplyCount(isWriter, qnaParent.getQnaIdx(), setStatus, notStatus);
+      // 관리자 ID 추출
+      String username = userService.getUserIdByUserIdx(qnaParent.getAUserIdx());
+
+      String whichQnA = redisService.getStringData(QNA_WATCHER + username);
+      boolean isWatched = String.valueOf(qnaParentIdx).equals(whichQnA);
+
+      // 답변 수 증가 (조회 시 초기화 돼야 함. --> 알림용)
+      // 유저가 추가 문의 작성 시 관리자가 해당 문의를 안 보고 있을 때
+      // Q_COUNT 증가 및 관리자에게 전송
+      if (!isWriter) {
+        // 관리자가 작성 중일 경우 → 무조건 실행
+        qnaMapper.increaseReplyCount(false, qnaParentIdx, setStatus, notStatus);
+
+      } else {
+        // 유저가 작성 중일 경우
+        if (!isWatched) {
+          // 관리자가 보고 있지 않을 때만 실행
+          qnaMapper.increaseReplyCount(true, qnaParentIdx, setStatus, notStatus);
+
+          MatchedListMessageDTO matchedResponse = getMatchedSingleQna(
+              qnaParent.getAUserIdx(),
+              qnaParent.getQnaIdx(),
+              MessageStatus.UPDATE.getStatus()
+          );
+          messageService.sendToUser(username, WSDestination.SUB_GET_MATCHED_QNA_LIST.getDestination(), matchedResponse);
+        }
+      }
+
+      if (isWatched) {
+        // 방금 작성한 답변 정보 조회
+        QnaDetailMessageDTO detailInfos = new QnaDetailMessageDTO();
+        detailInfos.setQnaIdx(qnaParentIdx);
+        detailInfos.setStatus(MessageStatus.ADD_COMMENT.getStatus());
+
+        QnaReplyListDTO comment = qnaMapper.getRecentComment(qnaReplyDTO.getQnaReplyIdx());
+        comment.setContent(HtmlSanitizer.sanitize(comment.getContent())); // 댓글 필터링
+
+        detailInfos.setComments(List.of(comment));
+
+        messageService.sendToUser(username, WSDestination.SUB_GET_QNA_DETAIL.getDestination() + qnaParentIdx, detailInfos);
+      }
+
     } catch (CustomException e) {
       throw e;
     } catch (Exception e) {
@@ -261,6 +307,65 @@ public class QnaServiceImpl implements QnaService {
       log.error("QnaService - getQnaDetails :: 예상치 못한 서버 오류가 발생했습니다 :", e);
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly(); // 수동 롤백
       throw new CustomException("서버 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Override
+  @Transactional(rollbackFor = RuntimeException.class)
+  public void modifyQnA(QnaDTO modifyDTO, List<String> setStatus) {
+    try {
+      int editorIdx = modifyDTO.getQUserIdx();
+      int qnaIdx = modifyDTO.getQnaIdx();
+
+      QnaDTO forValidate = qnaMapper.getQnaInfosByQnaIdx(qnaIdx, QnaStatus.DELETED.getStatus());
+
+      if (forValidate == null) {
+        throw new CustomException("존재하지 않거나, 삭제된 문의 입니다.", HttpStatus.NOT_FOUND);
+      }
+      if (!(QnaStatus.WAIT.getStatus().equals(forValidate.getQnaStatus()) || QnaStatus.CONNECT.getStatus().equals(forValidate.getQnaStatus()))) {
+        throw new CustomException("대기중 혹은 연결된(관리자가 답변을 하지 않은) 상태의 문의만 수정 가능합니다.", HttpStatus.PRECONDITION_FAILED);
+      }
+      if (editorIdx != forValidate.getQUserIdx()) {
+        throw new CustomException("문의 작성자만 수정 가능합니다.", HttpStatus.FORBIDDEN);
+      }
+
+      // 문의 수정 진행
+      int result = qnaMapper.modifyQnA(modifyDTO, setStatus);
+
+      if (result == 0) {
+        throw new CustomException("수정할 문의가 없어 문의 수정을 취소합니다.", HttpStatus.NO_CONTENT);
+      }
+
+      if (forValidate.getAUserIdx() != 0) {
+        MatchedListMessageDTO matchedResponse = getMatchedSingleQna(
+            forValidate.getAUserIdx(),
+            forValidate.getQnaIdx(),
+            MessageStatus.UPDATE.getStatus()
+        );
+
+        // 관리자 ID 추출
+        String username = userService.getUserIdByUserIdx(forValidate.getAUserIdx());
+
+        messageService.sendToUser(username, WSDestination.SUB_GET_MATCHED_QNA_LIST.getDestination(), matchedResponse);
+
+      } else {
+        // 관리자에게 전송할 객체 생성 및 데이터 전송
+        List<QnaWaitListDTO> waitItem = qnaMapper.getWaitSingleQna(forValidate.getQnaIdx());
+
+        WaitListMessageDTO waitQna = new WaitListMessageDTO();
+        waitQna.setWaitQnA(waitItem);
+        waitQna.setStatus(MessageStatus.UPDATE.getStatus());
+
+        // 관리자에게 실시간 대기중 문의 리스트 전송
+        messageService.sendToAll(WSDestination.SUB_GET_WAIT_QNA_LIST.getDestination(), waitQna);
+      }
+    } catch (CustomException e) {
+      log.info("QnaService - modifyQnA :: {}", e.getMessage());
+      throw e;
+    } catch (Exception e) {
+      log.error("QnaService - modifyQnA :: 예기치 않은 서버 오류가 발생했습니다.", e);
+      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly(); // 수동 롤백
+      throw e;
     }
   }
 }

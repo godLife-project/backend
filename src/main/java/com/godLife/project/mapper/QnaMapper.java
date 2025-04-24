@@ -39,6 +39,10 @@ public interface QnaMapper {
   // 답변 달기
   void commentReply(QnaReplyDTO qnaReplyDTO);
 
+  // 방금 작성한 답변 가져오기
+  @Select("SELECT * FROM QNA_REPLY WHERE QNA_REPLY_IDX = #{qnaReplyIdx}")
+  QnaReplyListDTO getRecentComment(int qnaReplyIdx);
+
   /**
    * 문의 검증용 기초 정보 조회
    * @param qnaIdx 조회 할 문의의 인덱스 번호
@@ -83,5 +87,16 @@ public interface QnaMapper {
    * @param isWriter 무엇을 초기화 할 지 정해 줄 친구
    */
   void setClearReplyCountByQnaIdx(int qnaIdx, boolean isWriter);
+
+  /**
+   * <strong>1:1 문의 (QnA) 수정</strong>
+   * <p>{@code qnaIdx}, {@code title}, {@code content}, {@code category} 를 필수로 받아야 합니다.</p>
+   * <p>{@code qUserIdx} 는 jwt토큰에서 추출한 userIdx 를 넣어줘야 합니다.</p>
+   * <p>{@code exceptStatus} 에 제외 할 문의의 상태값을 지정합니다.</p>
+   * @param modifyDTO 삭제할 문의 DTO -> {@code QnaDTO}
+   * @param setStatus 조회 할 문의 상태 값 List
+   * @return {@code int} - 수정 성공한 행의 개수
+   */
+  int modifyQnA(@Param("modifyDTO") QnaDTO modifyDTO, @Param("setStatus") List<String> setStatus);
 
 }

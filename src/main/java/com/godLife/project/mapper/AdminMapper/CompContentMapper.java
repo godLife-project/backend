@@ -1,8 +1,7 @@
 package com.godLife.project.mapper.AdminMapper;
 
-import com.godLife.project.dto.categories.FaqCateDTO;
+import com.godLife.project.dto.categories.ChallengeCateDTO;
 import com.godLife.project.dto.categories.JobCateDTO;
-import com.godLife.project.dto.categories.QnaCateDTO;
 import com.godLife.project.dto.categories.TargetCateDTO;
 import com.godLife.project.dto.datas.FireDTO;
 import org.apache.ibatis.annotations.Mapper;
@@ -11,8 +10,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 @Mapper
-public interface ComponentMapper {
-
+public interface CompContentMapper {
   // 목표 카테고리
   List<TargetCateDTO> targetCategoryList();                 // 목표 전체 카테고리 조회
   int insertTargetCategory(TargetCateDTO targetCateDTO);    // 목표 카테고리 등록
@@ -41,22 +39,13 @@ public interface ComponentMapper {
   int countExpOverlap(int minExp, int maxExp);    // EXP 범위 중복 체크 (추가용)
   int countExpOverlapExceptId(@Param("minExp") int minExp,
                               @Param("maxExp") int maxExp,
-                              @Param("lvIdx") Long lvIdx);    // EXP 범위 중복 체크 (수정용 - 현재 ID 제외)
+                              @Param("lvIdx") Long lvIdx);
 
-  // FAQ 카테고리 관리
-  List<FaqCateDTO> selectAllFaqCate();      // FAQ 카테고리 조회
-  int insertFaqCate(FaqCateDTO faqCateDTO); // FAQ 카테고리 추가
-  int updateFaqCate(FaqCateDTO faqCateDTO); // FAQ 카테고리 수정
-  int deleteFaqCate(int faqCategoryIdx);    // FAQ 카테고리 삭제
-  int countFaqByCategory(int faqCategoryIdx);   // FAQ 카테고리 참조 조회
-  int countByFaqName(String faqCategoryName);   // FAQ 카테고리이름 중복체크
-
-  // QNA 카테고리 관리
-  List<QnaCateDTO> selectAllQnaCate();      // QNA 카테고리 조회
-  int insertQnaCate(QnaCateDTO qnaCateDTO); // QNA 카테고리 추가
-  int updateQnaCate(QnaCateDTO qnaCateDTO); // QNA 카테고리 수정
-  int deleteQnaCate(int qnaCategoryIdx);    // QNA 카테고리 삭제
-  int countQnaByCategory(int qnaCategoryIdx);   // QNA 카테고리 참조 조회
-  int countByQnaName(String qnaCategoryIdx);   // QNA 카테고리이름 중복체크
+  // 챌린지 카테고리 관리
+  List<ChallengeCateDTO> selectChallCate();     // 챌린지 카테고리 조회
+  int insertChallCate(ChallengeCateDTO challengeCateDTO); // 챌린지 카테고리 추가
+  int updateChallCate(ChallengeCateDTO challengeCateDTO); // 챌린지 카테고리 수정
+  int deleteChallCate(int ChallCategoryIdx);              // 챌린지 카테고리 삭제
+  int countByChallCateName(String challName);             // 카테고리명 중복체크
 
 }

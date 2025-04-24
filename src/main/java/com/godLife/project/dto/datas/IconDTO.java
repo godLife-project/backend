@@ -16,4 +16,6 @@ public class IconDTO {
 
   @Schema(description = "사용 여부", example = "0")
   private int visible;
+
+  private String originalIconKey;
 }

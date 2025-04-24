@@ -81,7 +81,12 @@ public interface ChallengeMapper {
     // 챌린지 수정
     int modifyChallenge(ChallengeDTO challengeDTO);
     // 챌린지 삭제
-    int deleteChallenge(ChallengeDTO challengeDTO);
+    int deleteChallenge(@Param("challIdx") Long challIdx);
+    // 자식 테이블(조인,인증 테이블) 삭제
+    int deleteVerifyByChallIdx(@Param("challIdx") Long challIdx);
+    int deleteChallJoinByChallIdx(@Param("challIdx") Long challIdx);
+    // 조기 종료 처리
+    int earlyFinishChallenge(Long challIdx);
 
     // 인증을 통해 감소한 총 시간 조회
     Integer getElapsedClearTime(@Param("challIdx") Long challIdx);
@@ -97,6 +102,9 @@ public interface ChallengeMapper {
             @Param("size") int size,
             @Param("sort") String sort
     );
+    // 진행 중인 챌린지를 종료 상태로 자동 변경
+    int updateChallengesToEndStatus(@Param("now") LocalDateTime now);
+
 
 
 }

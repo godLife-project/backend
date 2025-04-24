@@ -37,7 +37,8 @@
         CT.MAX_PARTICIPANTS,
         CT.CHALL_END_TIME,
         COUNT(CJ.USER_IDX) AS CURRENT_PARTICIPANTS,
-        CT.CHALL_CREATED_AT
+        CT.CHALL_CREATED_AT,
+        CT.CHALL_STATE
         FROM CHALL_TABLE CT
         LEFT JOIN CHALL_JOIN CJ ON CT.CHALL_IDX = CJ.CHALL_IDX
         WHERE CT.CHALL_END_TIME IS NULL OR CT.CHALL_END_TIME > SYSDATE
@@ -48,7 +49,8 @@
         CT.CHALL_CATEGORY_IDX,
         CT.MAX_PARTICIPANTS,
         CT.CHALL_END_TIME,
-        CT.CHALL_CREATED_AT
+        CT.CHALL_CREATED_AT,
+        CT.CHALL_STATE
         ORDER BY CT.CHALL_CREATED_AT DESC
         OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
     </select>
@@ -236,11 +238,34 @@
     WHERE CHALL_IDX=#{challIdx}
     </update>
 
+
+    <!-- 인증(자식 테이블) 먼저 삭제 -->
+    <delete id="deleteVerifyByChallIdx" parameterType="java.lang.Long">
+        DELETE FROM VERIFY_TABLE
+        WHERE CHALL_IDX = #{challIdx}
+    </delete>
+    <!-- 챌린지 조인(자식 테이블) 먼저 삭제 -->
+    <delete id="deleteChallJoinByChallIdx" parameterType="java.lang.Long">
+        DELETE FROM CHALL_JOIN
+        WHERE CHALL_IDX = #{challIdx}
+    </delete>
+
     <!-- 챌린지 삭제 -->
     <delete id="deleteChallenge">
     DELETE FROM CHALL_TABLE
     WHERE CHALL_IDX = #{challIdx}
     </delete>
+
+    <!-- 챌린지 조기 종료 처리 -->
+    <update id="earlyFinishChallenge" parameterType="long">
+        UPDATE CHALL_TABLE
+        SET
+        CHALL_STATE = '종료됨',
+        CHALL_END_TIME = SYSDATE
+        WHERE
+        CHALL_IDX = #{challIdx}
+        AND CHALL_STATE != '종료됨'
+    </update>
 
     <!-- 챌린지 제목, 카테고리 내에서 검색 -->
     <select id="searchChallenges" resultType="com.godLife.project.dto.contents.ChallengeDTO">
@@ -256,6 +281,14 @@
         ORDER BY ${sort}
         OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
     </select>
+
+    <!-- 진행 중인 챌린지를 종료 상태로 자동 변경 -->
+    <update id="updateChallengesToEndStatus" parameterType="java.time.LocalDateTime">
+        UPDATE CHALL_TABLE
+        SET CHALL_STATE = '종료됨'
+        WHERE CHALL_STATE = '진행중'
+        AND CHALL_END_TIME &lt;= #{now}
+    </update>
 
 
 </mapper>

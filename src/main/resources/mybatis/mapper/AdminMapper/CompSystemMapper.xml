@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godLife.project.mapper.AdminMapper.CompSystemMapper">
+    <!--            FAQ CATEGORY 관리 테이블 CRUD Mapper         -->
+
+    <!-- FAQ_CATEGORY LIST 조회 -->
+    <select id="selectAllFaqCate" resultType="com.godLife.project.dto.categories.FaqCateDTO">
+        SELECT *
+        FROM FAQ_CATEGORY
+    </select>
+
+    <!-- FAQ_CATEGORY 추가 -->
+    <insert id="insertFaqCate" parameterType="com.godLife.project.dto.categories.FaqCateDTO">
+        INSERT INTO FAQ_CATEGORY (FAQ_CATEGORY_IDX, FAQ_CATEGORY_NAME)
+        VALUES (FAQ_CATEGORY_SEQ.NEXTVAL, #{faqCategoryName})
+    </insert>
+
+    <!-- FAQ_CATEGORY 수정 -->
+    <update id="updateFaqCate" parameterType="com.godLife.project.dto.categories.FaqCateDTO">
+        UPDATE FAQ_CATEGORY
+        SET FAQ_CATEGORY_NAME = #{faqCategoryName}
+        WHERE FAQ_CATEGORY_IDX = #{faqCategoryIdx}
+    </update>
+
+    <!-- FAQ_CATEGORY 삭제 -->
+    <delete id="deleteFaqCate" parameterType="int">
+        DELETE FROM FAQ_CATEGORY WHERE FAQ_CATEGORY_IDX = #{faqCategoryIdx}
+    </delete>
+
+    <!-- 참조 개수 조회 -->
+    <select id="countFaqByCategory" parameterType="int" resultType="int">
+        SELECT COUNT(*) FROM FAQ_TABLE WHERE FAQ_CATEGORY = #{faqCategoryIdx}
+    </select>
+
+    <!-- 중복 카테고리 확인 -->
+    <select id = "countByFaqName" parameterType="String" resultType="int">
+        SELECT COUNT(*)
+        FROM FAQ_CATEGORY
+        WHERE FAQ_CATEGORY_NAME = #{faqCategoryName}
+    </select>
+
+
+    <!--            QNA CATEGORY 관리 테이블 CRUD Mapper         -->
+
+    <!-- QNA_CATEGORY LIST 조회 -->
+    <select id="selectAllQnaCate" resultType="com.godLife.project.dto.categories.QnaCateDTO">
+        SELECT *
+        FROM QNA_CATEGORY
+    </select>
+
+    <!-- QNA_CATEGORY 추가 -->
+    <insert id="insertQnaCate" parameterType="com.godLife.project.dto.categories.QnaCateDTO">
+        INSERT INTO QNA_CATEGORY (QNA_CATEGORY_IDX, QNA_CATEGORY_NAME)
+        VALUES (QNA_CATEGORY_SEQ.NEXTVAL, #{qnaCategoryName})
+    </insert>
+
+    <!-- QNA_CATEGORY 수정 -->
+    <update id="updateQnaCate" parameterType="com.godLife.project.dto.categories.QnaCateDTO">
+        UPDATE QNA_CATEGORY
+        SET QNA_CATEGORY_NAME = #{qnaCategoryName}
+        WHERE QNA_CATEGORY_IDX = #{qnaCategoryIdx}
+    </update>
+
+    <!-- QNA_CATEGORY 삭제 -->
+    <delete id="deleteQnaCate" parameterType="int">
+        DELETE FROM QNA_CATEGORY WHERE QNA_CATEGORY_IDX = #{qnaCategoryIdx}
+    </delete>
+
+    <!-- 참조 개수 조회 -->
+    <select id="countQnaByCategory" parameterType="int" resultType="int">
+        SELECT COUNT(*) FROM QNA_TABLE WHERE CATEGORY = #{qnaCategoryIdx}
+    </select>
+
+    <!-- 중복 카테고리 확인 -->
+    <select id = "countByQnaName" parameterType="String" resultType="int">
+        SELECT COUNT(*)
+        FROM QNA_CATEGORY
+        WHERE QNA_CATEGORY_NAME = #{qnaCategoryName}
+    </select>
+
+
+    <!--            TOP MENU 관리 테이블 CRUD Mapper         -->
+
+    <!-- 조회 -->
+    <select id="selectTopMenu" resultType="com.godLife.project.dto.categories.TopCateDTO">
+        SELECT * FROM TOP_CATEGORY ORDER BY ORD_IDX ASC
+    </select>
+
+    <!-- 추가 -->
+    <insert id="insertTopMenu" parameterType="com.godLife.project.dto.categories.TopCateDTO">
+        INSERT INTO TOP_CATEGORY (TOP_IDX, TOP_NAME, TOP_ADDR, ORD_IDX)
+        VALUES (TOP_CATEGORY_SEQ.NEXTVAL, #{topName}, #{topAddr}, #{ordIdx})
+    </insert>
+
+    <!-- 수정 -->
+    <update id="updateTopMenu" parameterType="com.godLife.project.dto.categories.TopCateDTO">
+        UPDATE TOP_CATEGORY
+        <set>
+            <if test="topName != null and topName != ''">
+                TOP_NAME = #{topName},
+            </if>
+            <if test="topAddr != null and topAddr != ''">
+                TOP_ADDR = #{topAddr},
+            </if>
+            <if test="ordIdx != null">
+                ORD_IDX = #{ordIdx},
+            </if>
+        </set>
+        WHERE TOP_IDX = #{topIdx}
+    </update>
+
+    <!-- 삭제 -->
+    <delete id="deleteTopMenu" parameterType="int">
+        DELETE FROM TOP_CATEGORY WHERE TOP_IDX = #{topIdx}
+    </delete>
+
+    <!-- 중복 카테고리 확인 -->
+    <select id = "countByTopMenuName" parameterType="String" resultType="int">
+        SELECT COUNT(*)
+        FROM TOP_CATEGORY
+        WHERE TOP_NAME = #{topName}
+    </select>
+
+    <!-- 정렬 순서만 업데이트 -->
+    <update id="updateOrderTopMenu">
+        UPDATE TOP_CATEGORY SET ORD_IDX = #{ordIdx}
+        WHERE TOP_IDX = #{topIdx}
+    </update>
+
+            <!--            ICON 관리 테이블 CRUD Mapper         -->
+    <!-- 조회 -->
+    <select id="selectIcon" resultType="com.godLife.project.dto.datas.IconDTO">
+        SELECT * FROM ICON_TABLE
+    </select>
+
+    <!-- 추가 -->
+    <insert id="insertIcon" parameterType="com.godLife.project.dto.datas.IconDTO">
+        INSERT INTO ICON_TABLE (ICON_KEY, ICON, COLOR, VISIBLE)
+        VALUES (#{iconKey}, #{icon}, #{color}, #{visible})
+    </insert>
+
+    <!-- 수정 -->
+    <update id="updateIcon" parameterType="com.godLife.project.dto.datas.IconDTO">
+        UPDATE ICON_TABLE
+        <set>
+            <if test="iconKey != null and iconKey != ''">
+                ICON_KEY = #{iconKey},
+            </if>
+            <if test="icon != null and icon != ''">
+                ICON = #{icon},
+            </if>
+            <if test="color != null">
+                COLOR = #{color},
+            </if>
+            <if test="visible != null">
+                VISIBLE = #{visible},
+            </if>
+        </set>
+        WHERE ICON_KEY = #{iconKey}
+    </update>
+
+    <!-- 삭제 -->
+    <delete id="deleteIcon" parameterType="String">
+        DELETE FROM ICON_TABLE WHERE ICON_KEY = #{iconKey}
+    </delete>
+
+    <!-- 중복 카테고리 확인 -->
+    <select id = "countByIconName" parameterType="String" resultType="int">
+        SELECT COUNT(*)
+        FROM ICON_TABLE
+        WHERE ICON_KEY = #{iconKey}
+    </select>
+
+    <!-- 자기 자신 제외 -->
+    <select id="countByIconKeyExcludingSelf" resultType="int">
+        SELECT COUNT(*)
+        FROM ICON_TABLE
+        WHERE ICON_KEY = #{newKey}
+        AND ICON_KEY != #{originalKey}
+    </select>
+</mapper>

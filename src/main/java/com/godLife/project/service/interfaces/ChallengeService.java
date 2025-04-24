@@ -2,6 +2,7 @@ package com.godLife.project.service.interfaces;
 
 import com.godLife.project.dto.contents.ChallengeDTO;
 import com.godLife.project.dto.verify.ChallengeVerifyDTO;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -37,7 +38,9 @@ public interface ChallengeService {
     // 챌린지 수정
     int modifyChallenge(ChallengeDTO challengeDTO);
     // 챌린지 삭제
-    int deleteChallenge(ChallengeDTO challengeDTO);
+    int deleteChallenge(@Param("challIdx") Long challIdx);
+    // 조기 종료
+    void earlyFinishChallenge(Long challIdx);
 
     // 챌린지 검색 (제목, 카테고리)
     List<ChallengeDTO> searchChallenges(String challTitle,

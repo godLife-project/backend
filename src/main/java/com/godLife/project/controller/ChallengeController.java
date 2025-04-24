@@ -252,13 +252,14 @@ public class ChallengeController {
     }
 
     // 챌린지 존재 여부 확인
-    if (!challengeService.existsById(challengeDTO.getChallIdx())) {
+    Long challIdx = challengeDTO.getChallIdx();
+    if (!challengeService.existsById(challIdx)) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
               .body(handler.createResponse(404, "요청하신 챌린지가 존재하지 않습니다."));
     }
 
     // 삭제 서비스 실행
-    int deleteResult = challengeService.deleteChallenge(challengeDTO); // 관리자 권한 체크 후 삭제
+    int deleteResult = challengeService.deleteChallenge(challIdx); // 관리자 권한 체크 후 삭제
 
     // 응답 메시지 설정
     String msg = switch (deleteResult) {
@@ -271,6 +272,18 @@ public class ChallengeController {
 
     return ResponseEntity.status(handler.getHttpStatus(deleteResult))
             .body(handler.createResponse(deleteResult, msg));
+  }
+
+
+  // 챌린지 조기 종료
+  @PutMapping("/admin/earlyFinish/{challIdx}")
+  public ResponseEntity<String> earlyFinish(@PathVariable Long challIdx) {
+    try {
+      challengeService.earlyFinishChallenge(challIdx);
+      return ResponseEntity.ok("챌린지가 성공적으로 종료되었습니다.");
+    } catch (IllegalStateException e) {
+      return ResponseEntity.badRequest().body(e.getMessage());
+    }
   }
 
   // 챌린지 검색 API (제목, 카테고리)

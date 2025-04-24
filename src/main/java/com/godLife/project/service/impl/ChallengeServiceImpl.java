@@ -311,6 +311,11 @@ public class ChallengeServiceImpl implements ChallengeService {
                 challengeVerifyDTO.getChallIdx(),
                 (int) elapsedTime
         );
+        // 10. 총 클리어 시간이 0 이하일 경우 챌린지를 '종료됨' 상태로 업데이트
+        int remainingClearTime = challengeMapper.getTotalClearTime(challengeVerifyDTO.getChallIdx());
+        if (remainingClearTime <= 0) {
+            challengeMapper.finishChallenge(challengeVerifyDTO.getChallIdx());
+        }
     }
 
     // 챌린지 하루 한번 인증
@@ -342,16 +347,29 @@ public class ChallengeServiceImpl implements ChallengeService {
     }
 
     // ----------------- 챌린지 삭제 -----------------
-    @Override
-    public int deleteChallenge(ChallengeDTO challengeDTO) {
+    @Transactional
+    public int deleteChallenge(Long challIdx) {
         // 삭제 수행
-        int result = challengeMapper.deleteChallenge(challengeDTO);
+        challengeMapper.deleteVerifyByChallIdx(challIdx); // 자식 테이블 먼저 삭제 (인증테이블)
+        challengeMapper.deleteChallJoinByChallIdx(challIdx);  // 자식 테이블 먼저 삭제 (조인테이블)
+        int result = challengeMapper.deleteChallenge(challIdx);        // 부모 테이블 삭제
         if (result == 0) {
             return 500;
         }
         return 200; // 삭제 성공
     }
 
+
+    // 조기종료
+    @Transactional
+    public void earlyFinishChallenge(Long challIdx) {
+        int updated = challengeMapper.earlyFinishChallenge(challIdx);
+        if (updated == 0) {
+            throw new IllegalStateException("이미 종료된 챌린지이거나 존재하지 않습니다. challIdx = " + challIdx);
+        }
+    }
+    
+    // 챌린지 검색
     public List<ChallengeDTO> searchChallenges(String challTitle, String challCategory, int offset, int size, String sort) {
         return challengeMapper.searchChallenges(challTitle, challCategory, offset, size, sort);
     }

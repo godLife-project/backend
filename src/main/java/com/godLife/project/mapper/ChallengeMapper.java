@@ -11,8 +11,6 @@ import java.util.Map;
 
 @Mapper
 public interface ChallengeMapper {
-    // 챌린지 생성
-    void createChallenge(ChallengeDTO challengeDTO);
 
     // 최신 챌린지 조회 (페이징 적용)
     List<ChallengeDTO> getLatestChallenges(@Param("offset") int offset, @Param("size") int size);
@@ -60,7 +58,7 @@ public interface ChallengeMapper {
             @Param("endTime") LocalDateTime endTime,
             @Param("activity") String activity
     );
-    // 챌린지 참여 확인
+    // 챌린지 참여 확인 및 중복 체크
     ChallengeJoinDTO getJoinInfo(Long challIdx, Long userIdx);
 
     // 하루 한번 인증
@@ -78,21 +76,9 @@ public interface ChallengeMapper {
 
     // 챌린지 존재 여부 확인
     int existsById(@Param("challIdx") Long challIdx);
-    // 챌린지 수정
-    int modifyChallenge(ChallengeDTO challengeDTO);
-    // 챌린지 삭제
-    int deleteChallenge(@Param("challIdx") Long challIdx);
-    // 자식 테이블(조인,인증 테이블) 삭제
-    int deleteVerifyByChallIdx(@Param("challIdx") Long challIdx);
-    int deleteChallJoinByChallIdx(@Param("challIdx") Long challIdx);
-    // 조기 종료 처리
-    int earlyFinishChallenge(Long challIdx);
 
     // 인증을 통해 감소한 총 시간 조회
     Integer getElapsedClearTime(@Param("challIdx") Long challIdx);
-
-    // 사용자 중복 참여 방지 코드
-    boolean isUserAlreadyJoined(@Param("challIdx") Long challIdx, @Param("userIdx") int userIdx);
 
     // 챌린지 검색 (제목, 카테고리)
     List<ChallengeDTO> searchChallenges(

@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godLife.project.mapper.AdminMapper.ChallAdminMapper">
+
+    <!-- 챌린지 생성 (유저 참여형일 때는 START_TIME과 END_TIME을 NULL로 저장) -->
+    <insert id="createChallenge">
+        INSERT INTO CHALL_TABLE (
+        CHALL_IDX, CHALL_TITLE, CHALL_DESCRIPTION, CHALL_CATEGORY_IDX,
+        MIN_PARTICIPATION_TIME, TOTAL_CLEAR_TIME, MAX_PARTICIPANTS,
+        CHALL_CREATED_AT, CHALL_STATE, CHALL_START_TIME, CHALL_END_TIME, USER_JOIN, DURATION
+        )
+        VALUES (
+        CHALL_SEQ.NEXTVAL, #{challTitle}, #{challDescription}, #{challCategoryIdx},
+        #{minParticipationTime}, #{totalClearTime}, #{maxParticipants},
+        SYSDATE, #{challState},  #{challStartTime}, #{challEndTime}, #{userJoin}, #{duration}
+        )
+    </insert>
+
+    <!-- 최신 챌린지 LIST 조회 -->
+    <select id="getLatestChallenges" resultType="com.godLife.project.dto.request.ChallRequestDTO">
+        SELECT
+        CT.CHALL_IDX,
+        CT.CHALL_TITLE,
+        TO_CHAR(CT.CHALL_DESCRIPTION) AS CHALL_DESCRIPTION,
+        CT.CHALL_CATEGORY_IDX,
+        CT.MAX_PARTICIPANTS,
+        CT.CHALL_END_TIME,
+        COUNT(CJ.USER_IDX) AS CURRENT_PARTICIPANTS,
+        CT.CHALL_CREATED_AT,
+        CT.CHALL_STATE
+        FROM CHALL_TABLE CT
+        LEFT JOIN CHALL_JOIN CJ ON CT.CHALL_IDX = CJ.CHALL_IDX
+        WHERE CT.CHALL_END_TIME IS NULL OR CT.CHALL_END_TIME > SYSDATE
+        GROUP BY
+        CT.CHALL_IDX,
+        CT.CHALL_TITLE,
+        TO_CHAR(CT.CHALL_DESCRIPTION),
+        CT.CHALL_CATEGORY_IDX,
+        CT.MAX_PARTICIPANTS,
+        CT.CHALL_END_TIME,
+        CT.CHALL_CREATED_AT,
+        CT.CHALL_STATE
+        ORDER BY CT.CHALL_CREATED_AT DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <!-- 최신 챌린지 총 개수 조회 -->
+    <select id="countLatestChallenges" resultType="int">
+        SELECT COUNT(*)
+        FROM CHALL_TABLE
+        WHERE CHALL_END_TIME IS NULL OR CHALL_END_TIME > SYSDATE
+    </select>
+
+    <!-- 챌린지 수정 -->
+    <update id="modifyChallenge">
+        UPDATE CHALL_TABLE
+        SET CHALL_TITLE = #{challTitle},
+        CHALL_DESCRIPTION = #{challDescription},
+        CHALL_CATEGORY_IDX = #{challCategoryIdx},
+        MIN_PARTICIPATION_TIME = #{minParticipationTime},
+        MAX_PARTICIPANTS = #{maxParticipants}
+        WHERE CHALL_IDX=#{challIdx}
+    </update>
+
+    <!-- 인증(자식 테이블) 먼저 삭제 -->
+    <delete id="deleteVerifyByChallIdx" parameterType="java.lang.Long">
+        DELETE FROM VERIFY_TABLE
+        WHERE CHALL_IDX = #{challIdx}
+    </delete>
+    <!-- 챌린지 조인(자식 테이블) 먼저 삭제 -->
+    <delete id="deleteChallJoinByChallIdx" parameterType="java.lang.Long">
+        DELETE FROM CHALL_JOIN
+        WHERE CHALL_IDX = #{challIdx}
+    </delete>
+
+    <!-- 챌린지 삭제 -->
+    <delete id="deleteChallenge">
+        DELETE FROM CHALL_TABLE
+        WHERE CHALL_IDX = #{challIdx}
+    </delete>
+
+    <!-- 챌린지 조기 종료 처리 -->
+    <update id="earlyFinishChallenge" parameterType="long">
+        UPDATE CHALL_TABLE
+        SET
+        CHALL_STATE = '종료됨',
+        CHALL_END_TIME = SYSDATE
+        WHERE
+        CHALL_IDX = #{challIdx}
+        AND CHALL_STATE != '종료됨'
+    </update>
+
+    <!-- 진행 중인 챌린지를 종료 상태로 자동 변경 -->
+    <update id="updateChallengesToEndStatus" parameterType="java.time.LocalDateTime">
+        UPDATE CHALL_TABLE
+        SET CHALL_STATE = '종료됨'
+        WHERE CHALL_STATE = '진행중'
+        AND CHALL_END_TIME &lt;= #{now}
+    </update>
+
+    <!-- 챌린지 제목, 카테고리 내에서 검색 -->
+    <select id="searchChallenges" resultType="com.godLife.project.dto.contents.ChallengeDTO">
+        SELECT c.*, cat.category_name
+        FROM chall_table c
+        JOIN chall_category cat ON c.chall_category_idx = cat.chall_category_idx
+        WHERE 1=1
+        <if test="challTitle != null and challTitle != ''">
+            AND LOWER(c.challTitle) LIKE '%' || LOWER(#{challTitle}) || '%'
+        </if>
+        <if test="challCategory != null and challCategory != ''">
+            AND LOWER(cat.category_name) LIKE '%' || LOWER(#{challCategory}) || '%'
+        </if>
+        <choose>
+            <when test="sort == 'challCreatedAt'">
+                ORDER BY c.chall_created_at DESC
+            </when>
+            <when test="sort == 'challTitle'">
+                ORDER BY c.chall_name ASC
+            </when>
+            <otherwise>
+                ORDER BY c.chall_idx DESC
+            </otherwise>
+        </choose>
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <!-- 챌린지 존재 확인 -->
+    <select id="existsById" resultType="int">
+        SELECT COUNT(*) FROM chall_table WHERE chall_idx = #{challIdx}
+    </select>
+
+    <!-- 최신 챌린지 LIST 조회 -->
+    <select id="getAllChallengesAdmin" resultType="com.godLife.project.dto.contents.ChallengeDTO">
+        SELECT
+        CHALL_IDX,
+        CHALL_TITLE,
+        CHALL_STATE,
+        CHALL_CATEGORY_IDX,
+        CHALL_CREATED_AT,
+        CHALL_END_TIME
+        FROM CHALL_TABLE
+        ORDER BY CHALL_CREATED_AT DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <!-- 카테고리별 챌린지 조회 (페이징 적용) -->
+    <select id="getChallengesByCategoryId" resultType="com.godLife.project.dto.request.ChallRequestDTO">
+        SELECT
+        CT.CHALL_IDX,
+        CT.CHALL_TITLE,
+        TO_CHAR(CT.CHALL_DESCRIPTION) AS CHALL_DESCRIPTION,
+        CT.CHALL_CATEGORY_IDX,
+        CT.MAX_PARTICIPANTS,
+        CT.CHALL_END_TIME,
+        CT.CHALL_CREATED_AT
+        FROM CHALL_TABLE CT
+        WHERE CT.CHALL_CATEGORY_IDX = #{challCategoryIdx}
+        AND (CT.CHALL_END_TIME IS NULL OR CT.CHALL_END_TIME > SYSDATE)
+        ORDER BY CT.CHALL_CREATED_AT DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <!-- 카테고리별 챌린지 총 개수 조회 -->
+    <select id="countChallengesByCategoryId" resultType="int">
+        SELECT COUNT(*)
+        FROM CHALL_TABLE
+        WHERE CHALL_CATEGORY_IDX = #{challCategoryIdx}
+        AND (CHALL_END_TIME IS NULL OR CHALL_END_TIME > SYSDATE)
+    </select>
+
+
+    <!-- 챌린지 상세정보 조회 -->
+    <select id="challengeDetail" resultType="com.godLife.project.dto.contents.ChallengeDTO">
+        SELECT
+        CHALL_IDX, CHALL_TITLE, CHALL_DESCRIPTION, CHALL_CATEGORY_IDX,
+        MIN_PARTICIPATION_TIME, TOTAL_CLEAR_TIME, MAX_PARTICIPANTS,
+        CHALL_START_TIME, CHALL_END_TIME, CHALL_CREATED_AT, CHALL_STATE, DURATION,  USER_JOIN
+        FROM Chall_table
+        WHERE CHALL_IDX = #{challIdx}
+    </select>
+
+    <!-- 상세조회시 참가자 조회-->
+    <select id="getChallengeParticipants" resultType="com.godLife.project.dto.infos.ChallengeJoinDTO">
+        SELECT cj.CHALL_JOIN_IDX,
+        cj.CHALL_IDX,
+        cj.USER_IDX,
+        u.USER_NICK AS userNick,
+        cj.ACTIVITY,
+        cj.ACTIVITY_TIME
+        FROM CHALL_JOIN cj
+        JOIN USER_TABLE u ON cj.USER_IDX = u.USER_IDX
+        WHERE cj.CHALL_IDX = #{challIdx}
+    </select>
+
+    <!-- 참여인원 확인 메퍼 -->
+    <select id="countParticipants" resultType="int">
+        SELECT COUNT(*)
+        FROM chall_join
+        WHERE chall_idx = #{challIdx}
+    </select>
+
+    <!-- 유저 참여형 챌린지 최초 참여 시 정보 업데이트 -->
+    <update id="updateChallengeStartTime">
+        UPDATE CHALL_TABLE
+        SET CHALL_START_TIME = #{challStartTime},
+        CHALL_END_TIME = #{challEndTime},
+        CHALL_STATE = #{challState}
+        WHERE CHALL_IDX = #{challIdx}
+    </update>
+</mapper>

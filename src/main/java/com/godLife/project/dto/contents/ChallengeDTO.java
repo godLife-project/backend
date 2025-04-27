@@ -66,4 +66,6 @@ public class ChallengeDTO {
 
     // 참가자 정보 리스트
     private List<ChallengeJoinDTO> participants;
+    // 챌린지 카테고리 이름
+    private String categoryName;
 }

@@ -24,7 +24,7 @@ public interface QnaService {
    * @param status 클라이언트에게 보여 줄 상태 값
    * @return MatchedListMessageDTO
    */
-  MatchedListMessageDTO getlistAllMatchedQna(int adminIdx, String status);
+  MatchedListMessageDTO getlistAllMatchedQna(int adminIdx, String status, String username);
 
   /**
    * 특정 문의의 정보를 조회 합니다. 특정 문의가 파라미터로 입력 받은 관리자의 것인지
@@ -35,7 +35,7 @@ public interface QnaService {
    * @param status 클라이언트에게 보여 줄 상태 값
    * @return MatchedListMessageDTO
    */
-  MatchedListMessageDTO getMatchedSingleQna(int adminIdx, int qnaIdx, String status);
+  MatchedListMessageDTO getMatchedSingleQna(int adminIdx, int qnaIdx, String status, String username);
 
   /**
    * 현재 'WAIT' 상태인 문의의 전체 리스트를 조회합니다.
@@ -44,7 +44,7 @@ public interface QnaService {
    * @param status 클라이언트에게 보여 줄 상태 값
    * @return WaitListMessageDTO
    */
-  WaitListMessageDTO getlistAllWaitQna(String status);
+  WaitListMessageDTO getlistAllWaitQna(String status, String username);
 
   /**
    * 선택한 문의의 본문만 조회합니다.
@@ -81,4 +81,37 @@ public interface QnaService {
    * @param setStatus 조회 할 문의 상태 값 List
    */
   void modifyQnA(QnaDTO modifyDTO, List<String> setStatus);
+
+  /**
+   * <strong>답변을 수정하기 위한 서비스 로직입니다.</strong>
+   * <p>{@code qnaReplyIdx}, {@code qnaIdx}, {@code content} 를 필수로 받아야 합니다.</p>
+   * <p>{@code userIdx} 는 jwt토큰에서 추출한 userIdx 를 넣어줘야 합니다.</p>
+   * <p>내부적으로 검증을 진행 후, 모두 통과할 경우 답변을 수정한 후 담당 관리자 페이지에 바로 최신화 해줍니다.</p>
+   * @param modifyReplyDTO 수정할 답변 DTO -> {@code qnaReplyDTO}
+   */
+  void modifyReply(QnaReplyDTO modifyReplyDTO);
+
+  /**
+   * <strong>문의 삭제 로직</strong>
+   * <p>이미 삭제되었거나, 이미 완료된 문의는 삭제할 수 없습니다.</p>
+   * <p>문의는 DB에서 완전히 삭제되는게 아닌, qnaStatus 컬럼만 DELETED 상태로 전환됩니다.</p>
+   * @param qnaIdx 삭제할 문의의 인덱스 번호
+   * @param userIdx 삭제하려는 유저의 인덱스 번호
+   */
+  void deleteQna(int qnaIdx, int userIdx);
+
+  /**
+   * <strong>답변 삭제 로직</strong>
+   * <p>대기, 완료, 삭제 된 문의에 대한 답변은 삭제할 수 없습니다.</p>
+   * <p>가장 마지막에 남긴 답변만 삭제 가능합니다.</p>
+   * <p>1 -> 2 -> 3 순으로 답변이 달렸을 경우, 3 만 삭제 가능하고,
+   * 3이 삭제 되면 그 후 2 를 삭제할 수 있습니다.</p>
+   * <p>답변은 DB에서 완전히 삭제됩니다.</p>
+   * @param qnaIdx 답변을 삭제할 문의의 인덱스 번호
+   * @param qnaReplyIdx 삭제할 답변의 인덱스 번호
+   * @param userIdx 삭제하려는 유저의 인덱스 번호
+   */
+  void deleteReply(int qnaIdx, int qnaReplyIdx, int userIdx);
+
+
 }

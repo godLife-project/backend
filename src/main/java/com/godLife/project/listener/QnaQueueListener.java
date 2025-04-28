@@ -87,7 +87,7 @@ public class QnaQueueListener implements InitializingBean, DisposableBean {
                   continue;
                 }
                 serviceAdminService.refreshMatchCount(adminInfo.getUserIdx()); // 매칭된 상담원 매칭 문의 수 증가
-                MatchedListMessageDTO matchedQnA = qnaService.getMatchedSingleQna(adminInfo.getUserIdx(), qnaIdx, MessageStatus.ADD.getStatus());
+                MatchedListMessageDTO matchedQnA = qnaService.getMatchedSingleQna(adminInfo.getUserIdx(), qnaIdx, MessageStatus.ADD.getStatus(), adminInfo.getUserId());
 
                 // 모든 관리자에게 대기중 문의 리스트 중 매칭된 문의는 삭제
                 WaitListMessageDTO waitQna = matchService.setWaitListForMessage(qnaIdx, MessageStatus.REMOVE.getStatus());

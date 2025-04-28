@@ -22,6 +22,8 @@ public class QnaReplyListDTO {
 
   private String userName;
 
+  private int userIdx;
+
   private String content;
 
   @JsonSerialize(using = LocalDateTimeSerializer.class) // 직렬화

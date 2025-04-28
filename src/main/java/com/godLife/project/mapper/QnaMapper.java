@@ -5,6 +5,7 @@ import com.godLife.project.dto.contents.QnaReplyDTO;
 import com.godLife.project.dto.qnaWebsocket.QnaMatchedListDTO;
 import com.godLife.project.dto.qnaWebsocket.QnaReplyListDTO;
 import com.godLife.project.dto.qnaWebsocket.QnaWaitListDTO;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -27,10 +28,10 @@ public interface QnaMapper {
   List<QnaWaitListDTO> getWaitSingleQna(int qnaIdx);
 
   // 매칭된 문의 리스트 조회
-  List<QnaMatchedListDTO> getlistAllMatchedQna(int adminIdx);
+  List<QnaMatchedListDTO> getlistAllMatchedQna(int adminIdx, List<String> notStatus);
 
   // 매칭된 단일 문의 리스트 조회 (개인)
-  List<QnaMatchedListDTO> getMatchedSingleQna(int adminIdx, int qnaIdx);
+  List<QnaMatchedListDTO> getMatchedSingleQna(int adminIdx, int qnaIdx, List<String> notStatus);
 
   // 문의 본문 조회
   @Select("SELECT CONTENT FROM QNA_TABLE WHERE QNA_IDX = #{qnaIdx} AND QNA_STATUS != #{status}")
@@ -40,8 +41,7 @@ public interface QnaMapper {
   void commentReply(QnaReplyDTO qnaReplyDTO);
 
   // 방금 작성한 답변 가져오기
-  @Select("SELECT * FROM QNA_REPLY WHERE QNA_REPLY_IDX = #{qnaReplyIdx}")
-  QnaReplyListDTO getRecentComment(int qnaReplyIdx);
+  QnaReplyListDTO getRecentComment(int qnaIdx);
 
   /**
    * 문의 검증용 기초 정보 조회
@@ -98,5 +98,30 @@ public interface QnaMapper {
    * @return {@code int} - 수정 성공한 행의 개수
    */
   int modifyQnA(@Param("modifyDTO") QnaDTO modifyDTO, @Param("setStatus") List<String> setStatus);
+
+  /**
+   * <strong>답변 수정</strong>
+   * <p>{@code qnaReplyIdx}, {@code qnaIdx} {@code content} 를 필수로 받아야 합니다.</p>
+   * @param modifyReplyDTO QnaReplyDTO 입니다.
+   */
+  void modifyReply(QnaReplyDTO modifyReplyDTO);
+
+  /**
+   * <strong>문의 삭제</strong>
+   * <p>문의를 삭제 처리 해줍니다.</p>
+   * <p>실제로 삭제 되는 것이 아닌, 문의 상태만 DELETED 로 바꿔줍니다.</p>
+   * <p>{@code qnaIdx} 와 {@code qUserIdx} 를 받아야 합니다.</p>
+   * @param qnaIdx 어떤 문의를 삭제할 지 결정할 인덱스 번호
+   * @param userIdx 작성자 본인이 맞는지 확인할 인덱스 번호
+   */
+  void deleteQna(int qnaIdx, int userIdx);
+
+  /**
+   * 답변(or 재질문) 삭제
+   * @param qnaReplyIdx 삭제할 답변의 인덱스 번호
+   * @param userIdx 삭제하려는 유저의 인덱스 번호
+   */
+  @Delete("DELETE FROM QNA_REPLY WHERE QNA_REPLY_IDX = #{qnaReplyIdx} AND USER_IDX = #{userIdx}")
+  void deleteReply(int qnaReplyIdx, int userIdx);
 
 }

@@ -1,5 +1,6 @@
 package com.godLife.project.service.impl.adminImpl.serviceCenter;
 
+import com.godLife.project.enums.QnaStatus;
 import com.godLife.project.exception.CustomException;
 import com.godLife.project.mapper.AdminMapper.ServiceAdminMapper;
 import com.godLife.project.service.interfaces.AdminInterface.serviceCenter.ServiceAdminService;
@@ -9,6 +10,9 @@ import org.apache.ibatis.exceptions.PersistenceException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -20,14 +24,19 @@ public class ServiceAdminServiceImpl implements ServiceAdminService {
   // 고객서비스 접근 가능 관리자 로그인 처리
   @Override
   public void setCenterLoginByAdmin3467(int userIdx) {
+    List<String> notStatus = new ArrayList<>();
+    notStatus.add(QnaStatus.WAIT.getStatus());
+    notStatus.add(QnaStatus.COMPLETE.getStatus());
+    notStatus.add(QnaStatus.DELETED.getStatus());
+
     try  {
       serviceAdminMapper.setCenterLoginByAdmin3467(userIdx);
       log.info("AdminService - setCenterLoginByAdmin3467 :: 저장 성공..! 응대중 인 문의의 개수를 업데이트 합니다.");
-      serviceAdminMapper.setMatchedByQuestionCount(userIdx);
+      serviceAdminMapper.setMatchedByQuestionCount(userIdx, notStatus);
       log.info("AdminService - setCenterLoginByAdmin3467 :: 응대중 인 문의의 개수를 업데이트 완료.");
     } catch (DataIntegrityViolationException e) {
       log.warn("AdminService - setCenterLoginByAdmin3467 :: 이미 로그인 처리된 관리자 입니다. 로그인 등록을 건너 뜁니다.");
-      serviceAdminMapper.setMatchedByQuestionCount(userIdx);
+      serviceAdminMapper.setMatchedByQuestionCount(userIdx, notStatus);
       log.info("AdminService - setCenterLoginByAdmin3467 :: 등록을 건너 뛴 후 응대중 인 문의의 개수 업데이트 완료.");
     } catch (Exception e) {
       log.error("AdminService - setCenterLoginByAdmin3467 :: 고객센터 로그인 처리 중 문제가 발생했습니다: ", e);
@@ -85,6 +94,11 @@ public class ServiceAdminServiceImpl implements ServiceAdminService {
 
   @Override
   public void refreshMatchCount(int adminIdx) {
-    serviceAdminMapper.setMatchedByQuestionCount(adminIdx);
+    List<String> notStatus = new ArrayList<>();
+    notStatus.add(QnaStatus.WAIT.getStatus());
+    notStatus.add(QnaStatus.COMPLETE.getStatus());
+    notStatus.add(QnaStatus.DELETED.getStatus());
+
+    serviceAdminMapper.setMatchedByQuestionCount(adminIdx, notStatus);
   }
 }

@@ -416,5 +416,23 @@
         <include refid="jobCategoryFilter" />
     </select>
 
+    <!-- 문의 리스트 조회 -->
+    <select id="getQnaList" parameterType="map" resultType="com.godLife.project.dto.list.QnaListDTO">
+        SELECT ROW_NUMBER() OVER (ORDER BY CREATED_AT DESC) AS NUM, QNA_IDX, TITLE, CREATED_AT, MODIFIED_AT, CATEGORY, A_COUNT, QNA_STATUS
+        FROM QNA_TABLE
+        WHERE Q_USER_IDX = #{qUserIdx}
+        AND QNA_STATUS != #{notStatus}
+        ORDER BY CREATED_AT DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <!-- 조회할 문의 리스트의 총 문의 수 -->
+    <select id="getTotalQnaCount" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM QNA_TABLE
+        WHERE Q_USER_IDX = #{qUserIdx}
+        AND QNA_STATUS != #{notStatus}
+    </select>
+
 
 </mapper>

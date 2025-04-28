@@ -93,5 +93,45 @@ public class QnaController {
     return ResponseEntity.ok().body(handler.createResponse(200, "문의 수정 완료"));
   }
 
+  // 1:1 답변 수정
+  @PatchMapping("/modify/reply")
+  public ResponseEntity<Map<String, Object>> modifyReply(@RequestHeader("Authorization") String authHeader,
+                                                         @Valid @RequestBody QnaReplyDTO modifyReplyDTO,
+                                                         BindingResult valid) {
+    if (valid.hasErrors()) {
+      return ResponseEntity.badRequest().body(handler.getValidationErrors(valid));
+    }
+
+    int userIdx = handler.getUserIdxFromToken(authHeader);
+    modifyReplyDTO.setUserIdx(userIdx);
+
+    qnaService.modifyReply(modifyReplyDTO);
+
+    return ResponseEntity.ok().body(handler.createResponse(200, "답변 수정 완료"));
+  }
+
+  // 문의 삭제
+  @DeleteMapping("/delete/{qnaIdx}")
+  ResponseEntity<Map<String, Object>> deleteQnA(@RequestHeader("Authorization") String authHeader,
+                                                @PathVariable int qnaIdx) {
+    int userIdx = handler.getUserIdxFromToken(authHeader);
+
+    qnaService.deleteQna(qnaIdx, userIdx);
+
+    return ResponseEntity.ok().body(handler.createResponse(200, "문의가 정상적으로 삭제 되었습니다."));
+  }
+
+  // 답변 삭제
+  @DeleteMapping("/delete/reply/{qnaIdx}")
+  ResponseEntity<Map<String, Object>> deleteReply(@RequestHeader("Authorization") String authHeader,
+                                                  @PathVariable int qnaIdx,
+                                                  @RequestParam int qnaReplyIdx) {
+    int userIdx = handler.getUserIdxFromToken(authHeader);
+
+    qnaService.deleteReply(qnaIdx, qnaReplyIdx, userIdx);
+
+    return ResponseEntity.ok().body(handler.createResponse(200, "답변이 정상적으로 삭제 되었습니다."));
+  }
+
 
 }

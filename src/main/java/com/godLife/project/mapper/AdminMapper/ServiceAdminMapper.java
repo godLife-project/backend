@@ -4,6 +4,8 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
+import java.util.List;
+
 @Mapper
 public interface ServiceAdminMapper {
 
@@ -14,7 +16,7 @@ public interface ServiceAdminMapper {
   int setCenterLogoutByAdmin3467(String refreshToken);
 
   // 매칭된 혹은 응대중 인 문의 수 업데이트
-  void setMatchedByQuestionCount(int userIdx);
+  void setMatchedByQuestionCount(int userIdx, List<String>notStatus);
 
   // 관리자 상태 비/활성화 하기
   int switchAdminStatus(int userIdx);

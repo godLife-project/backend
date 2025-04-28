@@ -9,6 +9,7 @@
         <result property="userJoin" column="USER_JOIN" />
         <result property="userPhone" column="USER_PHONE" />
         <result property="userGender" column="USER_GENDER" />
+        <result property="maxExp" column="MAX_EXP" />
         <association property="jobInfos" javaType="com.godLife.project.dto.categories.JobCateDTO">
             <result property="idx" column="JOB_IDX" />
             <result property="name" column="JOB_NAME" />
@@ -28,12 +29,14 @@
     <select id="getUserInfos" parameterType="int" resultMap="MyPageGetUserInfoResultMap">
         SELECT U.USER_EMAIL, U.USER_PHONE, U.USER_GENDER, U.USER_JOIN, U.USER_ID,
         J.JOB_IDX, J.JOB_NAME, J.ICON_KEY AS JOB_ICONKEY, IJ.ICON AS JOB_ICON, IJ.COLOR AS JOB_COLOR,
-        T.TARGET_IDX, T.TARGET_NAME, T.ICON_KEY AS TARGET_ICONKEY, IT.ICON AS TARGET_ICON, IT.COLOR AS TARGET_COLOR
+        T.TARGET_IDX, T.TARGET_NAME, T.ICON_KEY AS TARGET_ICONKEY, IT.ICON AS TARGET_ICON, IT.COLOR AS TARGET_COLOR,
+        L.MAX_EXP
         FROM USER_TABLE U
         INNER JOIN JOB_CATEGORY J ON U.JOB_IDX = J.JOB_IDX
         INNER JOIN ICON_TABLE IJ ON J.ICON_KEY = IJ.ICON_KEY
         INNER JOIN TARGET_CATEGORY T ON T.TARGET_IDX = U.JOB_IDX
         INNER JOIN ICON_TABLE IT ON T.ICON_KEY = IT.ICON_KEY
+        INNER JOIN USER_LEVEL L ON U.USER_EXP BETWEEN L.MIN_EXP AND L.MAX_EXP
         WHERE USER_IDX = #{userIdx} AND IS_DELETED = 'N'
     </select>
 

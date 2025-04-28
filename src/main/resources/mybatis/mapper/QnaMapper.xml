@@ -31,11 +31,14 @@
     </select>
 
     <!-- 매칭된 문의 리스트 조회 -->
-    <select id="getlistAllMatchedQna" parameterType="int" resultType="com.godLife.project.dto.qnaWebsocket.QnaMatchedListDTO">
+    <select id="getlistAllMatchedQna" parameterType="map" resultType="com.godLife.project.dto.qnaWebsocket.QnaMatchedListDTO">
         SELECT Q.QNA_IDX, Q.Q_USER_IDX, U.USER_NAME, Q.TITLE, Q.CREATED_AT, Q.MODIFIED_AT, Q.CATEGORY, Q.QNA_STATUS, Q.Q_COUNT
         FROM QNA_TABLE Q
         INNER JOIN USER_TABLE U ON Q.Q_USER_IDX = U.USER_IDX
-        WHERE Q.QNA_STATUS NOT IN ('WAIT', 'COMPLETE')
+        WHERE Q.QNA_STATUS NOT IN
+        <foreach collection="notStatus" item="status" open="(" separator=", " close=")">
+            #{status}
+        </foreach>
         AND Q.A_USER_IDX = #{adminIdx}
         ORDER BY Q.CREATED_AT
     </select>
@@ -45,7 +48,10 @@
         SELECT Q.QNA_IDX, Q.Q_USER_IDX, U.USER_NAME, Q.TITLE, Q.CREATED_AT, Q.MODIFIED_AT, Q.CATEGORY, Q.QNA_STATUS, Q.Q_COUNT
         FROM QNA_TABLE Q
         INNER JOIN USER_TABLE U ON Q.Q_USER_IDX = U.USER_IDX
-        WHERE Q.QNA_STATUS NOT IN ('WAIT', 'COMPLETE')
+        WHERE Q.QNA_STATUS NOT IN
+        <foreach collection="notStatus" item="status" open="(" separator=", " close=")">
+            #{status}
+        </foreach>
         AND Q.A_USER_IDX = #{adminIdx}
         AND Q.QNA_IDX = #{qnaIdx}
         ORDER BY Q.CREATED_AT
@@ -117,6 +123,36 @@
         <foreach collection="setStatus" item="status" open="(" separator=", " close=")">
             #{status}
         </foreach>
+    </update>
+
+    <!-- 가장 최근 답변 조회 -->
+    <select id="getRecentComment" parameterType="int" resultType="com.godLife.project.dto.qnaWebsocket.QnaReplyListDTO">
+        SELECT R.*, U.USER_NAME
+        FROM QNA_REPLY R
+        INNER JOIN USER_TABLE U ON R.USER_IDX = U.USER_IDX
+        WHERE QNA_IDX = #{qnaIdx}
+        ORDER BY CREATED_AT DESC
+        FETCH FIRST 1 ROWS ONLY
+    </select>
+
+    <!-- 답변 수정 -->
+    <update id="modifyReply" parameterType="com.godLife.project.dto.contents.QnaReplyDTO">
+        UPDATE QNA_REPLY
+        SET MODIFIED_AT = SYSDATE,
+        CONTENT = #{content}
+        WHERE QNA_REPLY_IDX = #{qnaReplyIdx}
+        AND QNA_IDX = #{qnaIdx}
+        AND USER_IDX = #{userIdx}
+    </update>
+
+    <!-- 문의 삭제 -->
+    <update id="deleteQna" parameterType="map">
+        UPDATE QNA_TABLE
+        SET QNA_STATUS = 'DELETED',
+        Q_COUNT = 0,
+        A_COUNT = 0
+        WHERE QNA_IDX = #{qnaIdx}
+        AND Q_USER_IDX = #{userIdx}
     </update>
 
 

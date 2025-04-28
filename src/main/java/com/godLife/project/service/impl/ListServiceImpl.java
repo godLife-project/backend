@@ -2,13 +2,17 @@ package com.godLife.project.service.impl;
 
 import com.godLife.project.dto.list.MyPlanDTO;
 import com.godLife.project.dto.list.PlanListDTO;
+import com.godLife.project.dto.list.QnaListDTO;
 import com.godLife.project.dto.list.customDTOs.CustomPlanDTO;
+import com.godLife.project.enums.QnaStatus;
+import com.godLife.project.exception.CustomException;
 import com.godLife.project.mapper.ListMapper;
 import com.godLife.project.mapper.PlanMapper;
 import com.godLife.project.service.interfaces.ListService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -149,6 +153,45 @@ public class ListServiceImpl implements ListService {
       errorResponse.put("message", e.getMessage()); // 예외 메시지 추가
       errorResponse.put("status", "error"); // 에러 상태 추가
       return errorResponse; // 실패 응답 반환
+    }
+  }
+
+  @Override
+  public Map<String, Object> getQnaList(int qUserIdx, int page, int size) {
+    try {
+      // 페이지 번호가 음수일 경우 예외 처리
+      if (page < 0) {
+        throw new CustomException("페이지 번호는 1부터 시작 되어야 합니다.", HttpStatus.BAD_REQUEST);
+      }
+      if (size < 9) {
+        throw new CustomException("조회 할 최소 문의 수는 10 이상 이어야 합니다.", HttpStatus.BAD_REQUEST);
+      }
+
+      int offset = page * size;
+      String notStatus = QnaStatus.DELETED.getStatus();
+
+      List<QnaListDTO> QnAs = listMapper.getQnaList(qUserIdx, notStatus, offset, size);
+
+      if (QnAs == null || QnAs.isEmpty()) {
+        throw new CustomException("문의가 존재하지 않습니다.", HttpStatus.NO_CONTENT);
+      }
+
+      int totalQna = listMapper.getTotalQnaCount(qUserIdx, notStatus);
+
+      Map<String, Object> response = new HashMap<>();
+      response.put("QnAs", QnAs);
+      response.put("currentPage", page + 1);
+      response.put("totalPages", (int) Math.ceil((double) totalQna / size));
+      response.put("totalPosts", totalQna);
+
+      return response;
+
+    } catch (CustomException e) {
+      log.info("ListService - getQnaList :: {}", e.getMessage());
+      throw e;
+    } catch (Exception e) {
+      log.error("ListService - getQnaList ::", e);
+      throw e;
     }
   }
 

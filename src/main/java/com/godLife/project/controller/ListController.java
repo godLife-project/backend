@@ -84,6 +84,18 @@ public class ListController {
     return ResponseEntity.ok(response);
   }
 
+  // 문의 리스트 조회
+  @GetMapping("/auth/qna")
+  public ResponseEntity<Map<String, Object>> listMyQna(@RequestHeader("Authorization") String authHeader,
+                                                       @RequestParam(defaultValue = "1") int page,
+                                                       @RequestParam(defaultValue = "10") int size) {
+    int userIdx = handler.getUserIdxFromToken(authHeader);
+
+    Map<String, Object> response = listService.getQnaList(userIdx, page - 1, size);
+
+    return ResponseEntity.ok(response);
+  }
+
   /* -----------------------------------------// 함수 구현 //------------------------------------------------------- */
 
   /* --------------------------------------------------------------------------------------------------------------- */

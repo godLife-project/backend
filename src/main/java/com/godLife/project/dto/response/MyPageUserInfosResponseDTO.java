@@ -32,5 +32,8 @@ public class MyPageUserInfosResponseDTO {
   // 목표
   private TargetCateDTO targetInfos;
 
+  // 유저 최대 경험치
+  private double maxExp;
+
 
 }

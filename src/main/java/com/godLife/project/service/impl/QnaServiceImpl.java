@@ -16,6 +16,7 @@ import com.godLife.project.exception.WebSocketBusinessException;
 import com.godLife.project.mapper.QnaMapper;
 import com.godLife.project.service.impl.redis.RedisService;
 import com.godLife.project.service.impl.websocketImpl.WebSocketMessageService;
+import com.godLife.project.service.interfaces.AdminInterface.serviceCenter.ServiceAdminService;
 import com.godLife.project.service.interfaces.QnaService;
 import com.godLife.project.service.interfaces.UserService;
 import com.godLife.project.utils.HtmlSanitizer;
@@ -27,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -38,6 +40,7 @@ public class QnaServiceImpl implements QnaService {
   private final RedisService redisService;
   private final WebSocketMessageService messageService;
   private final UserService userService;
+  private final ServiceAdminService serviceAdminService;
 
   private static final String QNA_QUEUE_KEY = "qna_queue";
   private static final String QNA_WATCHER = "qna-watcher-";
@@ -70,7 +73,7 @@ public class QnaServiceImpl implements QnaService {
 
   // 대기중인 문의 리스트 조회 (전체)
   @Override
-  public WaitListMessageDTO getlistAllWaitQna(String status) {
+  public WaitListMessageDTO getlistAllWaitQna(String status, String username) {
     try {
       List<QnaWaitListDTO> waitList = qnaMapper.getlistAllWaitQna();
       WaitListMessageDTO request = new WaitListMessageDTO();
@@ -79,15 +82,20 @@ public class QnaServiceImpl implements QnaService {
 
       return request;
     } catch (Exception e) {
-      throw new WebSocketBusinessException("대기중인 QnA 리스트를 불러오는 중 오류 발생", 5001);
+      throw new WebSocketBusinessException("대기중인 QnA 리스트를 불러오는 중 오류 발생", 5001, username);
     }
   }
 
   // 매칭된 문의 리스트 조회 (개인)
   @Override
-  public MatchedListMessageDTO getlistAllMatchedQna(int adminIdx, String status) {
+  public MatchedListMessageDTO getlistAllMatchedQna(int adminIdx, String status, String username) {
     try {
-      List<QnaMatchedListDTO> matchedList = qnaMapper.getlistAllMatchedQna(adminIdx);
+      List<String> notStatus = new ArrayList<>();
+      notStatus.add(QnaStatus.WAIT.getStatus());
+      notStatus.add(QnaStatus.COMPLETE.getStatus());
+      notStatus.add(QnaStatus.DELETED.getStatus());
+
+      List<QnaMatchedListDTO> matchedList = qnaMapper.getlistAllMatchedQna(adminIdx, notStatus);
       //System.out.println(matchedList);
       MatchedListMessageDTO request = new MatchedListMessageDTO();
       request.setMatchedQnA(matchedList);
@@ -95,15 +103,20 @@ public class QnaServiceImpl implements QnaService {
 
       return request;
     } catch (Exception e) {
-      throw new WebSocketBusinessException("매칭된 QnA 리스트를 불러오는 중 오류 발생", 5001);
+      throw new WebSocketBusinessException("매칭된 QnA 리스트를 불러오는 중 오류 발생", 5001, username);
     }
   }
 
   // 매칭된 단일 문의 리스트 조회 (개인)
   @Override
-  public MatchedListMessageDTO getMatchedSingleQna(int adminIdx, int qnaIdx, String status) {
+  public MatchedListMessageDTO getMatchedSingleQna(int adminIdx, int qnaIdx, String status, String username) {
     try {
-      List<QnaMatchedListDTO> matchedQnaDTO = qnaMapper.getMatchedSingleQna(adminIdx, qnaIdx);
+      List<String> notStatus = new ArrayList<>();
+      notStatus.add(QnaStatus.WAIT.getStatus());
+      notStatus.add(QnaStatus.COMPLETE.getStatus());
+      notStatus.add(QnaStatus.DELETED.getStatus());
+
+      List<QnaMatchedListDTO> matchedQnaDTO = qnaMapper.getMatchedSingleQna(adminIdx, qnaIdx, notStatus);
 
       if (matchedQnaDTO != null) {
         MatchedListMessageDTO request = new MatchedListMessageDTO();
@@ -115,7 +128,7 @@ public class QnaServiceImpl implements QnaService {
 
       return null;
     } catch (Exception e) {
-      throw new WebSocketBusinessException("매칭된 QnA 리스트를 불러오는 중 오류 발생", 5001);
+      throw new WebSocketBusinessException("매칭된 QnA 리스트를 불러오는 중 오류 발생", 5001, username);
     }
   }
 
@@ -160,6 +173,7 @@ public class QnaServiceImpl implements QnaService {
       List<String> notStatus = new ArrayList<>();
       notStatus.add(QnaStatus.WAIT.getStatus());
       notStatus.add(QnaStatus.COMPLETE.getStatus());
+      notStatus.add(QnaStatus.DELETED.getStatus());
 
       // 관리자 ID 추출
       String username = userService.getUserIdByUserIdx(qnaParent.getAUserIdx());
@@ -183,7 +197,8 @@ public class QnaServiceImpl implements QnaService {
           MatchedListMessageDTO matchedResponse = getMatchedSingleQna(
               qnaParent.getAUserIdx(),
               qnaParent.getQnaIdx(),
-              MessageStatus.UPDATE.getStatus()
+              MessageStatus.UPDATE.getStatus(),
+              username
           );
           messageService.sendToUser(username, WSDestination.SUB_GET_MATCHED_QNA_LIST.getDestination(), matchedResponse);
         }
@@ -195,7 +210,8 @@ public class QnaServiceImpl implements QnaService {
         detailInfos.setQnaIdx(qnaParentIdx);
         detailInfos.setStatus(MessageStatus.ADD_COMMENT.getStatus());
 
-        QnaReplyListDTO comment = qnaMapper.getRecentComment(qnaReplyDTO.getQnaReplyIdx());
+        QnaReplyListDTO comment = qnaMapper.getRecentComment(qnaParentIdx);
+        comment.setUserIdx(0); // 유저 인덱스 조회 안되도록 초기화
         comment.setContent(HtmlSanitizer.sanitize(comment.getContent())); // 댓글 필터링
 
         detailInfos.setComments(List.of(comment));
@@ -337,19 +353,34 @@ public class QnaServiceImpl implements QnaService {
       }
 
       if (forValidate.getAUserIdx() != 0) {
-        MatchedListMessageDTO matchedResponse = getMatchedSingleQna(
-            forValidate.getAUserIdx(),
-            forValidate.getQnaIdx(),
-            MessageStatus.UPDATE.getStatus()
-        );
-
         // 관리자 ID 추출
         String username = userService.getUserIdByUserIdx(forValidate.getAUserIdx());
 
+        MatchedListMessageDTO matchedResponse = getMatchedSingleQna(
+            forValidate.getAUserIdx(),
+            forValidate.getQnaIdx(),
+            MessageStatus.UPDATE.getStatus(),
+            username
+        );
+
         messageService.sendToUser(username, WSDestination.SUB_GET_MATCHED_QNA_LIST.getDestination(), matchedResponse);
 
+        String whichQnA = redisService.getStringData(QNA_WATCHER + username);
+        boolean isWatched = String.valueOf(qnaIdx).equals(whichQnA);
+
+        if (isWatched) {
+          // 방금 수정한 본문 전송
+          QnaDetailMessageDTO detailInfos = new QnaDetailMessageDTO();
+          detailInfos.setQnaIdx(qnaIdx);
+          detailInfos.setStatus(MessageStatus.MODIFY_BODY.getStatus());
+
+          detailInfos.setBody(HtmlSanitizer.sanitize(modifyDTO.getContent()));
+
+          messageService.sendToUser(username, WSDestination.SUB_GET_QNA_DETAIL.getDestination() + qnaIdx, detailInfos);
+        }
+
       } else {
-        // 관리자에게 전송할 객체 생성 및 데이터 전송
+        // 모든 관리자에게 전송할 객체 생성 및 데이터 전송
         List<QnaWaitListDTO> waitItem = qnaMapper.getWaitSingleQna(forValidate.getQnaIdx());
 
         WaitListMessageDTO waitQna = new WaitListMessageDTO();
@@ -368,4 +399,181 @@ public class QnaServiceImpl implements QnaService {
       throw e;
     }
   }
+
+  // 답변 수정
+  @Override
+  public void modifyReply(QnaReplyDTO modifyReplyDTO) {
+    try {
+      int qnaReplyIdx = modifyReplyDTO.getQnaReplyIdx();
+      int qnaIdx = modifyReplyDTO.getQnaIdx();
+      int userIdx = modifyReplyDTO.getUserIdx();
+
+      QnaDTO forValidate = qnaMapper.getQnaInfosByQnaIdx(qnaIdx, QnaStatus.DELETED.getStatus());
+      if (forValidate == null) {
+        throw new CustomException("존재하지 않거나, 삭제된 문의 입니다.", HttpStatus.NOT_FOUND);
+      }
+      if (!(QnaStatus.RESPONDING.getStatus().equals(forValidate.getQnaStatus()) || QnaStatus.SLEEP.getStatus().equals(forValidate.getQnaStatus()))) {
+        throw new CustomException("응답 상태의 문의만 수정 가능합니다.", HttpStatus.PRECONDITION_FAILED);
+      }
+
+      // 부모 문의 작성자/관리자 검증
+      log.info("답변 수정자 : {} - {}", userIdx, whoAreYou(forValidate, userIdx)?"문의작성자(유저)":"담당관리자");
+
+      // 가장 최근 답변 조회
+      QnaReplyListDTO recentComment = qnaMapper.getRecentComment(qnaIdx);
+
+      if (recentComment.getQnaReplyIdx() != qnaReplyIdx) {
+        throw new CustomException("이미 답변이 달렸을 경우 수정할 수 없습니다.", HttpStatus.PRECONDITION_FAILED);
+      }
+      if (recentComment.getUserIdx() != userIdx) {
+        throw new CustomException("답변 수정은 작성자 본인만 가능합니다.", HttpStatus.FORBIDDEN);
+      }
+
+      // 답변 수정
+      qnaMapper.modifyReply(modifyReplyDTO);
+
+      // 관리자 ID 추출
+      String username = userService.getUserIdByUserIdx(forValidate.getAUserIdx());
+      String whichQnA = redisService.getStringData(QNA_WATCHER + username);
+      boolean isWatched = String.valueOf(qnaIdx).equals(whichQnA);
+
+      if (isWatched) {
+        // 방금 수정한 답변을 조회중인 관리자에게 전송
+        QnaDetailMessageDTO detailInfos = new QnaDetailMessageDTO();
+        detailInfos.setQnaIdx(qnaIdx);
+        detailInfos.setStatus(MessageStatus.MODIFY_COMM.getStatus());
+
+        QnaReplyListDTO comment = qnaMapper.getRecentComment(qnaIdx);
+        comment.setUserIdx(0); // 유저 인덱스 조회 안되도록 초기화
+        comment.setContent(HtmlSanitizer.sanitize(comment.getContent())); // 댓글 필터링
+
+        detailInfos.setComments(List.of(comment));
+
+        messageService.sendToUser(username, WSDestination.SUB_GET_QNA_DETAIL.getDestination() + qnaIdx, detailInfos);
+      }
+    } catch (CustomException e) {
+      log.info("QnaService - modifyReply :: {}", e.getMessage());
+      throw e;
+    } catch (Exception e) {
+      log.error("QnaService - modifyReply :: 답변 수정 중 예기치 않은 오류 발생", e);
+       throw new CustomException("답변 수정 중 서버 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Override
+  public void deleteQna(int qnaIdx, int userIdx) {
+
+    try {
+      QnaDTO forValidate = qnaMapper.getQnaInfosByQnaIdx(qnaIdx, QnaStatus.DELETED.getStatus());
+
+      if (forValidate == null) {
+        throw new CustomException("존재하지 않거나, 이미 삭제된 문의 입니다.", HttpStatus.NOT_FOUND);
+      }
+      if (forValidate.getQUserIdx() != userIdx) {
+        throw new CustomException("작성자가 아닙니다.", HttpStatus.FORBIDDEN);
+      }
+
+      int adminIdx = forValidate.getAUserIdx();
+
+      qnaMapper.deleteQna(qnaIdx, userIdx);
+
+      String qnaStatus = forValidate.getQnaStatus();
+      // 문의가 대기, 완료 상태가 아닌 경우
+      if (!(qnaStatus.equals(QnaStatus.WAIT.getStatus()) || qnaStatus.equals(QnaStatus.COMPLETE.getStatus()))) {
+
+        String username = userService.getUserIdByUserIdx(adminIdx);
+
+        // 매칭된 관리자에게 최신화
+        MatchedListMessageDTO deleteMatchedQna = new MatchedListMessageDTO();
+        deleteMatchedQna.setStatus(MessageStatus.REMOVE.getStatus());
+        deleteMatchedQna.setMatchedQnA(Collections.singletonList(
+            new QnaMatchedListDTO() {{
+              setQnaIdx(qnaIdx);
+            }}
+        ));
+        // 데이터 전송
+        messageService.sendToUser(username, WSDestination.SUB_GET_MATCHED_QNA_LIST.getDestination(), deleteMatchedQna);
+        // 매칭 수 재설정
+        serviceAdminService.refreshMatchCount(adminIdx);
+      } else if (qnaStatus.equals(QnaStatus.WAIT.getStatus())){
+        // 대기중인 리스트에서 삭제 할 문의 설정
+        WaitListMessageDTO deleteWaitQna = new WaitListMessageDTO();
+        deleteWaitQna.setStatus(MessageStatus.REMOVE.getStatus());
+        deleteWaitQna.setWaitQnA(Collections.singletonList(
+            new QnaWaitListDTO() {{
+              setQnaIdx(qnaIdx);
+            }}
+        ));
+        // 데이터 전송
+        messageService.sendToAll(WSDestination.SUB_GET_WAIT_QNA_LIST.getDestination(), deleteWaitQna);
+      }
+    } catch (CustomException e) {
+      log.info("QnaService - deleteQna :: {}", e.getMessage());
+      throw e;
+    } catch (Exception e) {
+      log.error("QnaService - deleteQna :: ", e);
+      throw e;
+    }
+  }
+
+  @Override
+  public void deleteReply(int qnaIdx, int qnaReplyIdx, int userIdx) {
+    try {
+      QnaDTO forValidate = qnaMapper.getQnaInfosByQnaIdx(qnaIdx, QnaStatus.DELETED.getStatus());
+
+      if (forValidate == null) {
+        throw new CustomException("존재하지 않거나, 삭제된 문의 입니다.", HttpStatus.NOT_FOUND);
+      }
+      if (QnaStatus.COMPLETE.getStatus().equals(forValidate.getQnaStatus()) || QnaStatus.DELETED.getStatus().equals(forValidate.getQnaStatus())) {
+        throw new CustomException("완료 혹은 삭제된 문의의 답변은 삭제 할 수 없습니다.", HttpStatus.PRECONDITION_FAILED);
+      }
+
+      // 부모 문의 작성자/관리자 검증
+      log.info("답변 삭제 요청 : {} - {}", userIdx, whoAreYou(forValidate, userIdx)?"문의작성자(유저)":"담당관리자");
+
+      // 가장 최근 답변 조회
+      QnaReplyListDTO recentComment = qnaMapper.getRecentComment(qnaIdx);
+
+      if (recentComment == null) {
+        throw new CustomException("현재 문의에 존재하는 답변이 없습니다.", HttpStatus.NO_CONTENT);
+      }
+      if (recentComment.getQnaReplyIdx() != qnaReplyIdx) {
+        throw new CustomException("이미 답변이 달렸거나 삭제된 답변입니다.", HttpStatus.PRECONDITION_FAILED);
+      }
+      if (recentComment.getUserIdx() != userIdx) {
+        throw new CustomException("답변 삭제는 작성자 본인만 가능합니다.", HttpStatus.FORBIDDEN);
+      }
+
+      // 답변 수정
+      qnaMapper.deleteReply(qnaReplyIdx, userIdx);
+
+      // 관리자 ID 추출
+      if (!forValidate.getQnaStatus().equals(QnaStatus.WAIT.getStatus())) {
+        String username = userService.getUserIdByUserIdx(forValidate.getAUserIdx());
+        String whichQnA = redisService.getStringData(QNA_WATCHER + username);
+        boolean isWatched = String.valueOf(qnaIdx).equals(whichQnA);
+
+        if (isWatched) {
+          // 방금 수정한 답변을 조회중인 관리자에게 전송
+          QnaReplyListDTO comment = new QnaReplyListDTO();
+          comment.setQnaReplyIdx(qnaReplyIdx);
+
+          QnaDetailMessageDTO detailInfos = new QnaDetailMessageDTO();
+          detailInfos.setQnaIdx(qnaIdx);
+          detailInfos.setStatus(MessageStatus.DELETE_COMM.getStatus());
+          detailInfos.setComments(Collections.singletonList(comment));
+
+          messageService.sendToUser(username, WSDestination.SUB_GET_QNA_DETAIL.getDestination() + qnaIdx, detailInfos);
+        }
+      }
+    } catch (CustomException e) {
+      log.info("QnaService - deleteReply :: {}", e.getMessage());
+      throw e;
+    } catch (Exception e) {
+      log.error("QnaService - deleteReply :: 예기치 못한 에러가 발생 했습니다.", e);
+      throw e;
+    }
+  }
+
+
 }

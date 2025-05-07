@@ -29,4 +29,8 @@ public class UserReportDTO {
     @JsonDeserialize(using = LocalDateTimeDeserializer.class) // 역직렬화
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime reportDate;
+
+    // 추가 필드
+    private String reporterNick;
+    private String reportedNick;
 }

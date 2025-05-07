@@ -10,6 +10,22 @@
         LEFT JOIN FAQ_CATEGORY fc ON f.FAQ_CATEGORY = fc.FAQ_CATEGORY_IDX
     </select>
 
+    <!-- FAQ 카테고리 조회 -->
+    <select id="selectCateFaq" resultType="com.godLife.project.dto.list.FaqListDTO">
+        SELECT
+        f.FAQ_IDX,
+        f.FAQ_TITLE,
+        fc.FAQ_CATEGORY_NAME
+        FROM
+        FAQ_TABLE f
+        LEFT JOIN
+        FAQ_CATEGORY fc
+        ON
+        f.FAQ_CATEGORY = fc.FAQ_CATEGORY_IDX
+        WHERE
+        f.FAQ_CATEGORY = #{faqCategory}
+    </select>
+
     <!-- FAQ 상세 조회 -->
     <select id="selectFaqById" parameterType="java.lang.Integer" resultType="com.godLife.project.dto.contents.FaQDTO">
         SELECT

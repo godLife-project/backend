@@ -28,6 +28,8 @@ public class FaqServiceImpl implements FaqService {
   public List<FaqListDTO> selectAllFaq() {
     return faqMapper.selectAllFaq();
   }
+  // FAQ 카테고리 조회
+  public List<FaqListDTO> selectCateFaq(Integer faqCategory){return faqMapper.selectCateFaq(faqCategory);}
 
 
   // FAQ 작성

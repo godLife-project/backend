@@ -40,6 +40,21 @@ public class FaqController {
     return ResponseEntity.ok(handler.createResponse(200, faqList));
   }
 
+  // FAQ 카테고리 조회
+  @GetMapping("category/{faqCategory}")
+  public ResponseEntity<Map<String, Object>> selectCateFaq(@PathVariable Integer faqCategory) {
+    List<FaqListDTO> faqList = faqService.selectCateFaq(faqCategory);
+
+    // FAQ 게시글이 없을 경우 404 상태 코드와 메세지 반환
+    if (faqList.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+              .body(handler.createResponse(404, "게시글이 존재하지 않습니다."));
+    }
+
+    return ResponseEntity.ok(handler.createResponse(200, faqList));
+  }
+
+
   // FAQ 상세 조회
   @GetMapping("/{faqIdx}")
   public ResponseEntity<Map<String, Object>> getFaqById(@PathVariable Integer faqIdx) {

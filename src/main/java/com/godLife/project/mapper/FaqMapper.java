@@ -12,6 +12,7 @@ import java.util.List;
 public interface FaqMapper {
   FaQDTO selectFaqById(@Param("faqIdx") Integer faqIdx);
   List<FaqListDTO> selectAllFaq();
+  List<FaqListDTO> selectCateFaq(@Param("faqCategory")Integer faqCategory);
   int insertFaq(FaQDTO faq);
   int updateFaq(FaQDTO faq);
   List<FaQDTO> searchFaq(@Param("query") String query);

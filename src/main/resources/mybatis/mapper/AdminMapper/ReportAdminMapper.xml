@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godLife.project.mapper.AdminMapper.ReportAdminMapper">
+
+    <select id="getAllReports" resultType="com.godLife.project.dto.infos.UserReportDTO">
+        SELECT *
+        FROM (
+        SELECT ROWNUM AS row_num, inner_query.*
+        FROM (
+        SELECT
+        r.REPORTER_IDX,
+        reporter.USER_NICK AS REPORTER_NICK,
+        r.REPORTED_IDX,
+        reported.USER_NICK AS REPORTED_NICK,
+        r.REPORT_REASON,
+        r.STATUS,
+        r.REPORT_DATE
+        FROM
+        USER_REPORT r
+        JOIN USER_TABLE reporter ON r.REPORTER_IDX = reporter.USER_IDX
+        JOIN USER_TABLE reported ON r.REPORTED_IDX = reported.USER_IDX
+        ORDER BY r.REPORT_DATE DESC
+        ) inner_query
+        WHERE ROWNUM &lt; #{offset} + #{limit}
+        )
+        WHERE row_num &gt; #{offset}
+    </select>
+    <!-- 전체 신고수 -->
+    <select id="countAllReports" resultType="int">
+        SELECT COUNT(*) FROM USER_REPORT
+    </select>
+
+    <!-- 상태별 조회 status : 0 처리중, 1 처리완료 -->
+    <select id="selectReportsByStatus" resultType="com.godLife.project.dto.infos.UserReportDTO">
+        SELECT *
+        FROM (
+        SELECT ROWNUM AS row_num, inner_query.*
+        FROM (
+        SELECT
+        r.REPORTER_IDX,
+        reporter.USER_NICK AS REPORTER_NICK,
+        r.REPORTED_IDX,
+        reported.USER_NICK AS REPORTED_NICK,
+        r.REPORT_REASON,
+        r.STATUS,
+        r.REPORT_DATE
+        FROM USER_REPORT r
+        JOIN USER_TABLE reporter ON r.REPORTER_IDX = reporter.USER_IDX
+        JOIN USER_TABLE reported ON r.REPORTED_IDX = reported.USER_IDX
+        WHERE r.STATUS = #{status}
+        ORDER BY r.REPORT_DATE DESC
+        ) inner_query
+        WHERE ROWNUM &lt; #{offset} + #{limit}
+        )
+        WHERE row_num &gt; #{offset}
+    </select>
+
+
+    <select id="selectPlanReports" resultType="com.godLife.project.dto.infos.PlanReportDTO">
+        SELECT *
+        FROM (
+        SELECT ROWNUM AS row_num, inner_query.*
+        FROM (
+        SELECT
+        r.REPORTER_IDX,
+        reporter.USER_NICK AS REPORTER_NICK,
+        r.PLAN_IDX,
+        r.REPORT_REASON,
+        r.STATUS,
+        r.REPORT_DATE
+        FROM
+        PLAN_REPORT r
+        JOIN USER_TABLE reporter ON r.REPORTER_IDX = reporter.USER_IDX
+        JOIN PLAN_TABLE plan ON r.PLAN_IDX = plan.PLAN_IDX
+        ORDER BY r.REPORT_DATE DESC
+        ) inner_query
+        WHERE ROWNUM &lt; #{offset} + #{limit}
+        )
+        WHERE row_num &gt; #{offset}
+    </select>
+
+
+    <select id="selectPlanReportsByStatus" resultType="com.godLife.project.dto.infos.PlanReportDTO">
+        SELECT *
+        FROM (
+        SELECT ROWNUM AS row_num, inner_query.*
+        FROM (
+        SELECT
+        r.REPORTER_IDX,
+        reporter.USER_NICK AS REPORTER_NICK,
+        r.PLAN_IDX,
+        r.REPORT_REASON,
+        r.STATUS,
+        r.REPORT_DATE
+        FROM
+        PLAN_REPORT r
+        JOIN USER_TABLE reporter ON r.REPORTER_IDX = reporter.USER_IDX
+        JOIN PLAN_TABLE plan ON r.PLAN_IDX = plan.PLAN_IDX
+        WHERE r.STATUS = #{status}
+        ORDER BY r.REPORT_DATE DESC
+        ) inner_query
+        WHERE ROWNUM &lt; #{offset} + #{limit}
+        )
+        WHERE row_num &gt; #{offset}
+    </select>
+
+    <select id="countAllPlanReports" resultType="int" parameterType="map">
+        SELECT COUNT(*)
+        FROM PLAN_REPORT r
+        WHERE r.STATUS = #{status}
+    </select>
+</mapper>

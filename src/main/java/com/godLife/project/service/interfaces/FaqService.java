@@ -12,6 +12,7 @@ import java.util.List;
 public interface FaqService {
   List<FaqListDTO> selectAllFaq();
   FaQDTO getFaqById(Integer faqIdx);
+  List<FaqListDTO> selectCateFaq(Integer faqCategory);
   int createFaq(FaQDTO faq);
   int updateFaq(FaQDTO faq);
   int deleteFaq(@Param("faqIdx") int faqIdx);

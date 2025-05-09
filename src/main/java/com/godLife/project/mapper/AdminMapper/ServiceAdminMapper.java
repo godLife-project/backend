@@ -1,5 +1,8 @@
 package com.godLife.project.mapper.AdminMapper;
 
+import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminInfos;
+import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminList;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
@@ -20,8 +23,22 @@ public interface ServiceAdminMapper {
 
   // 관리자 상태 비/활성화 하기
   int switchAdminStatus(int userIdx);
+  // 관리자 상태 활성화 하기
+  @Update("UPDATE SERVICE_CENTER SET STATUS = 1 WHERE USER_IDX = #{userIdx}")
+  void setAdminStatusTrue(int userIdx);
+
+  // 서비스 센터 연결 해제 처리
+  @Delete("DELETE FROM SERVICE_CENTER WHERE USER_IDX = #{userIdx}")
+  void disconnectAdminServiceCenter(int userIdx);
+
   // 관리자 상태 조회
   @Select("SELECT STATUS FROM SERVICE_CENTER WHERE USER_IDX = #{userIdx}")
   boolean getServiceAdminStatus(int userIdx);
+
+  // 접속중인 상담원 목록 조회
+  @Select("SELECT S.USER_IDX, U.USER_NAME, S.STATUS, S.MATCHED\n" +
+          "  FROM SERVICE_CENTER S\n" +
+          "INNER JOIN USER_TABLE U ON S.USER_IDX = U.USER_IDX")
+  List<ServiceCenterAdminInfos> getAllAccessServiceAdminList();
 
 }

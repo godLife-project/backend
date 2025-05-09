@@ -1,8 +1,12 @@
 package com.godLife.project.service.impl.adminImpl.serviceCenter;
 
+import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminInfos;
+import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminList;
 import com.godLife.project.enums.QnaStatus;
 import com.godLife.project.exception.CustomException;
 import com.godLife.project.mapper.AdminMapper.ServiceAdminMapper;
+import com.godLife.project.mapper.VerifyMapper;
+import com.godLife.project.service.impl.redis.RedisService;
 import com.godLife.project.service.interfaces.AdminInterface.serviceCenter.ServiceAdminService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,14 +25,20 @@ public class ServiceAdminServiceImpl implements ServiceAdminService {
 
   private final ServiceAdminMapper serviceAdminMapper;
 
+  private final VerifyMapper verifyMapper;
+
+  private final RedisService redisService;
+  private static final String SAVE_SERVICE_ADMIN_STATUS = "save-service-admin-status:";
+
   // 고객서비스 접근 가능 관리자 로그인 처리
   @Override
-  public void setCenterLoginByAdmin3467(int userIdx) {
+  public void setCenterLoginByAdmin3467(String username) {
     List<String> notStatus = new ArrayList<>();
     notStatus.add(QnaStatus.WAIT.getStatus());
     notStatus.add(QnaStatus.COMPLETE.getStatus());
     notStatus.add(QnaStatus.DELETED.getStatus());
 
+    int userIdx = verifyMapper.getUserIdxByUserId(username);
     try  {
       serviceAdminMapper.setCenterLoginByAdmin3467(userIdx);
       log.info("AdminService - setCenterLoginByAdmin3467 :: 저장 성공..! 응대중 인 문의의 개수를 업데이트 합니다.");
@@ -69,6 +79,11 @@ public class ServiceAdminServiceImpl implements ServiceAdminService {
         throw new CustomException("관리자가 아니거나, 로그아웃 처리된 상태입니다.", HttpStatus.NOT_FOUND);
       }
 
+      String isSaved = redisService.getStringData(SAVE_SERVICE_ADMIN_STATUS + userIdx);
+      if (isSaved != null) {
+        redisService.deleteData(SAVE_SERVICE_ADMIN_STATUS + userIdx);
+      }
+
       return serviceAdminMapper.getServiceAdminStatus(userIdx) ? "활성화" : "비활성화";
     } catch (CustomException e) {
       throw e;
@@ -79,6 +94,19 @@ public class ServiceAdminServiceImpl implements ServiceAdminService {
     }
   }
 
+  @Override
+  public void setAdminStatusTrue(int userIdx) {
+    serviceAdminMapper.setAdminStatusTrue(userIdx);
+  }
+
+  // 관리자 서비스 센터 연결 해제 처리
+  @Override
+  public void disconnectAdminServiceCenter(String username) {
+    int userIdx = verifyMapper.getUserIdxByUserId(username);
+    serviceAdminMapper.disconnectAdminServiceCenter(userIdx);
+  }
+
+  // 관리자 자동매칭 활성화 여부 조회
   @Override
   public String getAdminStatus(int userIdx) {
     try {
@@ -92,6 +120,7 @@ public class ServiceAdminServiceImpl implements ServiceAdminService {
     }
   }
 
+  // 매칭된 문의 수 새로고침
   @Override
   public void refreshMatchCount(int adminIdx) {
     List<String> notStatus = new ArrayList<>();
@@ -101,4 +130,16 @@ public class ServiceAdminServiceImpl implements ServiceAdminService {
 
     serviceAdminMapper.setMatchedByQuestionCount(adminIdx, notStatus);
   }
+
+  // 1:1 문의 관리자 페이지 접속 한 상담원 목록 조회
+  @Override
+  public List<ServiceCenterAdminInfos> getAllAccessServiceAdminList() {
+    try {
+      return serviceAdminMapper.getAllAccessServiceAdminList();
+    } catch (Exception e) {
+      log.error("ServiceAdminService - getAllAccessServiceAdminList :: 알 수 없는 오류가 발생했습니다.", e);
+      return null;
+    }
+  }
+
 }

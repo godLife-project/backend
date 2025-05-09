@@ -157,7 +157,7 @@ public class ListServiceImpl implements ListService {
   }
 
   @Override
-  public Map<String, Object> getQnaList(int qUserIdx, int page, int size) {
+  public Map<String, Object> getQnaList(int qUserIdx, int page, int size, String status, String sort, String order, String search) {
     try {
       // 페이지 번호가 음수일 경우 예외 처리
       if (page < 0) {
@@ -170,13 +170,18 @@ public class ListServiceImpl implements ListService {
       int offset = page * size;
       String notStatus = QnaStatus.DELETED.getStatus();
 
-      List<QnaListDTO> QnAs = listMapper.getQnaList(qUserIdx, notStatus, offset, size);
+      Map<String, List<String>> keywords = new HashMap<>();
+      if (search != null) {
+        keywords = parseKeywords(search);
+      }
+
+      List<QnaListDTO> QnAs = listMapper.getQnaList(qUserIdx, notStatus, offset, size, status, sort, order, keywords);
 
       if (QnAs == null || QnAs.isEmpty()) {
         throw new CustomException("문의가 존재하지 않습니다.", HttpStatus.NO_CONTENT);
       }
 
-      int totalQna = listMapper.getTotalQnaCount(qUserIdx, notStatus);
+      int totalQna = listMapper.getTotalQnaCount(qUserIdx, notStatus, status, keywords);
 
       Map<String, Object> response = new HashMap<>();
       response.put("QnAs", QnAs);
@@ -204,11 +209,18 @@ public class ListServiceImpl implements ListService {
 
     String remainingInput = input.trim();
 
-    // 1. "!^" 처리 (NOT 조건)
-    String[] notSplit = remainingInput.split("!\\^", 2);
-    remainingInput = notSplit[0].trim();
-    if (notSplit.length > 1) {
-      keywords.put("not", Collections.singletonList(notSplit[1].trim()));
+    // 1. "!^" 처리 (NOT 조건 - 여러 개 처리)
+    List<String> notConditions = new ArrayList<>();
+    String[] notSplit = remainingInput.split("!\\^");
+    remainingInput = notSplit[0].trim(); // 첫 번째는 검색 본문
+    for (int i = 1; i < notSplit.length; i++) {
+      String notKeyword = notSplit[i].trim();
+      if (!notKeyword.isBlank()) {
+        notConditions.add(notKeyword);
+      }
+    }
+    if (!notConditions.isEmpty()) {
+      keywords.put("not", notConditions);
     }
 
     // 2. "|" 처리 (OR 조건)

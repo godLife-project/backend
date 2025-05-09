@@ -5,27 +5,29 @@ import com.godLife.project.dto.qnaWebsocket.listMessage.MatchedListMessageDTO;
 import com.godLife.project.dto.qnaWebsocket.listMessage.QnaDetailMessageDTO;
 import com.godLife.project.dto.qnaWebsocket.listMessage.WaitListMessageDTO;
 import com.godLife.project.dto.serviceAdmin.AdminIdxAndIdDTO;
+import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminInfos;
+import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminList;
 import com.godLife.project.dto.test.TestChatDTO;
 import com.godLife.project.enums.MessageStatus;
 import com.godLife.project.enums.WSDestination;
 import com.godLife.project.exception.CustomException;
-import com.godLife.project.exception.UnauthorizedException;
 import com.godLife.project.exception.WebSocketBusinessException;
 import com.godLife.project.handler.GlobalExceptionHandler;
+import com.godLife.project.mapper.VerifyMapper;
 import com.godLife.project.service.impl.redis.RedisService;
 import com.godLife.project.service.impl.websocketImpl.WebSocketMessageService;
 import com.godLife.project.service.interfaces.AdminInterface.serviceCenter.ServiceAdminService;
 import com.godLife.project.service.interfaces.QnaMatchService;
 import com.godLife.project.service.interfaces.QnaService;
-import com.godLife.project.service.interfaces.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.handler.annotation.*;
-import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -44,9 +46,8 @@ public class ChatController {
 
   private final RedisService redisService;
 
-  private final UserService userService;
-
   private static final String QNA_WATCHER = "qna-watcher-";
+  private static final String SAVE_SERVICE_ADMIN_STATUS = "save-service-admin-status:";
 
 
   // 채팅 기능
@@ -67,6 +68,35 @@ public class ChatController {
   public WaitListMessageDTO broadcastWaitList(Principal principal) {
     return qnaService.getlistAllWaitQna(MessageStatus.RELOAD.getStatus(), principal.getName());
   }
+
+  // 1:1 문의 관리 페이지 접속 상담원 목록 조회
+  @MessageMapping("/get/access/serviceCenter")
+  @SendTo("/sub/access/list")
+  public List<ServiceCenterAdminList> broadcastAccessList() {
+    List<ServiceCenterAdminInfos> adminInfos = serviceAdminService.getAllAccessServiceAdminList();
+
+    for (int i = 0; i < adminInfos.size(); i++) {
+      ServiceCenterAdminInfos temp = adminInfos.get(i);
+      int userIdx = temp.getUserIdx();
+
+      String isSaved = redisService.getStringData(SAVE_SERVICE_ADMIN_STATUS + userIdx);
+      if (isSaved != null) {
+        // 해당 유저 상태 전환
+        serviceAdminService.setAdminStatusTrue(userIdx);
+
+        // 상태 변경 후 리스트 업데이트
+        temp.setStatus(1); // 상태 변경
+        adminInfos.set(i, temp); // 수정된 객체를 리스트에 다시 넣기
+      }
+    }
+
+    List<ServiceCenterAdminList> adminList = new ArrayList<>();
+    for (ServiceCenterAdminInfos info : adminInfos) {
+      adminList.add(new ServiceCenterAdminInfos(info));
+    }
+    return adminList;
+  }
+
 
   /// 구독중인 유저 한명에게
   // 할당 된 루틴 리스트 전송
@@ -121,8 +151,17 @@ public class ChatController {
           messageService.sendToAll(WSDestination.SUB_GET_WAIT_QNA_LIST.getDestination(), waitQna);
         }
 
-        String info = "해당 문의가 할당 됐습니다.";
-        messageService.sendToUser(principal.getName(), WSDestination.SUB_QNA_MATCH_RESULT.getDestination(), info);
+        String infoString = "해당 문의가 할당 됐습니다.";
+        messageService.sendToUser(principal.getName(), WSDestination.SUB_QNA_MATCH_RESULT.getDestination(), infoString);
+
+        // 클라이언트에게 관리자 목록 전송
+        List<ServiceCenterAdminInfos> accessAdminInfos = serviceAdminService.getAllAccessServiceAdminList();
+
+        List<ServiceCenterAdminList> accessAdminList = new ArrayList<>();
+        for (ServiceCenterAdminInfos info : accessAdminInfos) {
+          accessAdminList.add(new ServiceCenterAdminInfos(info));
+        }
+        messageService.sendToAll(WSDestination.SUB_ACCESS_ADMIN_LIST.getDestination(), accessAdminList);
       } else {
         String info = "다른 관리자에게 할당을 시도 중 이므로 수동 할당이 거부 됐습니다.";
         messageService.sendToUser(principal.getName(), WSDestination.SUB_QNA_MATCH_RESULT.getDestination(), info);

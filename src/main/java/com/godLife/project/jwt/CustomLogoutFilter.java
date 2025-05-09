@@ -1,6 +1,5 @@
 package com.godLife.project.jwt;
 
-import com.godLife.project.service.interfaces.AdminInterface.serviceCenter.ServiceAdminService;
 import com.godLife.project.service.interfaces.jwtInterface.RefreshService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
@@ -16,6 +15,7 @@ import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Enumeration;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -23,7 +23,6 @@ public class CustomLogoutFilter extends GenericFilterBean {
 
   private final JWTUtil jwtUtil;
   private final RefreshService refreshService;
-  private final ServiceAdminService serviceAdminService;
 
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -87,9 +86,6 @@ public class CustomLogoutFilter extends GenericFilterBean {
       log.warn("logoutFilter - NoDatabase :: DB에 Refresh 토큰이 없습니다.");
       return;
     }
-
-    //로그아웃 진행
-    serviceAdminService.setCenterLogoutByAdmin3467(refresh);
     //Refresh 토큰 DB에서 제거
     refreshService.deleteByRefresh(refresh);
 
@@ -97,10 +93,18 @@ public class CustomLogoutFilter extends GenericFilterBean {
     Cookie cookie = new Cookie("refresh", null);
     cookie.setMaxAge(0);
     cookie.setPath("/");
+    cookie.setHttpOnly(true);
+
+    // 🔹 현재 요청이 HTTPS인지 확인하여 Secure 적용
+    boolean isSecure = request.isSecure() || "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"));
+    if (isSecure) {
+      cookie.setSecure(true);
+      cookie.setAttribute("SameSite", "None");
+    }
     response.addCookie(cookie);
 
     // 성공 응답
-    log.info("logoutFilter - NoDatabase :: refresh 토큰 삭제,, 로그아웃완료");
+    log.info("logoutFilter - doFilter :: refresh 토큰 삭제,, 로그아웃완료");
 
     response.setStatus(HttpServletResponse.SC_OK);
     response.setContentType("application/json");
@@ -111,6 +115,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
   }
 
   private String getRefreshTokenFromCookies(HttpServletRequest request) {
+    //printRequestDetails(request);
     Cookie[] cookies = request.getCookies();
     if (cookies == null)  {
       log.warn("logoutFilter - NoDatabase :: 쿠키 없음");
@@ -125,6 +130,36 @@ public class CustomLogoutFilter extends GenericFilterBean {
     }
     return null;
   }
+
+  private void printRequestDetails(HttpServletRequest request) {
+    System.out.println("=== 📌 HTTP REQUEST 정보 ===");
+    System.out.println("📎 Method: " + request.getMethod());
+    System.out.println("📎 URI: " + request.getRequestURI());
+    System.out.println("📎 Query String: " + request.getQueryString());
+    System.out.println("📎 Protocol: " + request.getProtocol());
+    System.out.println("📎 RemoteAddr: " + request.getRemoteAddr());
+    System.out.println("📎 Secure: " + (request.isSecure() || "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"))));
+
+    // 헤더 출력
+    System.out.println("=== 📋 Headers ===");
+    Enumeration<String> headerNames = request.getHeaderNames();
+    while (headerNames.hasMoreElements()) {
+      String headerName = headerNames.nextElement();
+      System.out.println(headerName + ": " + request.getHeader(headerName));
+    }
+
+    // 쿠키 출력
+    System.out.println("=== 🍪 Cookies ===");
+    Cookie[] cookies = request.getCookies();
+    if (cookies != null) {
+      for (Cookie cookie : cookies) {
+        System.out.println(cookie.getName() + " = " + cookie.getValue());
+      }
+    } else {
+      System.out.println("쿠키 없음");
+    }
+  }
+
 
   // 에러 응답을 JSON 형식으로 보내는 메서드
   private void sendErrorResponse(HttpServletResponse response, int status, String message) throws IOException {

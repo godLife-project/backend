@@ -2,6 +2,7 @@ package com.godLife.project.mapper;
 
 import com.godLife.project.dto.contents.QnaDTO;
 import com.godLife.project.dto.contents.QnaReplyDTO;
+import com.godLife.project.dto.list.QnaDetailDTO;
 import com.godLife.project.dto.qnaWebsocket.QnaMatchedListDTO;
 import com.godLife.project.dto.qnaWebsocket.QnaReplyListDTO;
 import com.godLife.project.dto.qnaWebsocket.QnaWaitListDTO;
@@ -75,6 +76,18 @@ public interface QnaMapper {
    * @return {@code List<QnaReplyListDTO>}
    */
   List<QnaReplyListDTO> getQnaReplyByQnaIdx(int qnaIdx);
+
+  /**
+   * <strong>문의 상세 조회 메서드 동작 시 추가 정보 제공용 쿼리</strong>
+   * <p>title - {@code String}</p>
+   * <p>createdAt - {@code LocalDateTime}</p>
+   * <p>modifiedAt - {@code LocalDateTime}</p>
+   * <p>category - {@code int}</p>
+   * <p>qnaStatus - {@code String}</p>
+   * @param qnaIdx 조회할 문의의 인덱스 번호
+   * @return {@code QnaDetailDTO} 반환
+   */
+  QnaDetailDTO getQnaExtraDetailByQnaIdx(int qnaIdx);
 
   /**
    * <strong>원하는 문의의 Q_COUNT 혹은 A_COUNT 를 0으로 초기화 합니다.</strong>

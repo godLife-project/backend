@@ -95,6 +95,21 @@
         ORDER BY CREATED_AT
     </select>
 
+    <!-- 문의 상세 추가 정보 조회 -->
+    <resultMap id="extraQnaDetail" type="com.godLife.project.dto.list.QnaDetailDTO">
+        <result property="title" column="TITLE" />
+        <result property="createdAt" column="CREATED_AT" />
+        <result property="modifiedAt" column="MODIFIED_AT" />
+        <result property="category" column="CATEGORY" />
+        <result property="qnaStatus" column="QNA_STATUS" />
+    </resultMap>
+    <select id="getQnaExtraDetailByQnaIdx" parameterType="int" resultMap="extraQnaDetail">
+        SELECT TITLE, CREATED_AT, MODIFIED_AT, CATEGORY, QNA_STATUS
+        FROM QNA_TABLE
+        WHERE QNA_IDX = #{qnaIdx}
+        AND QNA_STATUS != 'DELETED'
+    </select>
+
     <!-- 답변 수 초기화 -->
     <update id="setClearReplyCountByQnaIdx" parameterType="map">
         UPDATE QNA_TABLE SET

@@ -56,7 +56,6 @@ public class RoutineScheduleServiceImpl {
   // 만료된 재발급 토큰 삭제 로직
   @Transactional
   public int deleteExpiredRefreshTokens() {
-    midnightMapper.clearServiceCenterByIsExpired();
     return midnightMapper.deleteExpiredRefreshTokens();
   }
 

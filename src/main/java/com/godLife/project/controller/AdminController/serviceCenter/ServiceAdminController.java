@@ -1,7 +1,11 @@
 package com.godLife.project.controller.AdminController.serviceCenter;
 
+import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminInfos;
+import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminList;
+import com.godLife.project.enums.WSDestination;
 import com.godLife.project.handler.GlobalExceptionHandler;
 import com.godLife.project.listener.QnaQueueListener;
+import com.godLife.project.service.impl.websocketImpl.WebSocketMessageService;
 import com.godLife.project.service.interfaces.AdminInterface.serviceCenter.ServiceAdminService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -21,6 +27,7 @@ public class ServiceAdminController {
   private final ServiceAdminService serviceAdminService;
 
   private final QnaQueueListener qnaQueueListener;
+  private final WebSocketMessageService messageService;
 
   // 관리자 상태 조회
   @GetMapping("/get/status")
@@ -38,6 +45,15 @@ public class ServiceAdminController {
     int userIdx = handler.getUserIdxFromToken(authHeader);
 
     String result = serviceAdminService.switchAdminStatus(userIdx);
+
+    // 클라이언트에게 관리자 목록 전송
+    List<ServiceCenterAdminInfos> accessAdminInfos = serviceAdminService.getAllAccessServiceAdminList();
+
+    List<ServiceCenterAdminList> accessAdminList = new ArrayList<>();
+    for (ServiceCenterAdminInfos info : accessAdminInfos) {
+      accessAdminList.add(new ServiceCenterAdminInfos(info));
+    }
+    messageService.sendToAll(WSDestination.SUB_ACCESS_ADMIN_LIST.getDestination(), accessAdminList);
 
     return ResponseEntity.status(HttpStatus.OK).body(handler.createResponse(200, result));
   }

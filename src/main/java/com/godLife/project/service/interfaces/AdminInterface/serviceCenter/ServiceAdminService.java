@@ -1,19 +1,25 @@
 package com.godLife.project.service.interfaces.AdminInterface.serviceCenter;
 
+import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminInfos;
+import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminList;
+
+import java.util.List;
+
 public interface ServiceAdminService {
 
   /**
    * 권한 3,4,6,7 을 갖고 있는 관리자가 로그인 시,
    * DB의 SERVICE_CENTER 테이블에 관리자 정보를 저장합니다.
-   * @param userIdx 로그인 한 유저의 인덱스 번호
+   * @param username 로그인 한 유저의 아이디
    */
-  void setCenterLoginByAdmin3467(int userIdx);
+  void setCenterLoginByAdmin3467(String username);
 
   /**
    * 로그아웃 시 재발급 토큰을 통해 유저의 인덱스 번호를 조회 후
    * SERVICE_CENTER 테이블에 해당 인덱스 번호를 갖고 있는 행을 삭제합니다.
    * @param refreshToken 로그아웃 하려는 유저의 재발급 토큰
    */
+  @Deprecated
   void setCenterLogoutByAdmin3467(String refreshToken);
 
   /**
@@ -23,7 +29,18 @@ public interface ServiceAdminService {
    * @return String - 활성화 / 비활성화
    */
   String switchAdminStatus(int userIdx);
-  // 관리자 상태 조회하기
+
+  /**
+   * 관리자 상태 활성화로 전환
+   * @param userIdx 상태를 전환 할 유저의 인덱스 번호
+   */
+  void setAdminStatusTrue(int userIdx);
+
+  /**
+   * <strong>관리자 서비스 센터 연결해제 처리</strong>
+   * @param username 연결 해제 할 관리자의 아이디
+   */
+  void disconnectAdminServiceCenter(String username);
 
   /**
    * 현재 로그인 한 유저의 상태를 반환합니다.
@@ -38,4 +55,13 @@ public interface ServiceAdminService {
    * @param adminIdx 업데이트 할 관리자의 인덱스 번호
    */
   void refreshMatchCount(int adminIdx);
+
+  /**
+   * <strong>현재 1:1 문의 서비스 관리자 페이지에 접속하고 있는 관리자 정보를 조회 합니다.</strong>
+   * <p>{@code userName} - String - 관리자 이름</p>
+   * <p>{@code status} - int - 자동매칭 활성화 여부</p>
+   * <p>{@code matched} - int - 매칭된(응대중인) 문의 수</p>
+   * @return {@code List<ServiceCenterAdminList>}
+   */
+  List<ServiceCenterAdminInfos> getAllAccessServiceAdminList();
 }

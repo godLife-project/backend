@@ -3,7 +3,12 @@ package com.godLife.project.controller;
 
 import com.godLife.project.dto.contents.QnaDTO;
 import com.godLife.project.dto.contents.QnaReplyDTO;
+import com.godLife.project.dto.list.QnaDetailDTO;
+import com.godLife.project.dto.qnaWebsocket.listMessage.QnaDetailMessageDTO;
+import com.godLife.project.enums.MessageStatus;
 import com.godLife.project.enums.QnaStatus;
+import com.godLife.project.exception.CustomException;
+import com.godLife.project.exception.WebSocketBusinessException;
 import com.godLife.project.handler.GlobalExceptionHandler;
 import com.godLife.project.service.interfaces.QnaService;
 import jakarta.validation.Valid;
@@ -131,6 +136,24 @@ public class QnaController {
     qnaService.deleteReply(qnaIdx, qnaReplyIdx, userIdx);
 
     return ResponseEntity.ok().body(handler.createResponse(200, "답변이 정상적으로 삭제 되었습니다."));
+  }
+
+  // 문의 상세 조회 (답변 까지)
+  @GetMapping("/{qnaIdx}")
+  ResponseEntity<Map<String, Object>> getDetailQna(@RequestHeader("Authorization") String authHeader,
+                                                   @PathVariable int qnaIdx) {
+    int userIdx = handler.getUserIdxFromToken(authHeader);
+
+    if (qnaIdx <= 0) {
+      throw new CustomException("문의 인덱스를 선택해주세요. 문의 인덱스는 0 보다 커야 합니다.", HttpStatus.BAD_REQUEST);
+    }
+
+    // 상세보기 데이터
+    QnaDetailMessageDTO base = qnaService.getQnaDetails(qnaIdx, MessageStatus.RELOAD.getStatus(), userIdx);
+
+    QnaDetailDTO response = qnaService.setQnaDetailForUser(base);
+
+    return ResponseEntity.ok().body(handler.createResponse(200, response));
   }
 
 

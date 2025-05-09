@@ -26,6 +26,7 @@ public class ReissueService {
     String refresh = getRefreshTokenFromCookies(request);
     if (refresh == null) {
       System.out.println("재발급 토큰 없음");
+      response.addCookie(createCookie("refresh", null, 0, request));
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body(createErrorResponse("Refresh token is missing", HttpStatus.BAD_REQUEST.value()));
     }
@@ -35,6 +36,7 @@ public class ReissueService {
       jwtUtil.isExpired(refresh);
     } catch (ExpiredJwtException e) {
       System.out.println("재발급 토큰 만료");
+      response.addCookie(createCookie("refresh", null, 0, request));
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
           .body(createErrorResponse("Refresh token is expired", HttpStatus.UNAUTHORIZED.value()));
     }
@@ -42,6 +44,7 @@ public class ReissueService {
     // 3. refresh 토큰 검증
     if (!"refresh".equals(jwtUtil.getCategory(refresh))) {
       System.out.println("재발급 토큰 변조");
+      response.addCookie(createCookie("refresh", null, 0, request));
       return ResponseEntity.status(HttpStatus.FORBIDDEN)
           .body(createErrorResponse("Invalid refresh token", HttpStatus.FORBIDDEN.value()));
     }
@@ -50,6 +53,7 @@ public class ReissueService {
     Boolean isExist = refreshService.existsByRefresh(refresh);
     if (!isExist) {
       System.out.println("재발급 토큰 DB에 없음");
+      response.addCookie(createCookie("refresh", null, 0, request));
       //response body
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
           .body(createErrorResponse("Refresh token not found in database", HttpStatus.UNAUTHORIZED.value()));
@@ -71,7 +75,7 @@ public class ReissueService {
 
     // 5. 응답 헤더에 새로운 access 토큰 추가
     response.setHeader("Authorization", "Bearer " + newAccess);
-    response.addCookie(createCookie("refresh", newRefresh, request));
+    response.addCookie(createCookie("refresh", newRefresh, 24*60*60, request));
 
     return  ResponseEntity.ok().body(createSuccessResponse("Token reissued successfully"));
   }
@@ -89,16 +93,18 @@ public class ReissueService {
     return null;
   }
 
-  private Cookie createCookie(String key, String value,  HttpServletRequest request) {
+  private Cookie createCookie(String key, String value, int maxAge, HttpServletRequest request) {
 
     Cookie cookie = new Cookie(key, value);
-    cookie.setMaxAge(24*60*60);
+    cookie.setMaxAge(maxAge);
     cookie.setPath("/");
     cookie.setHttpOnly(true);
 
     // 🔹 현재 요청이 HTTPS인지 확인하여 Secure 적용
-    if (request.isSecure()) {
+    boolean isSecure = request.isSecure() || "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"));
+    if (isSecure) {
       cookie.setSecure(true);
+      cookie.setAttribute("SameSite", "None");
     }
 
     return cookie;

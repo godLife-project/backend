@@ -2,6 +2,7 @@ package com.godLife.project.service.impl;
 
 import com.godLife.project.dto.contents.QnaDTO;
 import com.godLife.project.dto.contents.QnaReplyDTO;
+import com.godLife.project.dto.list.QnaDetailDTO;
 import com.godLife.project.dto.qnaWebsocket.QnaMatchedListDTO;
 import com.godLife.project.dto.qnaWebsocket.QnaReplyListDTO;
 import com.godLife.project.dto.qnaWebsocket.QnaWaitListDTO;
@@ -323,6 +324,34 @@ public class QnaServiceImpl implements QnaService {
       log.error("QnaService - getQnaDetails :: 예상치 못한 서버 오류가 발생했습니다 :", e);
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly(); // 수동 롤백
       throw new CustomException("서버 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  // 상세 조회 시 추가 정보 제공 (유저용)
+  @Override
+  public QnaDetailDTO setQnaDetailForUser(QnaDetailMessageDTO base) {
+    try {
+      if (base == null) {
+        throw new CustomException("QnaService - setQnaDetailForUser :: 문의 상세 정보가 null 입니다.", HttpStatus.NOT_FOUND);
+      }
+
+      QnaDetailDTO temp = qnaMapper.getQnaExtraDetailByQnaIdx(base.getQnaIdx());
+
+      QnaDetailDTO response = new QnaDetailDTO(base);
+      response.setTitle(temp.getTitle());
+      response.setCreatedAt(temp.getCreatedAt());
+      response.setModifiedAt(temp.getModifiedAt());
+      response.setCategory(temp.getCategory());
+      response.setQnaStatus(temp.getQnaStatus());
+
+      return response;
+
+    } catch (CustomException e) {
+      log.info(e.getMessage());
+      throw e;
+    } catch (Exception e) {
+      log.error("QnaService - setQnaDetailForUser :: 서버 오류가 발생 했습니다.", e);
+      throw e;
     }
   }
 

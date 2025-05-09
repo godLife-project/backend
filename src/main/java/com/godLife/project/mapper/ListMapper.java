@@ -62,7 +62,11 @@ public interface ListMapper {
   List<QnaListDTO> getQnaList(@Param("qUserIdx") int qUserIdx,
                               @Param("notStatus") String notStatus,
                               @Param("offset") int offset,
-                              @Param("size") int size);
+                              @Param("size") int size,
+                              @Param("status") String status,
+                              @Param("sort") String sort,
+                              @Param("order") String order,
+                              @Param("keywords") Map<String, List<String>> keywords);
 
   /**
    * 조회 할 문의 리스트의 총 문의 수
@@ -71,6 +75,8 @@ public interface ListMapper {
    * @return {@code int}
    */
   int getTotalQnaCount(@Param("qUserIdx") int qUserIdx,
-                       @Param("notStatus") String notStatus);
+                       @Param("notStatus") String notStatus,
+                       @Param("status") String status,
+                       @Param("keywords") Map<String, List<String>> keywords);
 
 }

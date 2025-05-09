@@ -416,13 +416,79 @@
         <include refid="jobCategoryFilter" />
     </select>
 
+    <!-- 문의 상태 필터 쿼리 조각 -->
+    <sql id="qnaStatusFilter">
+        <choose>
+            <when test="status == 'wait'">
+                AND QNA_STATUS = 'WAIT'
+            </when>
+            <when test="status == 'connect'">
+                AND QNA_STATUS = 'CONNECT'
+            </when>
+            <when test="status == 'responding'">
+                AND QNA_STATUS = 'RESPONDING'
+            </when>
+            <when test="status == 'complete'">
+                AND QNA_STATUS = 'COMPLETE'
+            </when>
+            <when test="status == 'sleep'">
+                AND QNA_STATUS = 'SLEEP'
+            </when>
+            <otherwise> </otherwise>
+        </choose>
+    </sql>
+
+    <!-- 문의 검색 쿼리 조각 -->
+    <sql id="qnaSearchFilter">
+        <if test="keywords != null and keywords.size() > 0">
+            <if test="keywords['or'] != null and keywords['or'].size() > 0">
+                <foreach collection="keywords['or']" item="or" open="AND (" separator=" AND " close=")">
+                    TITLE LIKE CONCAT('%', #{or}, '%')
+                </foreach>
+            </if>
+            <if test="keywords['and'] != null and keywords['and'].size() > 0">
+                <foreach collection="keywords['and']" item="and" open="AND (" separator=" AND " close=")">
+                    TITLE LIKE CONCAT('%', #{and}, '%')
+                </foreach>
+            </if>
+            <if test="keywords['not'] != null and keywords['not'].size() > 0">
+                <foreach collection="keywords['not']" item="not" open="AND (" separator=" AND " close=")">
+                    TITLE NOT LIKE CONCAT('%', #{not}, '%')
+                </foreach>
+            </if>
+        </if>
+    </sql>
+
     <!-- 문의 리스트 조회 -->
     <select id="getQnaList" parameterType="map" resultType="com.godLife.project.dto.list.QnaListDTO">
-        SELECT ROW_NUMBER() OVER (ORDER BY CREATED_AT DESC) AS NUM, QNA_IDX, TITLE, CREATED_AT, MODIFIED_AT, CATEGORY, A_COUNT, QNA_STATUS
+        SELECT ROW_NUMBER() OVER (
+            ORDER BY
+            <if test="sort == 'answer'">
+                A_COUNT DESC,
+            </if>
+            CREATED_AT
+                <choose>
+                    <when test="order == 'desc'"> DESC</when>
+                    <otherwise> asc</otherwise>
+                </choose>
+        ) AS NUM, QNA_IDX, TITLE, CREATED_AT, MODIFIED_AT, CATEGORY, A_COUNT, QNA_STATUS
         FROM QNA_TABLE
         WHERE Q_USER_IDX = #{qUserIdx}
-        AND QNA_STATUS != #{notStatus}
-        ORDER BY CREATED_AT DESC
+          AND QNA_STATUS != #{notStatus}
+        <!-- 문의 상태 필터 쿼리 -->
+        <include refid="qnaStatusFilter" />
+        <!-- 문의 검색 쿼리 -->
+        <include refid="qnaSearchFilter" />
+
+        ORDER BY
+            <if test="sort == 'answer'">
+                A_COUNT DESC,
+            </if>
+            CREATED_AT
+            <choose>
+                <when test="order == 'desc'"> DESC</when>
+                <otherwise> asc</otherwise>
+            </choose>
         OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
     </select>
 
@@ -432,6 +498,10 @@
         FROM QNA_TABLE
         WHERE Q_USER_IDX = #{qUserIdx}
         AND QNA_STATUS != #{notStatus}
+        <!-- 문의 상태 필터 쿼리 -->
+        <include refid="qnaStatusFilter" />
+        <!-- 문의 검색 쿼리 -->
+        <include refid="qnaSearchFilter" />
     </select>
 
 

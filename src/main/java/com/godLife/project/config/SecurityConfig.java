@@ -5,7 +5,6 @@ import com.godLife.project.jwt.CustomLogoutFilter;
 import com.godLife.project.jwt.JWTFilter;
 import com.godLife.project.jwt.JWTUtil;
 import com.godLife.project.jwt.LoginFilter;
-import com.godLife.project.service.interfaces.AdminInterface.serviceCenter.ServiceAdminService;
 import com.godLife.project.service.interfaces.UserService;
 import com.godLife.project.service.interfaces.jwtInterface.RefreshService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -49,16 +48,13 @@ public class SecurityConfig {
 
   private final CustomAccessDeniedHandler accessDeniedHandler;
 
-  private final ServiceAdminService serviceAdminService;
-
-  public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil, RefreshService refreshService, @Lazy UserService userService, CustomAccessDeniedHandler accessDeniedHandler, ServiceAdminService serviceAdminService) {
+  public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil, RefreshService refreshService, @Lazy UserService userService, CustomAccessDeniedHandler accessDeniedHandler) {
 
     this.authenticationConfiguration = authenticationConfiguration;
     this.jwtUtil = jwtUtil;
     this.refreshService = refreshService;
     this.userService = userService;
     this.accessDeniedHandler = accessDeniedHandler;
-    this.serviceAdminService = serviceAdminService;
   }
 
   //AuthenticationManager Bean 등록
@@ -136,9 +132,10 @@ public class SecurityConfig {
     );
 
     // 필터 적용
-    http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
-    http.addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshService, userService, serviceAdminService), UsernamePasswordAuthenticationFilter.class);
-    http.addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshService, serviceAdminService), LogoutFilter.class);
+    http.addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshService, userService), UsernamePasswordAuthenticationFilter.class);
+    http.addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+    http.addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshService), LogoutFilter.class);
+
 
     // 세션 비활성화
     http.sessionManagement((session) -> session

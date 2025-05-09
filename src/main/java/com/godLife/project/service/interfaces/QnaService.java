@@ -2,6 +2,7 @@ package com.godLife.project.service.interfaces;
 
 import com.godLife.project.dto.contents.QnaDTO;
 import com.godLife.project.dto.contents.QnaReplyDTO;
+import com.godLife.project.dto.list.QnaDetailDTO;
 import com.godLife.project.dto.qnaWebsocket.listMessage.MatchedListMessageDTO;
 import com.godLife.project.dto.qnaWebsocket.listMessage.QnaDetailMessageDTO;
 import com.godLife.project.dto.qnaWebsocket.listMessage.WaitListMessageDTO;
@@ -71,6 +72,14 @@ public interface QnaService {
    * @return {@code QnaDetailMessageDTO}
    */
   QnaDetailMessageDTO getQnaDetails(int qnaIdx, String status, int userIdx);
+
+  /**
+   * <strong>유저용 문의 상세 보기를 위한 메서드 입니다.</strong>
+   * <p>유저용 문의 상세 보기는 리스트 조회시 제공된 정보까지 주기 위해 동작합니다.</p>
+   * @param base {@code QnaDetailMessageDTO} 입니다. 문의 상세 정보가 담겨 있습니다.
+   * @return {@code QnaDetailDTO} 문의 상세 조회 메서드를 통해 얻은 정보  + 리스트 정보까지 담아줍니다.
+   */
+  QnaDetailDTO setQnaDetailForUser(QnaDetailMessageDTO base);
 
   /**
    * <strong>1:1 문의(QnA)를 수정하기 위한 서비스 로직입니다.</strong>

@@ -19,6 +19,6 @@ public interface ListService {
                                       List<Integer> job, String order, String search, int userIdx);
 
   // 나의 문의 리스트 조회
-  Map<String, Object> getQnaList(int qUserIdx, int page, int size);
+  Map<String, Object> getQnaList(int qUserIdx, int page, int size, String status, String sort, String order, String search);
 
 }

@@ -4,6 +4,7 @@
 
 <mapper namespace="com.godLife.project.mapper.AdminMapper.ReportAdminMapper">
 
+    <!-- 유저 신고 조회 -->
     <select id="getAllReports" resultType="com.godLife.project.dto.infos.UserReportDTO">
         SELECT *
         FROM (
@@ -16,7 +17,8 @@
         reported.USER_NICK AS REPORTED_NICK,
         r.REPORT_REASON,
         r.STATUS,
-        r.REPORT_DATE
+        r.REPORT_DATE,
+        r.USER_REPORT_IDX
         FROM
         USER_REPORT r
         JOIN USER_TABLE reporter ON r.REPORTER_IDX = reporter.USER_IDX
@@ -27,9 +29,18 @@
         )
         WHERE row_num &gt; #{offset}
     </select>
+
     <!-- 전체 신고수 -->
     <select id="countAllReports" resultType="int">
-        SELECT COUNT(*) FROM USER_REPORT
+        SELECT COUNT(*)
+        FROM USER_REPORT
+    </select>
+
+    <!-- 상태별 신고수 -->
+    <select id="countReportsByStatus" resultType="int">
+        SELECT COUNT(*)
+        FROM USER_REPORT
+        WHERE STATUS = #{status}
     </select>
 
     <!-- 상태별 조회 status : 0 처리중, 1 처리완료 -->
@@ -57,7 +68,40 @@
         WHERE row_num &gt; #{offset}
     </select>
 
+    <!-- 신고처리 -->
+    <update id="userReportStateUpdate" parameterType="com.godLife.project.dto.infos.UserReportDTO">
+        UPDATE USER_REPORT
+        SET STATUS = #{status}
+        WHERE USER_REPORT_IDX = #{userReportIdx}
+    </update>
 
+    <!-- 신고당한 유저 조회 -->
+    <select id="findReportedIdxByReportIdx" resultType="int">
+        SELECT REPORTED_IDX FROM USER_REPORT WHERE USER_REPORT_IDX = #{userReportIdx}
+    </select>
+
+    <!-- 신고누적 증가 -->
+    <update id="incrementReportCount" parameterType="int">
+        UPDATE USER_TABLE
+        SET REPORT_COUNT = REPORT_COUNT + 1
+        WHERE USER_IDX = #{userIdx}
+    </update>
+
+    <!-- 신고횟수 확인 -->
+    <select id="getReportCount" resultType="int" parameterType="int">
+        SELECT REPORT_COUNT FROM USER_TABLE WHERE USER_IDX = #{userIdx}
+    </select>
+
+    <!-- 신고 누적으로 인한 정지 처리 -->
+    <update id="banUser" parameterType="int">
+        UPDATE USER_TABLE
+        SET IS_BANNED = 1
+        WHERE USER_IDX = #{userIdx}
+    </update>
+
+
+    <!--                  루틴 신고 관련               -->
+    <!-- 전체 루틴 신고 조회 -->
     <select id="selectPlanReports" resultType="com.godLife.project.dto.infos.PlanReportDTO">
         SELECT *
         FROM (
@@ -81,7 +125,7 @@
         WHERE row_num &gt; #{offset}
     </select>
 
-
+    <!-- 상태별 조회 status : 0 처리중, 1 처리완료 -->
     <select id="selectPlanReportsByStatus" resultType="com.godLife.project.dto.infos.PlanReportDTO">
         SELECT *
         FROM (
@@ -105,10 +149,17 @@
         )
         WHERE row_num &gt; #{offset}
     </select>
-
+    <!-- 루틴 신고 수 -->
     <select id="countAllPlanReports" resultType="int" parameterType="map">
         SELECT COUNT(*)
         FROM PLAN_REPORT r
         WHERE r.STATUS = #{status}
     </select>
+
+    <!-- 신고처리 -->
+    <update id="planReportStateUpdate" parameterType="com.godLife.project.dto.infos.PlanReportDTO">
+        UPDATE PLAN_REPORT
+        SET STATUS = #{status}
+        WHERE PLAN_REPORT_IDX = #{planReportIdx}
+    </update>
 </mapper>

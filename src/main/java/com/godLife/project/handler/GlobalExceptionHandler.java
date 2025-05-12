@@ -125,4 +125,5 @@ public class GlobalExceptionHandler {
 
     return jwtUtil.getUsername(token);
   }
+
 }

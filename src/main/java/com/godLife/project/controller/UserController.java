@@ -1,7 +1,6 @@
 package com.godLife.project.controller;
 
 import com.godLife.project.dto.datas.UserDTO;
-import com.godLife.project.dto.request.GetEmailRequestDTO;
 import com.godLife.project.dto.request.GetNameNEmail;
 import com.godLife.project.dto.request.myPage.GetUserPwRequestDTO;
 import com.godLife.project.handler.GlobalExceptionHandler;
@@ -148,6 +147,5 @@ public class UserController {
     // 응답 메시지 설정
     return ResponseEntity.status(handler.getHttpStatus(result)).body(handler.createResponse(result, msg));
   }
-
 
 }

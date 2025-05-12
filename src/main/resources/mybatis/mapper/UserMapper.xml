@@ -9,7 +9,7 @@
     SELECT U.*, L.LV_IDX AS USER_LV
     FROM USER_TABLE U
     JOIN USER_LEVEL L ON U.USER_EXP <![CDATA[ >= ]]> L.MIN_EXP AND U.USER_EXP <![CDATA[ < ]]> L.MAX_EXP
-    WHERE USER_ID = #{username} AND NOT IS_DELETED = 'D'
+    WHERE USER_ID = #{username} AND  IS_DELETED != 'D'
   </select>
 
 </mapper>

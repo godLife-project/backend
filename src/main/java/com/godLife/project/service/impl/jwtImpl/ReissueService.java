@@ -1,6 +1,8 @@
 package com.godLife.project.service.impl.jwtImpl;
 
+import com.godLife.project.dto.datas.UserDTO;
 import com.godLife.project.jwt.JWTUtil;
+import com.godLife.project.service.interfaces.UserService;
 import com.godLife.project.service.interfaces.jwtInterface.RefreshService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
@@ -15,10 +17,12 @@ public class ReissueService {
   private final JWTUtil jwtUtil;
 
   private final RefreshService refreshService;
+  private final UserService userService;
 
-  public ReissueService(JWTUtil jwtUtil, RefreshService refreshService) {
+  public ReissueService(JWTUtil jwtUtil, RefreshService refreshService, UserService userService) {
     this.jwtUtil = jwtUtil;
     this.refreshService = refreshService;
+    this.userService = userService;
   }
 
   public ResponseEntity<?> reissueToken(HttpServletRequest request, HttpServletResponse response) {
@@ -56,14 +60,17 @@ public class ReissueService {
     }
 
     String username = jwtUtil.getUsername(refresh);
+    int isBanned = jwtUtil.getIsBanned(refresh);
     String role = jwtUtil.getRole(refresh);
+
+
 
     Long accessExp = 600000L;     // 10분
     Long refreshExp = 86400000L;  // 24시간
 
     // 4. 새로운 access 토큰 생성
-    String newAccess = jwtUtil.createJwt("access", username, role, accessExp);
-    String newRefresh = jwtUtil.createJwt("refresh", username, role, refreshExp);
+    String newAccess = jwtUtil.createJwt("access", username, role, isBanned ,accessExp);
+    String newRefresh = jwtUtil.createJwt("refresh", username, role, isBanned ,refreshExp);
 
     //Refresh 토큰 저장 DB에 기존의 Refresh 토큰 삭제 후 새 Refresh 토큰 저장
     refreshService.deleteByRefresh(refresh);

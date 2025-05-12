@@ -33,4 +33,8 @@ public class UserReportDTO {
     // 추가 필드
     private String reporterNick;
     private String reportedNick;
+
+    @Schema(description = "유저신고 고유 인덱스", example ="1")
+    private int userReportIdx;
+
 }

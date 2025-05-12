@@ -29,4 +29,7 @@ public class PlanReportDTO {
     @JsonDeserialize(using = LocalDateTimeDeserializer.class) // 역직렬화
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime reportDate;
+
+    @Schema(description = "신고 고유 인덱스", example = "1")
+    private int planReportIdx;
 }

@@ -16,4 +16,7 @@ public class LoginResponseDTO {
   // private int userGender;    // 필요시 사용
   // private int authorityIdx; // 필요시 사용
   private boolean roleStatus;
+  private int reportCount;
+  private int isBanned;
+
 }

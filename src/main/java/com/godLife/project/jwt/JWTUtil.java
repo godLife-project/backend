@@ -1,5 +1,6 @@
 package com.godLife.project.jwt;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -38,15 +39,40 @@ public class JWTUtil {
     return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getExpiration().before(new Date());
   }
 
-  public String createJwt(String category, String username, String role, Long expiredMs) {
+  public int getIsBanned(String token) {
+
+    return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("isBanned", Integer.class);
+  }
+
+
+
+  public String createJwt(String category, String username, String role, int isBanned, Long expiredMs) {
 
     return Jwts.builder()
         .claim("category", category)
         .claim("username", username)
         .claim("role", role)
+        .claim("isBanned", isBanned)
         .issuedAt(new Date(System.currentTimeMillis()))
         .expiration(new Date(System.currentTimeMillis() + expiredMs))
         .signWith(secretKey)
         .compact();
+  }
+
+  public boolean validateToken(String token) {
+    try {
+      // 서명 검증 및 파싱
+      Jwts.parser()
+              .verifyWith(secretKey)
+              .build()
+              .parseSignedClaims(token);
+
+      // 만료 여부 검사
+      return !isExpired(token);
+    } catch (Exception e) {
+      // 로그로 남기거나 처리할 수 있음
+      System.out.println("JWT 검증 실패: " + e.getMessage());
+      return false;
+    }
   }
 }

@@ -108,6 +108,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     // 유저 정보 조회
     UserDTO tempUserDTO = userService.findByUserId(username);
+    int isBanned = tempUserDTO.getIsBanned();
+
     // 전송할 데이터 DTO
     LoginResponseDTO loginUserDTO = new LoginResponseDTO();
     loginUserDTO.setUserIdx(tempUserDTO.getUserIdx());      // 유저 고유 인덱스
@@ -121,6 +123,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     loginUserDTO.setUserLv(tempUserDTO.getUserLv());        // 유저 레벨
     if (tempUserDTO.getAuthorityIdx() >= 2) {
       loginUserDTO.setRoleStatus(true);                     // 유저 권한이 아닐 경우 true
+    loginUserDTO.setReportCount(tempUserDTO.getReportCount()); // 신고 횟수
+    loginUserDTO.setIsBanned(tempUserDTO.getIsBanned());       // 정지 여부
     }
 
 
@@ -128,8 +132,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     Long refreshExp = 86400000L;  // 24시간
 
     //토큰 생성
-    String access = jwtUtil.createJwt("access", username, role, accessExp);
-    String refresh = jwtUtil.createJwt("refresh", username, role, refreshExp);
+    String access = jwtUtil.createJwt("access", username, role,  isBanned, accessExp);
+    String refresh = jwtUtil.createJwt("refresh", username, role, isBanned, refreshExp);
 
     // Refresh 토큰 저장
     refreshService.addRefreshToken(username, refresh, refreshExp);

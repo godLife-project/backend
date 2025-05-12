@@ -95,4 +95,10 @@ public class UserDTO {
 
     @Schema(description = "관리자 여부", example = "false")
     private boolean roleStatus = false;
+
+    @Schema(description = "신고 횟수", example = "1")
+    private int reportCount;
+
+    @Schema(description = "정지여부",example = "0:정상, 1:정지")
+    private int isBanned;
 }

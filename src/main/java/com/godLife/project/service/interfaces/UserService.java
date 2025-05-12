@@ -3,6 +3,7 @@ package com.godLife.project.service.interfaces;
 import com.godLife.project.dto.datas.UserDTO;
 import com.godLife.project.dto.request.GetNameNEmail;
 import com.godLife.project.dto.request.myPage.GetUserPwRequestDTO;
+import org.springframework.security.core.Authentication;
 
 public interface UserService {
     // 회원가입
@@ -16,6 +17,5 @@ public interface UserService {
     String FindUserIdByNameNEmail(GetNameNEmail getNameNEmail, boolean isMasked);
     // 비번 찾기
     int FindUserPw(GetUserPwRequestDTO userPwRequestDTO, String userEmail);
-
 
 }

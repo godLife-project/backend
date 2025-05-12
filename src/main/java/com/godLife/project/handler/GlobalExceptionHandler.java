@@ -116,7 +116,7 @@ public class GlobalExceptionHandler {
     String token = authHeader.replace("Bearer ", "");
     String username = jwtUtil.getUsername(token);
 
-    return verifyMapper.getUserIdxByUsername(username);
+    return verifyMapper.getUserIdxByUserId(username);
   }
 
   // 토큰에서 user_name 조회 하는 로직

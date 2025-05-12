@@ -35,6 +35,10 @@ public class QnaDTO {
   @Min(value = 1, message = "{qna.category.min}")
   private int category;
 
+  private int aUserIdx;
+
+  private int qCount;
   private int aCount;
+
   private String qnaStatus;
 }

@@ -122,7 +122,9 @@ public class SearchController {
     cookie.setSecure(true);
     cookie.setAttribute("SameSite", "None");
 
-    if (request.isSecure()) {
+    // 🔹 현재 요청이 HTTPS인지 확인하여 Secure 적용
+    boolean isSecure = request.isSecure() || "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"));
+    if (isSecure) {
       cookie.setSecure(true);
       cookie.setAttribute("SameSite", "None");
     }

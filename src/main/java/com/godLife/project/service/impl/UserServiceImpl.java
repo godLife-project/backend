@@ -8,6 +8,8 @@ import com.godLife.project.mapper.UserMapper;
 import com.godLife.project.service.interfaces.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,6 +51,10 @@ public class UserServiceImpl implements UserService {
     // 유저 정보 조회
     @Override
     public UserDTO findByUserId(String userId) { return userMapper.findByUserid(userId); }
+
+    // 유저 인덱스로 아이디 찾기
+    @Override
+    public String getUserIdByUserIdx(int userIdx) { return userMapper.getUserIdByUserIdx(userIdx); }
 
     // 아이디 찾기
     @Override
@@ -109,10 +115,6 @@ public class UserServiceImpl implements UserService {
             log.error("e: ", e);
             return 500;
         }
-
     }
-
-
-
 
 }

@@ -3,13 +3,11 @@ package com.godLife.project.service.impl.jwtImpl;
 import com.godLife.project.dto.jwtDTO.CustomUserDetails;
 import com.godLife.project.dto.datas.UserDTO;
 import com.godLife.project.mapper.UserMapper;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-@Slf4j
 @Service
 public class CustomUserDetailsService  implements UserDetailsService {
 
@@ -22,17 +20,18 @@ public class CustomUserDetailsService  implements UserDetailsService {
 
   @Override
   public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
+
     //DB에서 조회
     UserDTO userData = userMapper.findByUserid(userId);
-    //  System.out.println("========================================  유저 조회  =======================================");
-    //  System.out.println(userData);
-    //  System.out.println("============================================================================================");
+    //System.out.println("========================================  유저 조회  =======================================");
+    //System.out.println(userData);
+    //System.out.println("============================================================================================");
+    //System.out.println("CustomUserDetailsService 동작함");
     if (userData != null) {
 
       //UserDetails에 담아서 return하면 AutneticationManager가 검증 함
       return new CustomUserDetails(userData);
     }
-
 
     return null;
   }

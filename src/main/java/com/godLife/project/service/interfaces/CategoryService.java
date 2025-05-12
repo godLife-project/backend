@@ -4,6 +4,7 @@ import com.godLife.project.dto.categories.*;
 import com.godLife.project.dto.datas.FireDTO;
 import com.godLife.project.dto.datas.IconDTO;
 import com.godLife.project.dto.datas.UserLevelDTO;
+import com.godLife.project.dto.response.qna.QnaParent;
 
 import java.util.List;
 
@@ -24,6 +25,9 @@ public interface CategoryService {
     List<IconDTO> getUserIconInfos();
     // 아이콘 정보 조회
     List<IconDTO> getAllIconInfos();
+
+    // QNA 카테고리
+    List<QnaParent> getAllQnaCategories();
 
     // 불꽃 정보 조회
     List<FireDTO> getAllFireInfos();

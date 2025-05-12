@@ -49,4 +49,16 @@
         AND DELETE_DATE + #{expire} <![CDATA[ <= ]]> SYSDATE
     </update>
 
+    <!-- REFRESH 토큰이 만료된 고객관리자 로그아웃 처리 -->
+    <delete id="clearServiceCenterByIsExpired">
+        DELETE FROM SERVICE_CENTER SC
+        WHERE EXISTS (
+            SELECT 1
+            FROM USER_TABLE U
+            JOIN REFRESH_TOKEN R ON R.USERNAME = U.USER_ID
+            WHERE R.EXPIRATION <![CDATA[ < ]]> SYSDATE
+            AND U.USER_IDX = SC.USER_IDX
+        )
+    </delete>
+
 </mapper>

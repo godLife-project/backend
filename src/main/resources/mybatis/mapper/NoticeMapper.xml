@@ -39,7 +39,10 @@
         N.NOTICE_DATE,
         N.NOTICE_MODIFY,
         N.USER_IDX,
-        U.USER_NAME AS write_Name
+        U.USER_NAME AS write_Name,
+        N.IS_POPUP,
+        N.POPUP_START_DATE,
+        N.POPUP_END_DATE
         FROM NOTICE_TABLE N
         LEFT JOIN USER_TABLE U ON N.USER_IDX = U.USER_IDX
         WHERE N.NOTICE_IDX = #{noticeIdx}
@@ -65,8 +68,8 @@
 
     <!-- 공지사항 작성 -->
     <insert id="createNotice" parameterType="com.godLife.project.dto.contents.NoticeDTO">
-        INSERT INTO NOTICE_TABLE (NOTICE_IDX, NOTICE_TITLE, NOTICE_SUB, USER_IDX, NOTICE_DATE)
-        VALUES (NOTICE_SEQ.NEXTVAL, #{noticeTitle}, #{noticeSub}, #{userIdx}, SYSDATE)
+        INSERT INTO NOTICE_TABLE (NOTICE_IDX, NOTICE_TITLE, NOTICE_SUB, USER_IDX, NOTICE_DATE, IS_POPUP, POPUP_START_DATE, POPUP_END_DATE)
+        VALUES (NOTICE_SEQ.NEXTVAL, #{noticeTitle}, #{noticeSub}, #{userIdx}, SYSDATE, #{isPopup}, #{popupStartDate}, #{popupEndDate})
     </insert>
 
 

@@ -6,6 +6,7 @@ import com.godLife.project.mapper.MidnightMapper;
 import com.godLife.project.mapper.VerifyMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -53,7 +54,10 @@ public class RoutineScheduleServiceImpl {
   }
 
   // 만료된 재발급 토큰 삭제 로직
-  public int deleteExpiredRefreshTokens() { return midnightMapper.deleteExpiredRefreshTokens(); }
+  @Transactional
+  public int deleteExpiredRefreshTokens() {
+    return midnightMapper.deleteExpiredRefreshTokens();
+  }
 
   // 탈퇴 회원 삭제 처리
   public int clearAccountDelete() {

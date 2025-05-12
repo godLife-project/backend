@@ -3,6 +3,7 @@ package com.godLife.project.jwt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.godLife.project.dto.datas.UserDTO;
 import com.godLife.project.dto.response.LoginResponseDTO;
+import com.godLife.project.service.interfaces.AdminInterface.serviceCenter.ServiceAdminService;
 import com.godLife.project.service.interfaces.UserService;
 import com.godLife.project.service.interfaces.jwtInterface.RefreshService;
 import jakarta.servlet.FilterChain;
@@ -163,17 +164,16 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     response.getWriter().write("{\"error\": \"아이디 혹은 비밀번호가 일치하지 않습니다.\"}");
   }
 
-  private Cookie createCookie(String key, String value,  HttpServletRequest request) {
+  private Cookie createCookie(String key, String value, HttpServletRequest request) {
 
     Cookie cookie = new Cookie(key, value);
     cookie.setMaxAge(24*60*60); // 생명 주기 : 24시간
     cookie.setPath("/");     // 쿠키 적용 범위
     cookie.setHttpOnly(true);
-    cookie.setSecure(true);
-    cookie.setAttribute("SameSite", "None");
 
     // 🔹 현재 요청이 HTTPS인지 확인하여 Secure 적용
-    if (request.isSecure()) {
+    boolean isSecure = request.isSecure() || "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"));
+    if (isSecure) {
       cookie.setSecure(true);
       cookie.setAttribute("SameSite", "None");
     }

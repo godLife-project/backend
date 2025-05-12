@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godLife.project.mapper.autoMatch.AutoMatchMapper">
+
+    <!-- 매칭 할 상담원 조회 -->
+    <select id="getServiceAdminIdx" resultType="com.godLife.project.dto.serviceAdmin.AdminIdxAndIdDTO">
+        SELECT S.USER_IDX, U.USER_ID
+        FROM SERVICE_CENTER S
+        INNER JOIN USER_TABLE U ON S.USER_IDX = U.USER_IDX
+        WHERE S.STATUS = 1
+        AND MATCHED <![CDATA[ < ]]> 10
+        ORDER BY MATCHED
+        FETCH FIRST 1 ROWS ONLY
+    </select>
+
+    <!-- 문의 등록 시 단일 문의 자동 매칭 -->
+    <update id="autoMatchSingleQna" parameterType="map">
+        UPDATE QNA_TABLE
+        SET A_USER_IDX = #{adminIdx},
+        QNA_STATUS = 'CONNECT'
+        WHERE QNA_STATUS = 'WAIT'
+        AND QNA_IDX = #{qnaIdx}
+    </update>
+
+</mapper>

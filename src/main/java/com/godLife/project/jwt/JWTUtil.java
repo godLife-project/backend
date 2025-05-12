@@ -1,8 +1,15 @@
 package com.godLife.project.jwt;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
+import com.godLife.project.exception.UnauthorizedException;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.SignatureException;
+import io.jsonwebtoken.security.WeakKeyException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -59,20 +66,32 @@ public class JWTUtil {
         .compact();
   }
 
-  public boolean validateToken(String token) {
-    try {
-      // 서명 검증 및 파싱
-      Jwts.parser()
-              .verifyWith(secretKey)
-              .build()
-              .parseSignedClaims(token);
+  public String extractJwt(final StompHeaderAccessor accessor) {
+    return accessor.getFirstNativeHeader("Authorization");
+  }
 
-      // 만료 여부 검사
-      return !isExpired(token);
-    } catch (Exception e) {
-      // 로그로 남기거나 처리할 수 있음
-      System.out.println("JWT 검증 실패: " + e.getMessage());
-      return false;
+  public void validateToken(final String token) {
+    try {
+      Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token);
+    } catch (SecurityException | MalformedJwtException | SignatureException | WeakKeyException e) {
+      throw UnauthorizedException.of(e.getClass().getName(), "잘못된 JWT 서명입니다.");
+    } catch (ExpiredJwtException e) {
+      throw UnauthorizedException.of(e.getClass().getName(), "만료된 JWT 토큰입니다.");
+    } catch (UnsupportedJwtException e) {
+      throw UnauthorizedException.of(e.getClass().getName(), "지원되지 않는 JWT 토큰입니다.");
+    } catch (IllegalArgumentException e) {
+      throw UnauthorizedException.of(e.getClass().getName(), "JWT 토큰이 잘못되었습니다.");
+    } catch (JwtException e) {
+      throw UnauthorizedException.of(e.getClass().getName(), "JWT 처리 중 오류가 발생했습니다.");
     }
+  }
+
+  public Authentication getAuthentication(String token) {
+    String username = getUsername(token);
+    String role = getRole(token);
+
+    GrantedAuthority authority = new SimpleGrantedAuthority(role);
+
+    return new UsernamePasswordAuthenticationToken(username, null, java.util.Collections.singletonList(authority));
   }
 }

@@ -4,14 +4,23 @@ import com.godLife.project.dto.categories.*;
 import com.godLife.project.dto.datas.FireDTO;
 import com.godLife.project.dto.datas.IconDTO;
 import com.godLife.project.dto.datas.UserLevelDTO;
+import com.godLife.project.dto.response.qna.QnaChild;
+import com.godLife.project.dto.response.qna.QnaParent;
+import com.godLife.project.exception.CustomException;
 import com.godLife.project.mapper.CategoryMapper;
 import com.godLife.project.service.impl.redis.RedisService;
 import com.godLife.project.service.interfaces.CategoryService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
@@ -98,5 +107,54 @@ public class CategoryServiceImpl implements CategoryService {
             return categoryMapper.getAllUserLevelInfos();
         }
         return data;
+    }
+
+    // qna 카테고리
+    @Override
+    public List<QnaParent> getAllQnaCategories() {
+        try {
+            List<QnaCateDTO> origin = categoryMapper.getAllQnaCategories(false);
+
+            if (origin == null || origin.isEmpty()) {
+                throw new CustomException("qna 카테고리가 조회되지 않습니다.", HttpStatus.NOT_FOUND);
+            }
+
+            Map<Integer, QnaParent> parentMap = new HashMap<>();
+
+            for (QnaCateDTO dto : origin) {
+                int categoryLevel = dto.getCategoryLevel();
+
+                // 대분류 처리
+                if (categoryLevel == 1) {
+                    QnaParent parent = new QnaParent();
+                    parent.setParentIdx(dto.getCategoryIdx());
+                    parent.setParentName(dto.getCategoryName());
+                    parent.setChildCategory(new ArrayList<>());
+                    parentMap.put(dto.getCategoryIdx(), parent);
+                }
+                // 소분류 처리
+                else {
+                    QnaChild child = new QnaChild();
+                    child.setCategoryIdx(dto.getCategoryIdx());
+                    child.setCategoryName(dto.getCategoryName());
+
+                    // 상위 카테고리가 존재할 경우 소분류 추가
+                    QnaParent parent = parentMap.get(dto.getParentIdx());
+                    if (parent != null) {
+                        parent.getChildCategory().add(child);
+                    }
+                }
+            }
+
+            return new ArrayList<>(parentMap.values());
+
+        } catch (CustomException e) {
+            log.error(e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("알 수 없는 오류가 발생 했습니다.", e);
+            throw e;
+        }
+
     }
 }

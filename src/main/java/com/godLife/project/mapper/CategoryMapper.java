@@ -43,4 +43,8 @@ public interface CategoryMapper {
     // 유저 레벨 테이블 조회
     @Select("SELECT * FROM USER_LEVEL")
     List<UserLevelDTO> getAllUserLevelInfos();
+
+    // qna 카테고리
+    @Select("SELECT * FROM QNA_CATEGORY WHERE DEPRECATED = #{isDeprecated}")
+    List<QnaCateDTO> getAllQnaCategories(boolean isDeprecated);
 }

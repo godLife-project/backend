@@ -175,8 +175,8 @@ public class ChatController {
   // 문의 상세 보기
   @MessageMapping("/get/matched/qna/detail/{qnaIdx}")
   public void getMatchedQnaDetail(@Header("Authorization") String authHeader,
-                                                 @DestinationVariable(value = "qnaIdx") final int qnaIdx,
-                                                 Principal principal) {
+                                  @DestinationVariable(value = "qnaIdx") final int qnaIdx,
+                                  Principal principal) {
     try {
       int adminIdx = handler.getUserIdxFromToken(authHeader);
 

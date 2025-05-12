@@ -74,7 +74,9 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     // csrf disable
-    http.csrf(AbstractHttpConfigurer::disable);
+    http.csrf(csrf -> csrf
+        .ignoringRequestMatchers("/ws-stomp/**")
+        .disable());
     // Form 로그인 방식 disable
     http.formLogin(AbstractHttpConfigurer::disable);
     // http basic 인증 방식 disable
@@ -83,6 +85,8 @@ public class SecurityConfig {
     // 경로별 인가 작업
     http.authorizeHttpRequests(auth -> auth
     // 지정한 엔드포인트는 로그인시 접근 가능 (유저 권한)
+        // 웹소켓 통신 허용
+            .requestMatchers("/ws-stomp/**").permitAll()
         // 테스트 용 (유저 권한)
             .requestMatchers("/api/test/auth/**").authenticated()
         // 루틴 관련
@@ -143,29 +147,27 @@ public class SecurityConfig {
 
     // CORS 허용
     http
-        .cors((corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
+      .cors((corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
 
-          @Override
-          public CorsConfiguration getCorsConfiguration(@NonNull HttpServletRequest request) {
+        @Override
+        public CorsConfiguration getCorsConfiguration(@NonNull HttpServletRequest request) {
 
-            CorsConfiguration configuration = new CorsConfiguration();
+          CorsConfiguration configuration = new CorsConfiguration();
 
-            configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(", ")));
-            configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-            configuration.setAllowCredentials(true);
-            configuration.setAllowedHeaders(Collections.singletonList("*"));
-            configuration.setMaxAge(3600L);
+          configuration.setAllowedOriginPatterns(Arrays.asList(allowedOrigins.split(", ")));
+          configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+          configuration.setAllowCredentials(true);
+          configuration.setAllowedHeaders(Collections.singletonList("*"));
+          configuration.setMaxAge(3600L);
 
-            configuration.setExposedHeaders(Collections.singletonList("Authorization"));
+          configuration.addAllowedOriginPattern("/ws-stomp/**");
+          configuration.setExposedHeaders(List.of("Authorization", "Access-Control-Allow-Origin"));
 
-            return configuration;
-          }
-        })));
-
-
-
-        return http.build();
-    }
+          return configuration;
+        }
+      })));
+    return http.build();
+  }
 
 }
 

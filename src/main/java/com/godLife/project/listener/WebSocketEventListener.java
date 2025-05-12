@@ -86,10 +86,11 @@ public class WebSocketEventListener {
 
     // 세션 ID를 기준으로 해당 유저 정보 제거
     String userName = redisSessionManager.getUsernameBySessionId(sessionId);
-    int adminIdx = verifyMapper.getUserIdxByUserId(userName);
 
     if (userName != null) {
       redisSessionManager.removeSession(userName);
+
+      int adminIdx = verifyMapper.getUserIdxByUserId(userName);
 
       // 클라이언트에게 관리자 목록 조회
       List<ServiceCenterAdminInfos> accessAdminInfos = serviceAdminService.getAllAccessServiceAdminList();

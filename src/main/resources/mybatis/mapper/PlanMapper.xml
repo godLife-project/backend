@@ -161,6 +161,13 @@
     WHERE PLAN_IDX = #{planIdx} AND USER_IDX = #{userIdx}
   </update>
 
+  <select id="existsHandledReport" resultType="boolean">
+    SELECT COUNT(*) > 0
+    FROM PLAN_REPORT
+    WHERE PLAN_IDX = #{planIdx}
+    AND STATUS = 1
+  </select>
+
   <!-- 활동 수정 쿼리 -->
   <update id="modifyActivity" parameterType="com.godLife.project.dto.datas.ActivityDTO">
     UPDATE PLAN_ACTIVITY

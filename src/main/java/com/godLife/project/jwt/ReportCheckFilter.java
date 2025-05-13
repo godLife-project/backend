@@ -1,5 +1,6 @@
 package com.godLife.project.jwt;
 
+import com.godLife.project.exception.UnauthorizedException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,16 +33,24 @@ public class ReportCheckFilter extends OncePerRequestFilter {
         // 토큰이 유효하면 로그 출력
         // log.info("ReportCheckFilter 실행됨. 토큰: {}", token);
 
-        if (token != null && jwtUtil.validateToken(token)) {
-            // JWT에서 isBanned 값 추출
-            int isBanned = jwtUtil.getIsBanned(token);
+        if (token != null) {
+            try {
+                jwtUtil.validateToken(token);
 
-            // isBanned가 1이면 정지된 사용자로 처리
-            if (isBanned == 1) {
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                int isBanned = jwtUtil.getIsBanned(token);
+                if (isBanned == 1) {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setContentType("application/json");
+                    response.setCharacterEncoding("UTF-8");
+                    response.getWriter().write("{\"error\": \"신고 누적으로 인해 서비스 이용이 제한되었습니다.\"}");
+                    return;
+                }
+            } catch (UnauthorizedException e) {
+                // 유효하지 않은 토큰이면 여기서 처리 (예: 401 응답)
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
-                response.getWriter().write("{\"error\": \"신고 누적으로 인해 서비스 이용이 제한되었습니다.\"}");
+                response.getWriter().write("{\"error\": \"" + e.getMessage() + "\"}");
                 return;
             }
         }

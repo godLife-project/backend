@@ -163,7 +163,7 @@ public class CompSystemController {
   public ResponseEntity<Map<String, Object>> updateQnaCate(@PathVariable("qnaCategoryIdx")int qnaCategoryIdx,
                                                            @RequestBody QnaCateDTO qnaCateDTO){
     try {
-      qnaCateDTO.setQnaCategoryIdx(qnaCategoryIdx);
+      qnaCateDTO.setCategoryIdx(qnaCategoryIdx);
       int result = compSystemService.updateQnaCate(qnaCateDTO);
 
       if (result > 0) {

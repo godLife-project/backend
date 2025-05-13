@@ -116,6 +116,11 @@ public class PlanServicelmpl implements PlanService {
     // 탈퇴한 유저 수정 불가
     if (!planMapper.getUserIsDeleted(userIdx).contains("N")) { return 410; }
 
+    //  신고 처리된 루틴은 공개 설정 불가
+    if (planDTO.getIsShared() == 1 && planMapper.existsHandledReport(planIdx)) {
+      return 409; // Conflict
+    }
+
     try {
       // 루틴 수정
       planMapper.modifyPlan(planDTO);

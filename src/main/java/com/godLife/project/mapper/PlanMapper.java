@@ -90,6 +90,9 @@ public interface PlanMapper {
 
   // 루틴 수정하기
   void modifyPlan(PlanDTO planDTO);
+
+  // 해당 루틴이 처리된 신고 대상인지 여부
+  boolean existsHandledReport(@Param("planIdx") int planIdx);
   // 활동 수정하기
   void modifyActivity(ActivityDTO activityDTO);
   // 기타 직업 수정하기

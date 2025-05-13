@@ -110,7 +110,7 @@ public class PlanDTO {
     private String review;
 
     @Schema(description = "삭제 상태", example = "0: 삭제안함 1: 삭제됨")
-    private Integer isDeleted;
+    private Integer isDeleted = 0;
 
     @Schema(description = "활동 리스트", example = "활동들")
     @Size(min = 1, message = "{writePlan.activities.size}")

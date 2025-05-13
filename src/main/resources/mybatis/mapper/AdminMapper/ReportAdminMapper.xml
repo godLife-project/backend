@@ -162,4 +162,15 @@
         SET STATUS = #{status}
         WHERE PLAN_REPORT_IDX = #{planReportIdx}
     </update>
+
+    <!-- 비공개처리 된 루틴 활성화-->
+    <update id="updateIsShared">
+        UPDATE PLAN
+        SET IS_SHARED = #{isShared}
+        WHERE PLAN_IDX = #{planIdx}
+    </update>
+
+    <select id="checkPlanExists" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM PLAN WHERE PLAN_IDX = #{planIdx}
+    </select>
 </mapper>

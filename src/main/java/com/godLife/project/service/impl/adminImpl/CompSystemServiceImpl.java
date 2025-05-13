@@ -1,4 +1,4 @@
-package com.godLife.project.service.impl.AdminImpl;
+package com.godLife.project.service.impl.adminImpl;
 
 import com.godLife.project.dto.categories.FaqCateDTO;
 import com.godLife.project.dto.categories.QnaCateDTO;
@@ -62,7 +62,7 @@ public class CompSystemServiceImpl implements CompSystemService {
 
   // QNA 카테고리 추가
   public int insertQnaCate(QnaCateDTO qnaCateDTO) {
-    int count = compSystemMapper.countByQnaName(qnaCateDTO.getQnaCategoryName());
+    int count = compSystemMapper.countByQnaName(qnaCateDTO.getCategoryName());
     if (count > 0) {
       throw new IllegalStateException("이미 존재하는 카테고리 이름입니다.");
     }
@@ -71,7 +71,7 @@ public class CompSystemServiceImpl implements CompSystemService {
 
   // QNA 카테고리 수정
   public int updateQnaCate(QnaCateDTO qnaCateDTO) {
-    int count = compSystemMapper.countByQnaName(qnaCateDTO.getQnaCategoryName());
+    int count = compSystemMapper.countByQnaName(qnaCateDTO.getCategoryName());
     if (count > 0) {
       throw new IllegalStateException("이미 존재하는 카테고리 이름입니다.");
     }

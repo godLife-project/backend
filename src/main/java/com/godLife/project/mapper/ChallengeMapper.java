@@ -73,6 +73,9 @@ public interface ChallengeMapper {
     // 총 클리어 시간 확인
     int getTotalClearTime(Long challIdx);
 
+    // 챌린지 상태 업데이트
+    int updateChallengesToCompleted();
+
 
     // 챌린지 존재 여부 확인
     int existsById(@Param("challIdx") Long challIdx);

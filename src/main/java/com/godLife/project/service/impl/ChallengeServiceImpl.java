@@ -8,6 +8,7 @@ import com.godLife.project.mapper.ChallJoinMapper;
 import com.godLife.project.mapper.ChallengeMapper;
 import com.godLife.project.service.interfaces.ChallengeService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +34,8 @@ public class ChallengeServiceImpl implements ChallengeService {
     // ----------------- 최신 챌린지 조회 (페이징 적용) -----------------
     @Override
     public List<ChallengeDTO> getLatestChallenges(int page, int size) {
+        // 진행 중인 챌린지를 종료 상태로 자동 변경
+        challengeMapper.updateChallengesToEndStatus(LocalDateTime.now());
         int offset = (page - 1) * size;
         return challengeMapper.getLatestChallenges(offset, size);
     }
@@ -46,6 +49,7 @@ public class ChallengeServiceImpl implements ChallengeService {
     // -----------------카테고리별 챌린지 조회 (페이징 적용) -----------------
     @Override
     public List<ChallengeDTO> getChallengesByCategoryId(int categoryIdx, int page, int size) {
+        challengeMapper.updateChallengesToEndStatus(LocalDateTime.now());
         int offset = (page - 1) * size;
         return challengeMapper.getChallengesByCategoryId(categoryIdx, offset, size);
     }

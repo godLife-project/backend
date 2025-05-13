@@ -122,5 +122,5 @@ public interface QnaService {
    */
   void deleteReply(int qnaIdx, int qnaReplyIdx, int userIdx);
 
-
+  void setQnaStatus(int qnaIdx, Integer userIdx, String setStatus, List<String> findStatus);
 }

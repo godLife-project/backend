@@ -8,7 +8,6 @@ import com.godLife.project.dto.qnaWebsocket.listMessage.QnaDetailMessageDTO;
 import com.godLife.project.enums.MessageStatus;
 import com.godLife.project.enums.QnaStatus;
 import com.godLife.project.exception.CustomException;
-import com.godLife.project.exception.WebSocketBusinessException;
 import com.godLife.project.handler.GlobalExceptionHandler;
 import com.godLife.project.service.interfaces.QnaService;
 import jakarta.validation.Valid;
@@ -154,6 +153,29 @@ public class QnaController {
     QnaDetailDTO response = qnaService.setQnaDetailForUser(base);
 
     return ResponseEntity.ok().body(handler.createResponse(200, response));
+  }
+
+  // 문의 완료 처리 api
+  @PatchMapping("/complete/{qnaIdx}")
+  public ResponseEntity<Map<String, Object>> setComplete(@RequestHeader("Authorization") String authHeader,
+                                                         @PathVariable int qnaIdx) {
+    int userIdx = handler.getUserIdxFromToken(authHeader);
+
+    if (qnaIdx == 0) {
+      throw new CustomException("완료 처리 할 문의를 선택 해주세요.", HttpStatus.BAD_REQUEST);
+    }
+    // 수정할 상태 값
+    String setStatus = QnaStatus.COMPLETE.getStatus();
+
+    // 조회할 문의의 상태
+    List<String> findStatus = new ArrayList<>();
+    findStatus.add(QnaStatus.RESPONDING.getStatus());
+    findStatus.add(QnaStatus.SLEEP.getStatus());
+
+    // 문의 상태 수정 (완료 처리)
+    qnaService.setQnaStatus(qnaIdx, userIdx, setStatus, findStatus);
+
+    return ResponseEntity.ok().body(handler.createResponse(200, "해당 문의가 완료 처리 되었습니다."));
   }
 
 

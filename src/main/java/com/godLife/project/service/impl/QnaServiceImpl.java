@@ -604,5 +604,40 @@ public class QnaServiceImpl implements QnaService {
     }
   }
 
+  @Override
+  public void setQnaStatus(int qnaIdx, Integer userIdx, String setStatus, List<String> findStatus) {
+    try {
+      // 문의 상태 수정 전 원본 조회
+      QnaDTO forValidate = qnaMapper.getQnaInfosByQnaIdx(qnaIdx, QnaStatus.DELETED.getStatus());
+
+      // 부모 문의 존재 유무 검증
+      if (forValidate == null) {
+        throw new CustomException("존재하지 않거나, 삭제된 문의 입니다.", HttpStatus.NOT_FOUND);
+      }
+
+      // 원본의 상태값이 findStatus 와 부합하는지 검증
+      if (!findStatus.contains(forValidate.getQnaStatus())) {
+        log.error("QnaService - setQnaStatus :: status 검증 불일치 [원본 status : {} ↔ 검증 satus : {}]", forValidate.getQnaStatus(), findStatus);
+        throw new CustomException("상태를 변경할 문의의 상태값이 부합하지 않습니다.", HttpStatus.UNPROCESSABLE_ENTITY);
+      }
+
+      // userIdx 가 있을 경우, 클라이언트의 요청으로 데이터 수정하는것으로 간주
+      // 수정 권한 있는지 검증
+      if (userIdx != null) {
+        boolean isWriter = whoAreYou(forValidate, userIdx);
+        log.info("{} - {} 의 요청으로 문의의 상태값을 {} 으로 변경합니다.", isWriter ? "작성자" : "상담원", userIdx, setStatus);
+      }
+
+      // 모든 검증 통과 시 문의 상태값 변경
+      qnaMapper.setQnaStatus(qnaIdx, setStatus, findStatus);
+    } catch (CustomException e) {
+      log.error("QnaService - setQnaStatus :: {}", e.getMessage());
+      throw e;
+    } catch (Exception e) {
+      log.error("QnaService - setQnaStatus :: 예기치 못한 에러가 발생 했습니다.", e);
+      throw e;
+    }
+  }
+
 
 }

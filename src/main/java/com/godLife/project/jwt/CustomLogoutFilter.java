@@ -115,7 +115,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
   }
 
   private String getRefreshTokenFromCookies(HttpServletRequest request) {
-    //printRequestDetails(request);
+    printRequestDetails(request);
     Cookie[] cookies = request.getCookies();
     if (cookies == null)  {
       log.warn("logoutFilter - NoDatabase :: 쿠키 없음");

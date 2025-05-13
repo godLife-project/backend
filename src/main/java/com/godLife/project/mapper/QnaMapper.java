@@ -137,4 +137,14 @@ public interface QnaMapper {
   @Delete("DELETE FROM QNA_REPLY WHERE QNA_REPLY_IDX = #{qnaReplyIdx} AND USER_IDX = #{userIdx}")
   void deleteReply(int qnaReplyIdx, int userIdx);
 
+  /**
+   * <strong>문의 상태 전환 쿼리</strong>
+   * <p>메소드 재사용을 위해 userbase 진행하지 않습니다.</p>
+   * <p>서비스단에서 유저 검증이 필요할 경우 검증 로직을 구현해주세요.</p>
+   * @param qnaIdx 상태를 전환 할 문의의 인덱스 번호
+   * @param setStatus 해당 파라미터를 통해 어떤 상태로 바꿀지 결정합니다.
+   * @param findStatus 해당 파라미터를 통해 어떤 상태의 문의를 update 할 지 결정합니다.
+   */
+  void setQnaStatus(int qnaIdx, String setStatus, List<String> findStatus);
+
 }

@@ -170,5 +170,16 @@
         AND Q_USER_IDX = #{userIdx}
     </update>
 
+    <!-- 문의 상태 전환 -->
+    <update id="setQnaStatus" parameterType="map">
+        UPDATE QNA_TABLE
+        SET QNA_STATUS = #{setStatus}
+        WHERE QNA_IDX = #{qnaIdx}
+        AND QNA_STATUS IN
+        <foreach collection="findStatus" item="status" open="(" separator=", " close=")">
+            #{status}
+        </foreach>
+    </update>
+
 
 </mapper>

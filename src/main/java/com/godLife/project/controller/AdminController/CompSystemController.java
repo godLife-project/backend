@@ -106,6 +106,12 @@ public class CompSystemController {
         return ResponseEntity.status(handler.getHttpStatus(404))
                 .body(handler.createResponse(404, "삭제할 FAQ 카테고리를 찾을 수 없습니다."));
       }
+    } catch (IllegalStateException e) {
+      // 연결된 FAQ 존재로 인한 삭제 불가 예외
+      log.warn("FAQ 카테고리 삭제 차단: {}", e.getMessage());
+      return ResponseEntity.status(handler.getHttpStatus(400))
+              .body(handler.createResponse(400, e.getMessage()));
+
     } catch (Exception e) {
       log.error("FAQ 카테고리 삭제 오류: {}", e.getMessage(), e);
       return ResponseEntity.status(handler.getHttpStatus(500))
@@ -181,9 +187,9 @@ public class CompSystemController {
 
   // QNA 카테고리 삭제
   @DeleteMapping("qnaCategory/{qnaCategoryIdx}")
-  public ResponseEntity<Map<String, Object>> deleteQnaCate(@PathVariable("qnaCategoryIdx") int qnaCategoryIdx){
+  public ResponseEntity<Map<String, Object>> deleteQnaCate(@PathVariable("qnaCategoryIdx") int categoryIdx){
     try {
-      int result = compSystemService.deleteQnaCate(qnaCategoryIdx);
+      int result = compSystemService.deleteQnaCate(categoryIdx);
       if (result > 0) {
         return ResponseEntity.ok(handler.createResponse(200, "QNA 카테고리 삭제 성공"));
       } else {

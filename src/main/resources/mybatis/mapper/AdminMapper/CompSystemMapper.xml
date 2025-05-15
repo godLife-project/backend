@@ -24,6 +24,12 @@
         WHERE FAQ_CATEGORY_IDX = #{faqCategoryIdx}
     </update>
 
+    <!-- FAQ_CATEGORY에 속한 FAQ 먼저 삭제 -->
+    <delete id="deleteFaqByCate" parameterType="int">
+        DELETE FROM FAQ_TABLE
+        WHERE FAQ_CATEGORY_IDX = #{faqCategoryIdx}
+    </delete>
+
     <!-- FAQ_CATEGORY 삭제 -->
     <delete id="deleteFaqCate" parameterType="int">
         DELETE FROM FAQ_CATEGORY WHERE FAQ_CATEGORY_IDX = #{faqCategoryIdx}
@@ -52,32 +58,38 @@
 
     <!-- QNA_CATEGORY 추가 -->
     <insert id="insertQnaCate" parameterType="com.godLife.project.dto.categories.QnaCateDTO">
-        INSERT INTO QNA_CATEGORY (QNA_CATEGORY_IDX, QNA_CATEGORY_NAME)
-        VALUES (QNA_CATEGORY_SEQ.NEXTVAL, #{qnaCategoryName})
+        INSERT INTO QNA_CATEGORY (categoryIdx, categoryName)
+        VALUES (QNA_CATEGORY_SEQ.NEXTVAL, #{categoryName})
     </insert>
 
     <!-- QNA_CATEGORY 수정 -->
     <update id="updateQnaCate" parameterType="com.godLife.project.dto.categories.QnaCateDTO">
         UPDATE QNA_CATEGORY
-        SET QNA_CATEGORY_NAME = #{qnaCategoryName}
-        WHERE QNA_CATEGORY_IDX = #{qnaCategoryIdx}
+        SET CATEGORY_NAME = #{categoryName}
+        WHERE CATEGORY_IDX = #{categoryIdx}
     </update>
+
+    <!-- QNA_CATEGORY에 속한 QNA 먼저 삭제 -->
+    <delete id="deleteQnaByCate" parameterType="int">
+        DELETE FROM QNA_TABLE
+        WHERE CATEGORY = #{category}
+    </delete>
 
     <!-- QNA_CATEGORY 삭제 -->
     <delete id="deleteQnaCate" parameterType="int">
-        DELETE FROM QNA_CATEGORY WHERE QNA_CATEGORY_IDX = #{qnaCategoryIdx}
+        DELETE FROM QNA_CATEGORY WHERE CATEGORY_IDX = #{categoryIdx}
     </delete>
 
     <!-- 참조 개수 조회 -->
     <select id="countQnaByCategory" parameterType="int" resultType="int">
-        SELECT COUNT(*) FROM QNA_TABLE WHERE CATEGORY = #{qnaCategoryIdx}
+        SELECT COUNT(*) FROM QNA_TABLE WHERE CATEGORY = #{category}
     </select>
 
     <!-- 중복 카테고리 확인 -->
     <select id = "countByQnaName" parameterType="String" resultType="int">
         SELECT COUNT(*)
         FROM QNA_CATEGORY
-        WHERE QNA_CATEGORY_NAME = #{qnaCategoryName}
+        WHERE CATEGORY_NAME = #{categoryName}
     </select>
 
 

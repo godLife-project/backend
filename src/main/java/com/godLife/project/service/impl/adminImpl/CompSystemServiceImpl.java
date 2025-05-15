@@ -43,13 +43,17 @@ public class CompSystemServiceImpl implements CompSystemService {
     return compSystemMapper.updateFaqCate(faqCateDTO);
   }
 
+  @Transactional
   // FAQ 카테고리 삭제
   public int deleteFaqCate(int faqCategoryIdx) {
     int count = compSystemMapper.countFaqByCategory(faqCategoryIdx);
-
+    // 만약 데이터가 있어도 FAQ까지 지울거면 해당 예외처리 삭제
     if (count > 0) {
-      throw new IllegalStateException("해당 카테고리는 현재 FAQ에서 사용 중입니다.");
+      throw new IllegalStateException("해당 카테고리에 연결된 FAQ가 존재하므로 삭제할 수 없습니다.");
     }
+
+     // FAQ 먼저 삭제
+    compSystemMapper.deleteFaqByCate(faqCategoryIdx);
     return compSystemMapper.deleteFaqCate(faqCategoryIdx);
   }
 
@@ -79,13 +83,14 @@ public class CompSystemServiceImpl implements CompSystemService {
   }
 
   // QNA 카테고리 삭제
-  public int deleteQnaCate(int qnaCategoryIdx) {
-    int count = compSystemMapper.countQnaByCategory(qnaCategoryIdx);
+  public int deleteQnaCate(int categoryIdx) {
+    int count = compSystemMapper.countQnaByCategory(categoryIdx);
 
     if (count > 0) {
       throw new IllegalStateException("해당 카테고리는 현재 QNA에서 사용 중입니다.");
     }
-    return compSystemMapper.deleteQnaCate(qnaCategoryIdx);
+    compSystemMapper.deleteQnaByCate(categoryIdx);
+    return compSystemMapper.deleteQnaCate(categoryIdx);
   }
 
   //                           TopMenu 카테고리 관리 테이블

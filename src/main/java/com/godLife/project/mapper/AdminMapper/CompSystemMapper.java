@@ -16,6 +16,7 @@ public interface CompSystemMapper {
   List<FaqCateDTO> selectAllFaqCate();      // FAQ 카테고리 조회
   int insertFaqCate(FaqCateDTO faqCateDTO); // FAQ 카테고리 추가
   int updateFaqCate(FaqCateDTO faqCateDTO); // FAQ 카테고리 수정
+  int deleteFaqByCate(int faqCategoryIdx);  // FAQ 삭제 (카테고리 삭제시)
   int deleteFaqCate(int faqCategoryIdx);    // FAQ 카테고리 삭제
   int countFaqByCategory(int faqCategoryIdx);   // FAQ 카테고리 참조 조회
   int countByFaqName(String faqCategoryName);   // FAQ 카테고리명 중복체크
@@ -24,9 +25,10 @@ public interface CompSystemMapper {
   List<QnaCateDTO> selectAllQnaCate();      // QNA 카테고리 조회
   int insertQnaCate(QnaCateDTO qnaCateDTO); // QNA 카테고리 추가
   int updateQnaCate(QnaCateDTO qnaCateDTO); // QNA 카테고리 수정
-  int deleteQnaCate(int qnaCategoryIdx);    // QNA 카테고리 삭제
-  int countQnaByCategory(int qnaCategoryIdx);   // QNA 카테고리 참조 조회
-  int countByQnaName(String qnaCategoryIdx);   // QNA 카테고리명 중복체크
+  int deleteQnaByCate(int categoryIdx);     // QNA 해당 카테고리 데이터 삭제
+  int deleteQnaCate(int categoryIdx);    // QNA 카테고리 삭제
+  int countQnaByCategory(int categoryIdx);   // QNA 카테고리 참조 조회
+  int countByQnaName(String categoryIdx);   // QNA 카테고리명 중복체크
 
   // Top Menu 카테고리 관리
   List<TopCateDTO> selectTopMenu();             // TopMenu 카테고리 조회

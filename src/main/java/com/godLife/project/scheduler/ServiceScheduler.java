@@ -1,5 +1,6 @@
 package com.godLife.project.scheduler;
 
+import com.godLife.project.mapper.ChallengeMapper;
 import com.godLife.project.service.impl.scheduleImpl.RoutineScheduleServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,12 +9,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
+import java.time.LocalDateTime;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class RoutineScheduler {
+public class ServiceScheduler {
 
   private final RoutineScheduleServiceImpl routineScheduleService;
+  private final ChallengeMapper challengeMapper;
 
   /*
     [Cron 표현식 설명]
@@ -78,5 +82,11 @@ public class RoutineScheduler {
   public void checkEveryTwoHours() {
     int result = routineScheduleService.deleteExpiredRefreshTokens();
     log.info(".....만료 된 모든 재발급 토큰을 삭제했습니다.....삭제된 토큰 수 ::> {}", result);
+  }
+
+  // 매 5분마다 실행
+  @Scheduled(cron = "0 0/5 * * * ?") // 5분
+  public void updateChallengeStatusToEnded() {
+    challengeMapper.updateChallengesToEndStatus(LocalDateTime.now());
   }
 }

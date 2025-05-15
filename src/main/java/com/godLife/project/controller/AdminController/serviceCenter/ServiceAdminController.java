@@ -49,10 +49,7 @@ public class ServiceAdminController {
     // 클라이언트에게 관리자 목록 전송
     List<ServiceCenterAdminInfos> accessAdminInfos = serviceAdminService.getAllAccessServiceAdminList();
 
-    List<ServiceCenterAdminList> accessAdminList = new ArrayList<>();
-    for (ServiceCenterAdminInfos info : accessAdminInfos) {
-      accessAdminList.add(new ServiceCenterAdminInfos(info));
-    }
+    List<ServiceCenterAdminList> accessAdminList = serviceAdminService.getAccessAdminListForMessage(accessAdminInfos);
     messageService.sendToAll(WSDestination.SUB_ACCESS_ADMIN_LIST.getDestination(), accessAdminList);
 
     return ResponseEntity.status(HttpStatus.OK).body(handler.createResponse(200, result));

@@ -142,4 +142,15 @@ public class ServiceAdminServiceImpl implements ServiceAdminService {
     }
   }
 
+  // 1:1 문의 관리자 명단 메세지 전송 패키징
+  @Override
+  public List<ServiceCenterAdminList> getAccessAdminListForMessage(List<ServiceCenterAdminInfos> accessAdminInfos) {
+    List<ServiceCenterAdminList> accessAdminList = new ArrayList<>();
+    for (ServiceCenterAdminInfos info : accessAdminInfos) {
+      accessAdminList.add(new ServiceCenterAdminInfos(info));
+    }
+
+    return accessAdminList;
+  }
+
 }

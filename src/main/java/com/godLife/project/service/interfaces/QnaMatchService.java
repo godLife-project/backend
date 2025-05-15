@@ -1,5 +1,6 @@
 package com.godLife.project.service.interfaces;
 
+import com.godLife.project.dto.qnaWebsocket.listMessage.MatchedListMessageDTO;
 import com.godLife.project.dto.qnaWebsocket.listMessage.WaitListMessageDTO;
 import com.godLife.project.dto.serviceAdmin.AdminIdxAndIdDTO;
 
@@ -27,4 +28,13 @@ public interface QnaMatchService {
      * @return WaitListMessageDTO
      */
     WaitListMessageDTO setWaitListForMessage(int qnaIdx, String status);
+
+    /**
+     * STOMP 응답 메시지 패키징 메서드 ::
+     * 매칭된 문의 리스트 최신화를 위해 DTO를 패키징 합니다.
+     * @param qnaIdx 추가,삭제,업데이트 할 문의의 인덱스 번호
+     * @param status 어떤 행동을 할 지 나타낼 상태값
+     * @return MatchedListMessageDTO
+     */
+    MatchedListMessageDTO setMatchedListForMessage(int qnaIdx, String status);
 }

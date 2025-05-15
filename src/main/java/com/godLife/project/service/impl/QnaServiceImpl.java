@@ -9,6 +9,8 @@ import com.godLife.project.dto.qnaWebsocket.QnaWaitListDTO;
 import com.godLife.project.dto.qnaWebsocket.listMessage.MatchedListMessageDTO;
 import com.godLife.project.dto.qnaWebsocket.listMessage.QnaDetailMessageDTO;
 import com.godLife.project.dto.qnaWebsocket.listMessage.WaitListMessageDTO;
+import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminInfos;
+import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminList;
 import com.godLife.project.enums.MessageStatus;
 import com.godLife.project.enums.QnaStatus;
 import com.godLife.project.enums.WSDestination;
@@ -18,6 +20,7 @@ import com.godLife.project.mapper.QnaMapper;
 import com.godLife.project.service.impl.redis.RedisService;
 import com.godLife.project.service.impl.websocketImpl.WebSocketMessageService;
 import com.godLife.project.service.interfaces.AdminInterface.serviceCenter.ServiceAdminService;
+import com.godLife.project.service.interfaces.QnaMatchService;
 import com.godLife.project.service.interfaces.QnaService;
 import com.godLife.project.service.interfaces.UserService;
 import com.godLife.project.utils.HtmlSanitizer;
@@ -42,6 +45,7 @@ public class QnaServiceImpl implements QnaService {
   private final WebSocketMessageService messageService;
   private final UserService userService;
   private final ServiceAdminService serviceAdminService;
+  private final QnaMatchService qnaMatchService;
 
   private static final String QNA_QUEUE_KEY = "qna_queue";
   private static final String QNA_WATCHER = "qna-watcher-";
@@ -89,13 +93,8 @@ public class QnaServiceImpl implements QnaService {
 
   // 매칭된 문의 리스트 조회 (개인)
   @Override
-  public MatchedListMessageDTO getlistAllMatchedQna(int adminIdx, String status, String username) {
+  public MatchedListMessageDTO getlistAllQnaByFindNotStatus(int adminIdx, String status, List<String> notStatus, String username) {
     try {
-      List<String> notStatus = new ArrayList<>();
-      notStatus.add(QnaStatus.WAIT.getStatus());
-      notStatus.add(QnaStatus.COMPLETE.getStatus());
-      notStatus.add(QnaStatus.DELETED.getStatus());
-
       List<QnaMatchedListDTO> matchedList = qnaMapper.getlistAllMatchedQna(adminIdx, notStatus);
       //System.out.println(matchedList);
       MatchedListMessageDTO request = new MatchedListMessageDTO();
@@ -104,7 +103,7 @@ public class QnaServiceImpl implements QnaService {
 
       return request;
     } catch (Exception e) {
-      throw new WebSocketBusinessException("매칭된 QnA 리스트를 불러오는 중 오류 발생", 5001, username);
+      throw new WebSocketBusinessException("QnA 리스트를 불러오는 중 오류 발생", 5001, username);
     }
   }
 
@@ -189,6 +188,16 @@ public class QnaServiceImpl implements QnaService {
         // 관리자가 작성 중일 경우 → 무조건 실행
         qnaMapper.increaseReplyCount(false, qnaParentIdx, setStatus, notStatus);
 
+        String findStatus = QnaStatus.CONNECT.getStatus();
+        qnaMapper.setQnaStatus(qnaParentIdx, QnaStatus.RESPONDING.getStatus(), Collections.singletonList(findStatus));
+
+        MatchedListMessageDTO matchedResponse = getMatchedSingleQna(
+            qnaParent.getAUserIdx(),
+            qnaParent.getQnaIdx(),
+            MessageStatus.UPDATE.getStatus(),
+            username
+        );
+        messageService.sendToUser(username, WSDestination.SUB_GET_MATCHED_QNA_LIST.getDestination(), matchedResponse);
       } else {
         // 유저가 작성 중일 경우
         if (!isWatched) {
@@ -626,10 +635,24 @@ public class QnaServiceImpl implements QnaService {
       if (userIdx != null) {
         boolean isWriter = whoAreYou(forValidate, userIdx);
         log.info("{} - {} 의 요청으로 문의의 상태값을 {} 으로 변경합니다.", isWriter ? "작성자" : "상담원", userIdx, setStatus);
+
+        // 모든 검증 통과 시 문의 상태값 변경
+        qnaMapper.setQnaStatus(qnaIdx, setStatus, findStatus);
+
+        // 매칭 리스트에 완료 된 문의 삭제 요청
+        String userId = userService.getUserIdByUserIdx(userIdx);
+
+        MatchedListMessageDTO matchedListQnAMessage = qnaMatchService.setMatchedListForMessage(qnaIdx,MessageStatus.REMOVE.getStatus());
+        messageService.sendToUser(userId, WSDestination.SUB_GET_MATCHED_QNA_LIST.getDestination(), matchedListQnAMessage);
+
+        // 상담원 명단 매칭수 최신화 하기
+        serviceAdminService.refreshMatchCount(userIdx);
+        List<ServiceCenterAdminInfos> accessAdminInfos = serviceAdminService.getAllAccessServiceAdminList();
+        List<ServiceCenterAdminList> accessAdminList = serviceAdminService.getAccessAdminListForMessage(accessAdminInfos);
+
+        messageService.sendToAll(WSDestination.SUB_ACCESS_ADMIN_LIST.getDestination(), accessAdminList);
       }
 
-      // 모든 검증 통과 시 문의 상태값 변경
-      qnaMapper.setQnaStatus(qnaIdx, setStatus, findStatus);
     } catch (CustomException e) {
       log.error("QnaService - setQnaStatus :: {}", e.getMessage());
       throw e;

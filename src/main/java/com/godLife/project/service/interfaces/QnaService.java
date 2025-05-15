@@ -25,7 +25,7 @@ public interface QnaService {
    * @param status 클라이언트에게 보여 줄 상태 값
    * @return MatchedListMessageDTO
    */
-  MatchedListMessageDTO getlistAllMatchedQna(int adminIdx, String status, String username);
+  MatchedListMessageDTO getlistAllQnaByFindNotStatus(int adminIdx, String status, List<String> notStatus, String username);
 
   /**
    * 특정 문의의 정보를 조회 합니다. 특정 문의가 파라미터로 입력 받은 관리자의 것인지

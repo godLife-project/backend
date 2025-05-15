@@ -9,11 +9,11 @@ import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminInfos;
 import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminList;
 import com.godLife.project.dto.test.TestChatDTO;
 import com.godLife.project.enums.MessageStatus;
+import com.godLife.project.enums.QnaStatus;
 import com.godLife.project.enums.WSDestination;
 import com.godLife.project.exception.CustomException;
 import com.godLife.project.exception.WebSocketBusinessException;
 import com.godLife.project.handler.GlobalExceptionHandler;
-import com.godLife.project.mapper.VerifyMapper;
 import com.godLife.project.service.impl.redis.RedisService;
 import com.godLife.project.service.impl.websocketImpl.WebSocketMessageService;
 import com.godLife.project.service.interfaces.AdminInterface.serviceCenter.ServiceAdminService;
@@ -106,7 +106,12 @@ public class ChatController {
     try {
       int adminIdx = handler.getUserIdxFromToken(authHeader);
 
-      MatchedListMessageDTO request = qnaService.getlistAllMatchedQna(adminIdx, MessageStatus.RELOAD.getStatus(), principal.getName());
+      List<String> notStatus = new ArrayList<>();
+      notStatus.add(QnaStatus.WAIT.getStatus());
+      notStatus.add(QnaStatus.COMPLETE.getStatus());
+      notStatus.add(QnaStatus.DELETED.getStatus());
+
+      MatchedListMessageDTO request = qnaService.getlistAllQnaByFindNotStatus(adminIdx, MessageStatus.RELOAD.getStatus(), notStatus, principal.getName());
       //System.out.println(request);
       // 사용자 식별 ID를 얻는 방법: principal.getName() → WebSocket 인증된 사용자명
       messageService.sendToUser(principal.getName(), WSDestination.SUB_GET_MATCHED_QNA_LIST.getDestination(), request);
@@ -213,6 +218,27 @@ public class ChatController {
   @MessageMapping("/close/detail")
   public void detailClose(Principal principal) {
     redisService.deleteData(QNA_WATCHER + principal.getName());
+  }
+
+  // 완료 처리된 문의 조회
+  @MessageMapping("/get/complete/qnaList/init")
+  public void getCompletedQnaList(Principal principal,
+                                  @Header("Authorization") String authHeader) {
+    try {
+      int adminIdx = handler.getUserIdxFromToken(authHeader);
+
+      List<String> notStatus = new ArrayList<>();
+      notStatus.add(QnaStatus.WAIT.getStatus());
+      notStatus.add(QnaStatus.CONNECT.getStatus());
+      notStatus.add(QnaStatus.DELETED.getStatus());
+      notStatus.add(QnaStatus.RESPONDING.getStatus());
+      notStatus.add(QnaStatus.SLEEP.getStatus());
+
+      MatchedListMessageDTO request = qnaService.getlistAllQnaByFindNotStatus(adminIdx, MessageStatus.RELOAD.getStatus(), notStatus, principal.getName());
+      messageService.sendToUser(principal.getName(), "/queue/completed/qna/list", request);
+    } catch (Exception e) {
+      throw new WebSocketBusinessException(e.getMessage(), 4001, principal.getName());
+    }
   }
 
   // 에러 메시지 처리

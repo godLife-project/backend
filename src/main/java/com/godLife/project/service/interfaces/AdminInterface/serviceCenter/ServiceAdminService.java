@@ -64,4 +64,12 @@ public interface ServiceAdminService {
    * @return {@code List<ServiceCenterAdminList>}
    */
   List<ServiceCenterAdminInfos> getAllAccessServiceAdminList();
+
+  /**
+   * <strong>STOMP 응답 메시지 패키징 메서드 ::</strong>
+   * 상담원 명단 최신화를 위해 DTO를 패키징 합니다.
+   * @param accessAdminInfos {@code List<ServiceCenterAdminInfos>} 상담원 리스트를 조회한 데이터를 넣어주세요.
+   * @return List<ServiceCenterAdminList>
+   */
+  List<ServiceCenterAdminList> getAccessAdminListForMessage(List<ServiceCenterAdminInfos> accessAdminInfos);
 }

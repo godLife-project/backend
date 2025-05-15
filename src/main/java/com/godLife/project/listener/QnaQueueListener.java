@@ -3,6 +3,8 @@ package com.godLife.project.listener;
 import com.godLife.project.dto.qnaWebsocket.listMessage.MatchedListMessageDTO;
 import com.godLife.project.dto.qnaWebsocket.listMessage.WaitListMessageDTO;
 import com.godLife.project.dto.serviceAdmin.AdminIdxAndIdDTO;
+import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminInfos;
+import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminList;
 import com.godLife.project.enums.MessageStatus;
 import com.godLife.project.enums.WSDestination;
 import com.godLife.project.service.impl.redis.RedisService;
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.QueryTimeoutException;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -98,6 +101,12 @@ public class QnaQueueListener implements InitializingBean, DisposableBean {
                   log.info("QnaQueueListener - autoMatch :: 문의 담당자에게 매칭되었습니다. ::> 매칭된 문의 - {} / 담당자 - {}", qnaIdx ,adminInfo);
 
                   messageService.sendToAll(WSDestination.SUB_GET_WAIT_QNA_LIST.getDestination(), waitQna);
+
+                  // 상담원 명단 매칭수 최신화 하기
+                  List<ServiceCenterAdminInfos> accessAdminInfos = serviceAdminService.getAllAccessServiceAdminList();
+                  List<ServiceCenterAdminList> accessAdminList = serviceAdminService.getAccessAdminListForMessage(accessAdminInfos);
+
+                  messageService.sendToAll(WSDestination.SUB_ACCESS_ADMIN_LIST.getDestination(), accessAdminList);
                 }
                 Thread.sleep(500);
               }

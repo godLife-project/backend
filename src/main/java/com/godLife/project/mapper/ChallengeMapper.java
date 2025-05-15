@@ -92,7 +92,7 @@ public interface ChallengeMapper {
             @Param("sort") String sort
     );
     // 진행 중인 챌린지를 종료 상태로 자동 변경
-    int updateChallengesToEndStatus(@Param("now") LocalDateTime now);
+    void updateChallengesToEndStatus(@Param("now") LocalDateTime now);
 
 
 

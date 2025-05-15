@@ -7,8 +7,8 @@ import com.godLife.project.enums.ChallengeState;
 import com.godLife.project.mapper.ChallJoinMapper;
 import com.godLife.project.mapper.ChallengeMapper;
 import com.godLife.project.service.interfaces.ChallengeService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,14 +22,9 @@ import java.util.Map;
 @Slf4j
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class ChallengeServiceImpl implements ChallengeService {
     private final ChallengeMapper challengeMapper;
-    private final ChallJoinMapper challJoinMapper;
-
-    public ChallengeServiceImpl(ChallengeMapper challengeMapper, ChallJoinMapper challengeJoinMapper) {
-        this.challengeMapper = challengeMapper;
-        this.challJoinMapper = challengeJoinMapper;
-    }
 
     // ----------------- 최신 챌린지 조회 (페이징 적용) -----------------
     @Override

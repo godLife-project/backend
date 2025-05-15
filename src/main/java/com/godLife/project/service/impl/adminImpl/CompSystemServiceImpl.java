@@ -1,5 +1,4 @@
 package com.godLife.project.service.impl.adminImpl;
-
 import com.godLife.project.dto.categories.FaqCateDTO;
 import com.godLife.project.dto.categories.QnaCateDTO;
 import com.godLife.project.dto.categories.TopCateDTO;

@@ -31,7 +31,7 @@ public class CompContentCntroller {
   //                                  목표 카테고리
 
   // 목표 카테고리 조회
-  @GetMapping("targetCategory")
+  @GetMapping("/targetCategory")
   public ResponseEntity<Map<String, Object>> targetCategoryList() {
     try {
       List<TargetCateDTO> categoryList = compContentService.targetCategoryList();
@@ -53,7 +53,7 @@ public class CompContentCntroller {
   }
 
   // 목표 카테고리 추가
-  @PostMapping("targetCategory")
+  @PostMapping("/targetCategory")
   public ResponseEntity<Map<String, Object>> createCategory(@RequestBody TargetCateDTO targetCateDTO) {
     try {
       int result = compContentService.insertTargetCategory(targetCateDTO);

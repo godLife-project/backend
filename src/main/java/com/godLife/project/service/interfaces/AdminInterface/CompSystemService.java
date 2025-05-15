@@ -22,6 +22,7 @@ public interface CompSystemService {
   int updateQnaCate(QnaCateDTO qnaCateDTO);       // QNA 카테고리 수정
   int deleteQnaCate(int categoryIdx);          // QNA 카테고리 삭제
 
+
   // Top Menu 관리
   List<TopCateDTO> selectTopMenu();
   int insertTopMenu(TopCateDTO topCateDTO);

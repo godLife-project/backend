@@ -14,7 +14,7 @@ public interface CompContentService {
   List<TargetCateDTO> targetCategoryList();                   // 목표 전체 카테고리 조회
   int insertTargetCategory(TargetCateDTO targetCateDTO);     // 목표 카테고리 등록
   int updateTargetCategory(TargetCateDTO targetCateDTO);    // 목표 카테고리 수정
-  int deleteTargetCategory(int targetCateIdx);             // 목표 카테고리 삭제
+  int softDeleteTargetCategory(int targetCateIdx);             // 목표 카테고리 삭제
 
   // 직업 카테고리
   List<JobCateDTO> getAllJobCategories();          // 직업 카테고리 전체 조회

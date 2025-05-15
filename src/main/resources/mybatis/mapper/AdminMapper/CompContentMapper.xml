@@ -15,6 +15,7 @@
         NVL(i.COLOR, '#999999') AS color
         FROM TARGET_CATEGORY t
         LEFT JOIN ICON_TABLE i ON t.ICON_KEY = i.ICON_KEY
+        WHERE IS_DELETED = FALSE
     </select>
     <!-- 추가 -->
     <insert id="insertTargetCategory" parameterType="com.godLife.project.dto.categories.TargetCateDTO">
@@ -35,10 +36,11 @@
         WHERE target_idx = #{idx}
     </update>
     <!-- 삭제 -->
-    <delete id="deleteTargetCategory" parameterType="int">
-        DELETE FROM TARGET_CATEGORY
+    <update id="softDeleteTargetCategory" parameterType="int">
+        UPDATE TARGET_CATEGORY
+        SET IS_DELETED = TRUE
         WHERE TARGET_IDX = #{idx}
-    </delete>
+    </update>
     <!-- 중복 카테고리 확인 -->
     <select id = "countByTargetCateName" parameterType="String" resultType="int">
         SELECT COUNT(*)

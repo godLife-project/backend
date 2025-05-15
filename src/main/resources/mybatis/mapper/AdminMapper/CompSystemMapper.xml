@@ -11,6 +11,13 @@
         FROM FAQ_CATEGORY
     </select>
 
+    <!-- FAQ CATEGORY 별 조회 -->
+    <select id="faqListByCategory" resultType="com.godLife.project.dto.contents.FaQDTO">
+        SELECT *
+        FROM FAQ_TABLE
+        WHERE FAQ_CATEGORY = #{faqCategory}
+    </select>
+
     <!-- FAQ_CATEGORY 추가 -->
     <insert id="insertFaqCate" parameterType="com.godLife.project.dto.categories.FaqCateDTO">
         INSERT INTO FAQ_CATEGORY (FAQ_CATEGORY_IDX, FAQ_CATEGORY_NAME)
@@ -27,7 +34,7 @@
     <!-- FAQ_CATEGORY에 속한 FAQ 먼저 삭제 -->
     <delete id="deleteFaqByCate" parameterType="int">
         DELETE FROM FAQ_TABLE
-        WHERE FAQ_CATEGORY_IDX = #{faqCategoryIdx}
+        WHERE FAQ_CATEGORY = #{faqCategory}
     </delete>
 
     <!-- FAQ_CATEGORY 삭제 -->
@@ -55,17 +62,25 @@
         SELECT *
         FROM QNA_CATEGORY
     </select>
+    <!-- QNA CATEGORY 별 조회 -->
+    <select id="qnaListByCategory" resultType="com.godLife.project.dto.list.QnaListDTO">
+        SELECT *
+        FROM QNA_TABLE
+        WHERE CATEGORY = #{category}
+    </select>
 
-    <!-- QNA_CATEGORY 추가 -->
+    <!-- QNA 카테고리 추가 -->
     <insert id="insertQnaCate" parameterType="com.godLife.project.dto.categories.QnaCateDTO">
-        INSERT INTO QNA_CATEGORY (categoryIdx, categoryName)
-        VALUES (QNA_CATEGORY_SEQ.NEXTVAL, #{categoryName})
+        INSERT INTO QNA_CATEGORY (CATEGORY_IDX, PARENT_IDX, CATEGORY_NAME, CATEGORY_LEVEL, CREATE_DATE, UPDATE_DATE, DEPRECATED)
+        VALUES (QNA_CATEGORY_SEQ.NEXTVAL, #{parentIdx}, #{categoryName}, #{categoryLevel}, SYSDATE, SYSDATE, 0)
     </insert>
 
     <!-- QNA_CATEGORY 수정 -->
     <update id="updateQnaCate" parameterType="com.godLife.project.dto.categories.QnaCateDTO">
         UPDATE QNA_CATEGORY
-        SET CATEGORY_NAME = #{categoryName}
+        SET
+            CATEGORY_NAME = #{categoryName},
+            PARENT_IDX = #{parentIdx}
         WHERE CATEGORY_IDX = #{categoryIdx}
     </update>
 
@@ -80,10 +95,22 @@
         DELETE FROM QNA_CATEGORY WHERE CATEGORY_IDX = #{categoryIdx}
     </delete>
 
+    <!-- 자식 카테고리 삭제 -->
+    <delete id="deleteChildQnaCategories" parameterType="int">
+        DELETE FROM QNA_CATEGORY WHERE PARENT_IDX = #{parentIdx}
+    </delete>
+
     <!-- 참조 개수 조회 -->
     <select id="countQnaByCategory" parameterType="int" resultType="int">
         SELECT COUNT(*) FROM QNA_TABLE WHERE CATEGORY = #{category}
     </select>
+
+    <!-- 자식 카테고리 개수 확인 -->
+    <select id="countQnaChildCategories" resultType="int">
+        SELECT COUNT(*) FROM QNA_CATEGORY
+        WHERE PARENT_IDX = #{parentIdx}
+    </select>
+
 
     <!-- 중복 카테고리 확인 -->
     <select id = "countByQnaName" parameterType="String" resultType="int">

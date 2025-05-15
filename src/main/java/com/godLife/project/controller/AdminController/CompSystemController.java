@@ -4,6 +4,8 @@ import com.godLife.project.dto.categories.FaqCateDTO;
 import com.godLife.project.dto.categories.QnaCateDTO;
 import com.godLife.project.dto.categories.TopCateDTO;
 import com.godLife.project.dto.datas.IconDTO;
+import com.godLife.project.exception.FaqCategoryDeletePendingException;
+import com.godLife.project.exception.QnaCategoryDeletePendingException;
 import com.godLife.project.handler.GlobalExceptionHandler;
 import com.godLife.project.service.interfaces.AdminInterface.CompSystemService;
 import lombok.extern.slf4j.Slf4j;
@@ -97,25 +99,19 @@ public class CompSystemController {
 
   // FAQ 카테고리 삭제
   @DeleteMapping("faqCategory/{faqCategoryIdx}")
-  public ResponseEntity<Map<String, Object>> deleteFaqCate(@PathVariable("faqCategoryIdx") int faqCategoryIdx){
+  public ResponseEntity<?> deleteFaqCate(@PathVariable int faqCategoryIdx) {
     try {
       int result = compSystemService.deleteFaqCate(faqCategoryIdx);
-      if (result > 0) {
-        return ResponseEntity.ok(handler.createResponse(200, "FAQ 카테고리 삭제 성공"));
-      } else {
-        return ResponseEntity.status(handler.getHttpStatus(404))
-                .body(handler.createResponse(404, "삭제할 FAQ 카테고리를 찾을 수 없습니다."));
-      }
-    } catch (IllegalStateException e) {
-      // 연결된 FAQ 존재로 인한 삭제 불가 예외
-      log.warn("FAQ 카테고리 삭제 차단: {}", e.getMessage());
-      return ResponseEntity.status(handler.getHttpStatus(400))
-              .body(handler.createResponse(400, e.getMessage()));
-
+      return ResponseEntity.ok(handler.createResponse(200, "FAQ 카테고리 삭제 성공"));
+    } catch (FaqCategoryDeletePendingException e) {
+      return ResponseEntity.status(400).body(Map.of(
+              "code", 400,
+              "message", e.getMessage(),
+              "faqList", e.getPendingFaqList()
+      ));
     } catch (Exception e) {
       log.error("FAQ 카테고리 삭제 오류: {}", e.getMessage(), e);
-      return ResponseEntity.status(handler.getHttpStatus(500))
-              .body(handler.createResponse(500, "서버 오류 발생"));
+      return ResponseEntity.status(500).body(handler.createResponse(500, "서버 오류"));
     }
   }
 
@@ -133,11 +129,11 @@ public class CompSystemController {
       }
 
       Map<String, Object> response = handler.createResponse(200, "QNA 카테고리 조회 성공");
-      response.put("faqCategory", qnaCateDTOList);
+      response.put("qnaCategory", qnaCateDTOList);
 
       return ResponseEntity.ok(response);
     } catch (Exception e) {
-      log.error("FAQ 카테고리 조회 실패: {}", e.getMessage());
+      log.error("QNA 카테고리 조회 실패: {}", e.getMessage());
       return ResponseEntity.status(handler.getHttpStatus(500))
               .body(handler.createResponse(500, "서버 오류로 인해 QNA 카테고리 조회에 실패했습니다."));
     }
@@ -185,19 +181,18 @@ public class CompSystemController {
     }
   }
 
+
   // QNA 카테고리 삭제
   @DeleteMapping("qnaCategory/{qnaCategoryIdx}")
-  public ResponseEntity<Map<String, Object>> deleteQnaCate(@PathVariable("qnaCategoryIdx") int categoryIdx){
+  public ResponseEntity<Map<String, Object>> deleteQnaCate(@PathVariable("qnaCategoryIdx") int categoryIdx) {
     try {
       int result = compSystemService.deleteQnaCate(categoryIdx);
-      if (result > 0) {
-        return ResponseEntity.ok(handler.createResponse(200, "QNA 카테고리 삭제 성공"));
-      } else {
-        return ResponseEntity.status(handler.getHttpStatus(404))
-                .body(handler.createResponse(404, "삭제할 QNA 카테고리를 찾을 수 없습니다."));
-      }
+      return ResponseEntity.ok(handler.createResponse(200, "QNA 카테고리 삭제 성공"));
+    } catch (QnaCategoryDeletePendingException e) {
+      return ResponseEntity.status(409)
+              .body(handler.createResponseWithData(409, e.getMessage(), e.getQnaList())); // 이 부분이 handler에 없다면 method 추가 필요
     } catch (Exception e) {
-      log.error("QNA 카테고리 삭제 오류: {}", e.getMessage(), e);
+      log.error("QNA 카테고리 삭제 오류", e);
       return ResponseEntity.status(handler.getHttpStatus(500))
               .body(handler.createResponse(500, "서버 오류 발생"));
     }

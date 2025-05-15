@@ -15,7 +15,7 @@ public interface CompContentMapper {
   List<TargetCateDTO> targetCategoryList();                 // 목표 전체 카테고리 조회
   int insertTargetCategory(TargetCateDTO targetCateDTO);    // 목표 카테고리 등록
   int updateTargetCategory(TargetCateDTO targetCateDTO);    // 목표 카테고리 수정
-  int deleteTargetCategory(int targetCateIdx);              // 목표 카테고리 삭제
+  int softDeleteTargetCategory(int targetCateIdx);              // 목표 카테고리 삭제
   int countByTargetCateName(String targetCateName);         // 같은 이름의 카테고리 수를 반환 (중복 체크용)
   int countTargetCateNameExceptSelf(@Param("name") String name, @Param("idx") Long idx); //수정시 중복체크할 때 자기자신 제외
 

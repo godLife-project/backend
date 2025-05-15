@@ -104,7 +104,7 @@ public class CompContentCntroller {
   @DeleteMapping("targetCategory/{targetCateIdx}")
   public ResponseEntity<Map<String, Object>> deleteCategory(@PathVariable int targetCateIdx) {
     try {
-      int result = compContentService.deleteTargetCategory(targetCateIdx);
+      int result = compContentService.softDeleteTargetCategory(targetCateIdx);
 
       if (result > 0) {
         return ResponseEntity.ok(handler.createResponse(200, "목표 카테고리 삭제 성공"));

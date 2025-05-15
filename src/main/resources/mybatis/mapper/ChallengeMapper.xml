@@ -229,13 +229,4 @@
         OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
     </select>
 
-    <!-- 진행 중인 챌린지를 종료 상태로 자동 변경 -->
-    <update id="updateChallengesToEndStatus" parameterType="java.time.LocalDateTime">
-        UPDATE CHALL_TABLE
-        SET CHALL_STATE = '종료됨'
-        WHERE CHALL_STATE = '진행중'
-        AND CHALL_END_TIME &lt;= #{now}
-    </update>
-
-
 </mapper>

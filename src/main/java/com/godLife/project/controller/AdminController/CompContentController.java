@@ -17,7 +17,7 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequestMapping("/api/admin/compContent")
-public class CompContentCntroller {
+public class CompContentController {
   @Autowired
   private GlobalExceptionHandler handler;
   
@@ -25,7 +25,7 @@ public class CompContentCntroller {
   private final CompContentService compContentService;
   
 
-  public CompContentCntroller(CompContentService compContentService) {
+  public CompContentController(CompContentService compContentService) {
     this.compContentService = compContentService;
   }
   //                                  목표 카테고리
@@ -101,10 +101,10 @@ public class CompContentCntroller {
   }
 
   // 목표 카테고리 삭제
-  @DeleteMapping("targetCategory/{targetCateIdx}")
-  public ResponseEntity<Map<String, Object>> deleteCategory(@PathVariable int targetCateIdx) {
+  @DeleteMapping("targetCategory/{idx}")
+  public ResponseEntity<Map<String, Object>> deleteCategory(@PathVariable int idx) {
     try {
-      int result = compContentService.softDeleteTargetCategory(targetCateIdx);
+      int result = compContentService.softDeleteTargetCategory(idx);
 
       if (result > 0) {
         return ResponseEntity.ok(handler.createResponse(200, "목표 카테고리 삭제 성공"));

@@ -51,7 +51,7 @@
     <select id="countTargetCateNameExceptSelf" resultType="int">
         SELECT COUNT(*)
         FROM TARGET_CATEGORY
-        WHERE NAME = #{name}
+        WHERE TARGET_NAME = #{name}
         AND TARGET_IDX != #{idx}
     </select>
 

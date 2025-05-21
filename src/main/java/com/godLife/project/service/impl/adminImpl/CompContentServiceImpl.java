@@ -51,8 +51,8 @@ public class CompContentServiceImpl implements CompContentService {
   }
 
   //  목표 카테고리 삭제
-  public int softDeleteTargetCategory(int targetCateIdx) {
-    return compContentMapper.softDeleteTargetCategory(targetCateIdx);
+  public int softDeleteTargetCategory(int idx) {
+    return compContentMapper.softDeleteTargetCategory(idx);
   }
 
 

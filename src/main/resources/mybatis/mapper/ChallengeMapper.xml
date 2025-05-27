@@ -126,18 +126,16 @@
     <!-- 인증 기록 저장 -->
     <insert id="insertVerify">
     INSERT INTO VERIFY_TABLE (
-        VERIFY_IDX, CHALL_IDX, USER_IDX,  VERIFY_DATE, ELAPSED_TIME)
+        VERIFY_IDX, CHALL_IDX, USER_IDX,  VERIFY_DATE, START_TIME, END_TIME, ELAPSED_TIME)
     VALUES (
-        VERIFY_SEQ.NEXTVAL, #{challIdx}, #{userIdx}, SYSDATE, #{elapsedTime}
+        VERIFY_SEQ.NEXTVAL, #{challIdx}, #{userIdx}, SYSDATE, #{startTime}, #{endTime}, #{elapsedTime}
     )
     </insert>
 
     <!-- challJoin 업데이트 메퍼 -->
     <update id="updateChallJoin">
         UPDATE CHALL_JOIN
-        SET START_TIME = #{startTime},
-        END_TIME = #{endTime},
-        ACTIVITY = #{activity}
+        SET ACTIVITY = #{activity}
         WHERE CHALL_IDX = #{challIdx}
         AND USER_IDX = #{userIdx}
     </update>
@@ -148,8 +146,6 @@
         CHALL_JOIN_IDX,
         CHALL_IDX,
         USER_IDX,
-        START_TIME,
-        END_TIME,
         ACTIVITY
         FROM CHALL_JOIN
         WHERE CHALL_IDX = #{challIdx}

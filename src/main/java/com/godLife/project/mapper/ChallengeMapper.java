@@ -48,6 +48,8 @@ public interface ChallengeMapper {
     int insertVerify(
             @Param("challIdx") Long challIdx,
             @Param("userIdx") Long userIdx,
+            @Param("startTime") LocalDateTime startTime,
+            @Param("endTime") LocalDateTime endTime,
             @Param("elapsedTime") Long elapsedTime
     );
     // 활동 정보 갱신

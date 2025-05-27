@@ -22,7 +22,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AdminUserController {
     private final AdminUserService adminUserService;
-    @Autowired
+
+
     private GlobalExceptionHandler handler;
 
     // 유저 정보 리스트 조회

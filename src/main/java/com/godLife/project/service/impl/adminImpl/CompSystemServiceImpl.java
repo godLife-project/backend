@@ -147,11 +147,6 @@ public class CompSystemServiceImpl implements CompSystemService {
 
 
   //                           TopMenu 카테고리 관리 테이블
-  // 조회
-  @Override
-  public List<TopCateDTO> selectTopMenu() {
-    return compSystemMapper.selectTopMenu();
-  }
 
   // 추가
   @Override
@@ -187,10 +182,6 @@ public class CompSystemServiceImpl implements CompSystemService {
   }
 
   //                           ICON 관리 테이블
-  // ICON   조회
-  public List<IconDTO> selectIcon() {
-    return compSystemMapper.selectIcon();
-  }
 
   // ICON 추가
   public int insertIcon(IconDTO iconDTO) {
@@ -217,4 +208,16 @@ public class CompSystemServiceImpl implements CompSystemService {
   public int deleteIcon(String iconKey) {
     return compSystemMapper.deleteIcon(iconKey);
   }
+
+  /*
+    // 조회
+  public List<TopCateDTO> selectTopMenu() {
+    return compSystemMapper.selectTopMenu();
+  }
+
+  // ICON   조회
+  public List<IconDTO> selectIcon() {
+    return compSystemMapper.selectIcon();
+  }
+   */
 }

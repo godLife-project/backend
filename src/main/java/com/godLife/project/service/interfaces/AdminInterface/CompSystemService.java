@@ -24,16 +24,18 @@ public interface CompSystemService {
 
 
   // Top Menu 관리
-  List<TopCateDTO> selectTopMenu();
   int insertTopMenu(TopCateDTO topCateDTO);
   int updateTopMenu(TopCateDTO topCateDTO);
   int deleteTopMenu(int topIdx);
   void updateOrderTopMenu(List<TopCateDTO> orderedList); // 드래그 앤 드롭용
 
   // ICON 테이블 관리
-  List<IconDTO> selectIcon();                // ICON  조회
   int insertIcon(IconDTO iconDTO);           // ICON  추가
   int updateIcon(IconDTO iconDTO);           // ICON  수정
   int deleteIcon(String iconKey);            // ICON  삭제
 
+  /*
+  List<TopCateDTO> selectTopMenu();          // 탑메뉴 조회
+  List<IconDTO> selectIcon();                // ICON  조회
+   */
 }

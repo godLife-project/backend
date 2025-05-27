@@ -21,7 +21,6 @@ public interface CategoryMapper {
     List<TargetCateDTO> getAllTargetCategories();
 
     // 챌린지 카테고리 조회
-    @Select("SELECT * FROM CHALL_CATEGORY")
     List<ChallengeCateDTO> getAllChallCategories();
     // 숏컷 카테고리
     @Select("SELECT * FROM SHORTCUT_CATEGORY")

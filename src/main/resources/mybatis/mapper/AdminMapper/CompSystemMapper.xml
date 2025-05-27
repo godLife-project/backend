@@ -122,10 +122,6 @@
 
     <!--            TOP MENU 관리 테이블 CRUD Mapper         -->
 
-    <!-- 조회 -->
-    <select id="selectTopMenu" resultType="com.godLife.project.dto.categories.TopCateDTO">
-        SELECT * FROM TOP_CATEGORY ORDER BY ORD_IDX ASC
-    </select>
 
     <!-- 추가 -->
     <insert id="insertTopMenu" parameterType="com.godLife.project.dto.categories.TopCateDTO">
@@ -169,10 +165,6 @@
     </update>
 
             <!--            ICON 관리 테이블 CRUD Mapper         -->
-    <!-- 조회 -->
-    <select id="selectIcon" resultType="com.godLife.project.dto.datas.IconDTO">
-        SELECT * FROM ICON_TABLE
-    </select>
 
     <!-- 추가 -->
     <insert id="insertIcon" parameterType="com.godLife.project.dto.datas.IconDTO">
@@ -219,4 +211,16 @@
         WHERE ICON_KEY = #{newKey}
         AND ICON_KEY != #{originalKey}
     </select>
+
+    <!--
+        < 탑메뉴 조회 >
+    <select id="selectTopMenu" resultType="com.godLife.project.dto.categories.TopCateDTO">
+        SELECT * FROM TOP_CATEGORY ORDER BY ORD_IDX ASC
+    </select>
+        < 아이콘 조회 >
+    <select id="selectIcon" resultType="com.godLife.project.dto.datas.IconDTO">
+        SELECT * FROM ICON_TABLE
+    </select>
+
+    -->
 </mapper>

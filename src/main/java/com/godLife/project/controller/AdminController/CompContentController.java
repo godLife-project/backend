@@ -28,29 +28,9 @@ public class CompContentController {
   public CompContentController(CompContentService compContentService) {
     this.compContentService = compContentService;
   }
-  //                                  목표 카테고리
 
-  // 목표 카테고리 조회
-  @GetMapping("/targetCategory")
-  public ResponseEntity<Map<String, Object>> targetCategoryList() {
-    try {
-      List<TargetCateDTO> categoryList = compContentService.targetCategoryList();
 
-      if (categoryList.isEmpty()) {
-        return ResponseEntity.status(handler.getHttpStatus(404))
-                .body(handler.createResponse(404, "등록된 목표 카테고리가 없습니다."));
-      }
-
-      Map<String, Object> response = handler.createResponse(200, "목표 카테고리 조회 성공");
-      response.put("categories", categoryList);
-
-      return ResponseEntity.ok(response);
-    } catch (Exception e) {
-      log.error("목표 카테고리 조회 실패: {}", e.getMessage());
-      return ResponseEntity.status(handler.getHttpStatus(500))
-              .body(handler.createResponse(500, "서버 오류로 인해 카테고리 조회에 실패했습니다."));
-    }
-  }
+  //                                  목표
 
   // 목표 카테고리 추가
   @PostMapping("/targetCategory")
@@ -122,27 +102,6 @@ public class CompContentController {
 
 
   //                                  직업 카테고리
-  // 직업 카테고리 조회
-  @GetMapping("jobCategory")
-  public ResponseEntity<Map<String, Object>> jobCategoryList() {
-    try {
-      List<JobCateDTO> jobCategoryList = compContentService.getAllJobCategories();
-
-      if (jobCategoryList.isEmpty()) {
-        return ResponseEntity.status(handler.getHttpStatus(404))
-                .body(handler.createResponse(404, "등록된 직업 카테고리가 없습니다."));
-      }
-
-      Map<String, Object> response = handler.createResponse(200, "직업 카테고리 조회 성공");
-      response.put("categories", jobCategoryList);
-
-      return ResponseEntity.ok(response);
-    } catch (Exception e) {
-      log.error("직업 카테고리 조회 실패: {}", e.getMessage());
-      return ResponseEntity.status(handler.getHttpStatus(500))
-              .body(handler.createResponse(500, "서버 오류로 인해 카테고리 조회에 실패했습니다."));
-    }
-  }
 
   // 직업 카테고리 추가
   @PostMapping("/jobCategory")
@@ -203,27 +162,7 @@ public class CompContentController {
   }
 
 
-  //                                  등급(불꽃) 관리 테이블
-  @GetMapping("fire")
-  public ResponseEntity<Map<String, Object>> selectAllFireGrades(FireDTO fireDTO) {
-    try {
-      List<FireDTO> fireDTOList = compContentService.selectAllFireGrades();
-
-      if (fireDTOList.isEmpty()) {
-        return ResponseEntity.status(handler.getHttpStatus(404))
-                .body(handler.createResponse(404, "등록된 등급(불꽃)이 없습니다."));
-      }
-
-      Map<String, Object> response = handler.createResponse(200, "등급(불꽃) 조회 성공");
-      response.put("fire", fireDTOList);
-
-      return ResponseEntity.ok(response);
-    } catch (Exception e) {
-      log.error("등급(불꽃) 조회 실패: {}", e.getMessage());
-      return ResponseEntity.status(handler.getHttpStatus(500))
-              .body(handler.createResponse(500, "서버 오류로 인해 등급(불꽃) 조회에 실패했습니다."));
-    }
-  }
+  //                                  등급(불꽃) 관리
 
   // 등급(불꽃) 추가
   @PostMapping("fire")
@@ -286,29 +225,8 @@ public class CompContentController {
     }
   }
 
-  //                                  등급(불꽃) 관리 테이블
 
-  // 조회
-  @GetMapping("challCate")
-  public ResponseEntity<Map<String, Object>> selectChallCate() {
-    try {
-      List<ChallengeCateDTO> categoryList = compContentService.selectChallCate();
-
-      if (categoryList.isEmpty()) {
-        return ResponseEntity.status(handler.getHttpStatus(404))
-                .body(handler.createResponse(404, "등록된 챌린지 카테고리가 없습니다."));
-      }
-
-      Map<String, Object> response = handler.createResponse(200, "챌린지 카테고리 조회 성공");
-      response.put("categories", categoryList);
-
-      return ResponseEntity.ok(response);
-    } catch (Exception e) {
-      log.error("챌린지 카테고리 조회 실패: {}", e.getMessage());
-      return ResponseEntity.status(handler.getHttpStatus(500))
-              .body(handler.createResponse(500, "서버 오류로 인해 카테고리 조회에 실패했습니다."));
-    }
-  }
+  //                                 챌린지 카테고리 관리 테이블
 
   // 챌린지 카테고리 추가
   @PostMapping("challCate")
@@ -371,3 +289,96 @@ public class CompContentController {
     }
   }
 }
+
+
+
+/*
+  // 목표 카테고리 조회
+  @GetMapping("/targetCategory")
+  public ResponseEntity<Map<String, Object>> targetCategoryList() {
+    try {
+      List<TargetCateDTO> categoryList = compContentService.targetCategoryList();
+
+      if (categoryList.isEmpty()) {
+        return ResponseEntity.status(handler.getHttpStatus(404))
+                .body(handler.createResponse(404, "등록된 목표 카테고리가 없습니다."));
+      }
+
+      Map<String, Object> response = handler.createResponse(200, "목표 카테고리 조회 성공");
+      response.put("categories", categoryList);
+
+      return ResponseEntity.ok(response);
+    } catch (Exception e) {
+      log.error("목표 카테고리 조회 실패: {}", e.getMessage());
+      return ResponseEntity.status(handler.getHttpStatus(500))
+              .body(handler.createResponse(500, "서버 오류로 인해 카테고리 조회에 실패했습니다."));
+    }
+  }
+  
+  
+// 직업 카테고리 조회
+  @GetMapping("jobCategory")
+  public ResponseEntity<Map<String, Object>> jobCategoryList() {
+    try {
+      List<JobCateDTO> jobCategoryList = compContentService.getAllJobCategories();
+
+      if (jobCategoryList.isEmpty()) {
+        return ResponseEntity.status(handler.getHttpStatus(404))
+                .body(handler.createResponse(404, "등록된 직업 카테고리가 없습니다."));
+      }
+
+      Map<String, Object> response = handler.createResponse(200, "직업 카테고리 조회 성공");
+      response.put("categories", jobCategoryList);
+
+      return ResponseEntity.ok(response);
+    } catch (Exception e) {
+      log.error("직업 카테고리 조회 실패: {}", e.getMessage());
+      return ResponseEntity.status(handler.getHttpStatus(500))
+              .body(handler.createResponse(500, "서버 오류로 인해 카테고리 조회에 실패했습니다."));
+    }
+  }
+  
+  // 등급
+@GetMapping("fire")
+  public ResponseEntity<Map<String, Object>> selectAllFireGrades(FireDTO fireDTO) {
+    try {
+      List<FireDTO> fireDTOList = compContentService.selectAllFireGrades();
+
+      if (fireDTOList.isEmpty()) {
+        return ResponseEntity.status(handler.getHttpStatus(404))
+                .body(handler.createResponse(404, "등록된 등급(불꽃)이 없습니다."));
+      }
+
+      Map<String, Object> response = handler.createResponse(200, "등급(불꽃) 조회 성공");
+      response.put("fire", fireDTOList);
+
+      return ResponseEntity.ok(response);
+    } catch (Exception e) {
+      log.error("등급(불꽃) 조회 실패: {}", e.getMessage());
+      return ResponseEntity.status(handler.getHttpStatus(500))
+              .body(handler.createResponse(500, "서버 오류로 인해 등급(불꽃) 조회에 실패했습니다."));
+    }
+  }
+  
+  // 챌린지
+ @GetMapping("challCate")
+  public ResponseEntity<Map<String, Object>> selectChallCate() {
+    try {
+      List<ChallengeCateDTO> categoryList = compContentService.selectChallCate();
+
+      if (categoryList.isEmpty()) {
+        return ResponseEntity.status(handler.getHttpStatus(404))
+                .body(handler.createResponse(404, "등록된 챌린지 카테고리가 없습니다."));
+      }
+
+      Map<String, Object> response = handler.createResponse(200, "챌린지 카테고리 조회 성공");
+      response.put("categories", categoryList);
+
+      return ResponseEntity.ok(response);
+    } catch (Exception e) {
+      log.error("챌린지 카테고리 조회 실패: {}", e.getMessage());
+      return ResponseEntity.status(handler.getHttpStatus(500))
+              .body(handler.createResponse(500, "서버 오류로 인해 카테고리 조회에 실패했습니다."));
+    }
+  }
+ */

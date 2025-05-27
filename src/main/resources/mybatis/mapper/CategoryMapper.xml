@@ -31,4 +31,16 @@
     ORDER BY TC.TARGET_IDX
   </select>
 
+  <!-- 챌린지 카테고리 조회 -->
+  <select id="getAllChallCategories" resultType="com.godLife.project.dto.categories.ChallengeCateDTO">
+    SELECT
+    j.CHALL_CATEGORY_IDX AS challCateIdx,
+    j.CHALL_NAME AS challName,
+    j.ICON_KEY AS iconKey,
+    i.ICON AS icon,
+    i.COLOR AS color
+    FROM CHALL_CATEGORY j
+    LEFT JOIN ICON_TABLE i ON j.ICON_KEY = i.ICON_KEY
+  </select>
+
 </mapper>

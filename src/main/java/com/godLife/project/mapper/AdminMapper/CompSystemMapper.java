@@ -38,7 +38,6 @@ public interface CompSystemMapper {
   int countByQnaName(String categoryIdx);   // QNA 카테고리명 중복체크
 
   // Top Menu 카테고리 관리
-  List<TopCateDTO> selectTopMenu();             // TopMenu 카테고리 조회
   int insertTopMenu(TopCateDTO dto);               // TopMenu 카테고리 추가
   int updateTopMenu(TopCateDTO dto);               // TopMenu 카테고리 수정
   int deleteTopMenu(int topIdx);                   // TopMenu 카테고리 삭제
@@ -46,10 +45,14 @@ public interface CompSystemMapper {
   int countByTopMenuName(String topName);         // TopMenu 카테고리명 중복체크
 
   // ICON 테이블 관리
-  List<IconDTO> selectIcon();             // ICON  조회
   int insertIcon(IconDTO iconDTO);               // ICON  추가
   int updateIcon(IconDTO iconDTO);               // ICON  수정
   int deleteIcon(String iconKey);                   // ICON  삭제
   int countByIconName(String iconKey);         // ICON  중복체크
   int countByIconKeyExcludingSelf(@Param("newKey") String newKey, @Param("originalKey") String originalKey); // 자기 자신 제외
+
+  /*
+  List<TopCateDTO> selectTopMenu();             // TopMenu 카테고리 조회
+  List<IconDTO> selectIcon();             // ICON  조회
+   */
 }

@@ -200,27 +200,6 @@ public class CompSystemController {
 
 
   //                                  Top Menu 관리 테이블
-  // Top Menu  조회
-  @GetMapping("/topMenu")
-  public ResponseEntity<Map<String, Object>> selectTopMenu() {
-    try {
-      List<TopCateDTO> TopMenuList = compSystemService.selectTopMenu();
-
-      if (TopMenuList.isEmpty()) {
-        return ResponseEntity.status(handler.getHttpStatus(404))
-                .body(handler.createResponse(404, "등록된 TopMenu 가 없습니다."));
-      }
-
-      Map<String, Object> response = handler.createResponse(200, "TopMenu 조회 성공");
-      response.put("TopMenu", TopMenuList);
-
-      return ResponseEntity.ok(response);
-    } catch (Exception e) {
-      log.error("TopMenu 조회 실패: {}", e.getMessage());
-      return ResponseEntity.status(handler.getHttpStatus(500))
-              .body(handler.createResponse(500, "서버 오류로 인해 TopMenu 조회에 실패했습니다."));
-    }
-  }
 
   // TopMenu 추가
   @PostMapping("/topMenu")
@@ -295,29 +274,8 @@ public class CompSystemController {
     }
 }
 
+
   //                                  ICON 관리 테이블
-  // ICON 조회
-  @GetMapping("/icon")
-  public ResponseEntity<Map<String, Object>> selectIcon() {
-    try {
-      List<IconDTO> IconDTOList = compSystemService.selectIcon();
-
-      if (IconDTOList.isEmpty()) {
-        return ResponseEntity.status(handler.getHttpStatus(404))
-                .body(handler.createResponse(404, "등록된 ICON 이 없습니다."));
-      }
-
-      Map<String, Object> response = handler.createResponse(200, "ICON 조회 성공");
-      response.put("ICON", IconDTOList);
-
-      return ResponseEntity.ok(response);
-    } catch (Exception e) {
-      log.error("ICON 조회 실패: {}", e.getMessage());
-      return ResponseEntity.status(handler.getHttpStatus(500))
-              .body(handler.createResponse(500, "서버 오류로 인해 ICON 조회에 실패했습니다."));
-    }
-  }
-
   // ICON 추가
   @PostMapping("/icon")
   public ResponseEntity<Map<String, Object>> insertIcon(@RequestBody IconDTO iconDTO) {
@@ -377,4 +335,51 @@ public class CompSystemController {
               .body(handler.createResponse(500, "서버 오류 발생"));
     }
   }
+
+
+  /*
+   // Top Menu  조회
+  @GetMapping("/topMenu")
+  public ResponseEntity<Map<String, Object>> selectTopMenu() {
+    try {
+      List<TopCateDTO> TopMenuList = compSystemService.selectTopMenu();
+
+      if (TopMenuList.isEmpty()) {
+        return ResponseEntity.status(handler.getHttpStatus(404))
+                .body(handler.createResponse(404, "등록된 TopMenu 가 없습니다."));
+      }
+
+      Map<String, Object> response = handler.createResponse(200, "TopMenu 조회 성공");
+      response.put("TopMenu", TopMenuList);
+
+      return ResponseEntity.ok(response);
+    } catch (Exception e) {
+      log.error("TopMenu 조회 실패: {}", e.getMessage());
+      return ResponseEntity.status(handler.getHttpStatus(500))
+              .body(handler.createResponse(500, "서버 오류로 인해 TopMenu 조회에 실패했습니다."));
+    }
+  }
+
+// ICON 조회
+  @GetMapping("/icon")
+  public ResponseEntity<Map<String, Object>> selectIcon() {
+    try {
+      List<IconDTO> IconDTOList = compSystemService.selectIcon();
+
+      if (IconDTOList.isEmpty()) {
+        return ResponseEntity.status(handler.getHttpStatus(404))
+                .body(handler.createResponse(404, "등록된 ICON 이 없습니다."));
+      }
+
+      Map<String, Object> response = handler.createResponse(200, "ICON 조회 성공");
+      response.put("ICON", IconDTOList);
+
+      return ResponseEntity.ok(response);
+    } catch (Exception e) {
+      log.error("ICON 조회 실패: {}", e.getMessage());
+      return ResponseEntity.status(handler.getHttpStatus(500))
+              .body(handler.createResponse(500, "서버 오류로 인해 ICON 조회에 실패했습니다."));
+    }
+  }
+   */
 }

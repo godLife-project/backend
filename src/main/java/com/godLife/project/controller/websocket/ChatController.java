@@ -1,12 +1,14 @@
 package com.godLife.project.controller.websocket;
 
 import com.godLife.project.dto.error.CustomWsErrorDTO;
+import com.godLife.project.dto.qnaWebsocket.QnaMatchedListDTO;
 import com.godLife.project.dto.qnaWebsocket.listMessage.MatchedListMessageDTO;
 import com.godLife.project.dto.qnaWebsocket.listMessage.QnaDetailMessageDTO;
 import com.godLife.project.dto.qnaWebsocket.listMessage.WaitListMessageDTO;
 import com.godLife.project.dto.serviceAdmin.AdminIdxAndIdDTO;
 import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminInfos;
 import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminList;
+import com.godLife.project.dto.statistics.response.ResponseQnaAdminStat;
 import com.godLife.project.dto.test.TestChatDTO;
 import com.godLife.project.enums.MessageStatus;
 import com.godLife.project.enums.QnaStatus;
@@ -19,6 +21,7 @@ import com.godLife.project.service.impl.websocketImpl.WebSocketMessageService;
 import com.godLife.project.service.interfaces.AdminInterface.serviceCenter.ServiceAdminService;
 import com.godLife.project.service.interfaces.QnaMatchService;
 import com.godLife.project.service.interfaces.QnaService;
+import com.godLife.project.service.interfaces.statistics.ServiceAdminStatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -43,6 +46,8 @@ public class ChatController {
   private final QnaMatchService matchService;
 
   private final ServiceAdminService serviceAdminService;
+
+  private final ServiceAdminStatService adminStatService;
 
   private final RedisService redisService;
 
@@ -114,13 +119,14 @@ public class ChatController {
       MatchedListMessageDTO request = qnaService.getlistAllQnaByFindNotStatus(adminIdx, MessageStatus.RELOAD.getStatus(), notStatus, principal.getName());
       //System.out.println(request);
       // 사용자 식별 ID를 얻는 방법: principal.getName() → WebSocket 인증된 사용자명
-      messageService.sendToUser(principal.getName(), WSDestination.SUB_GET_MATCHED_QNA_LIST.getDestination(), request);
+      messageService.sendToUser(principal.getName(), WSDestination.QUEUE_MATCHED_QNA_LIST.getDestination(), request);
     } catch (Exception e) {
       throw new WebSocketBusinessException(e.getMessage(), 4001, principal.getName());
     }
 
   }
 
+  // 문의 수동 할당
   @MessageMapping("/take/waitQna/{qnaIdx}")
   public void takeWaitQna(@Header("Authorization") String authHeader,
                           @DestinationVariable(value = "qnaIdx") final int qnaIdx,
@@ -147,17 +153,21 @@ public class ChatController {
         // 모든 관리자에게 대기중 문의 리스트 중 매칭된 문의는 삭제
         WaitListMessageDTO waitQna =  matchService.setWaitListForMessage(qnaIdx, MessageStatus.REMOVE.getStatus());
         // 매칭 된 관리자에게 매칭 문의 리스트 추가
-        MatchedListMessageDTO matchedQnA = qnaService.getMatchedSingleQna(adminInfo.getUserIdx(), qnaIdx, MessageStatus.ADD.getStatus(), principal.getName());
+        List<String> notStatus = new ArrayList<>();
+        notStatus.add(QnaStatus.WAIT.getStatus());
+        notStatus.add(QnaStatus.COMPLETE.getStatus());
+        notStatus.add(QnaStatus.DELETED.getStatus());
+        MatchedListMessageDTO matchedQnA = qnaService.getMatchedSingleQna(adminInfo.getUserIdx(), qnaIdx, MessageStatus.ADD.getStatus(), notStatus, principal.getName());
         // 관리자에게 매칭 리스트 업데이트
         if (matchedQnA != null) {
-          messageService.sendToUser(principal.getName(), WSDestination.SUB_GET_MATCHED_QNA_LIST.getDestination(), matchedQnA);
+          messageService.sendToUser(principal.getName(), WSDestination.QUEUE_MATCHED_QNA_LIST.getDestination(), matchedQnA);
           log.info("ChatController - takeWaitQna :: 문의 담당자에게 매칭되었습니다. ::> 매칭된 문의 - {} / 담당자 - {}", qnaIdx ,adminInfo);
 
-          messageService.sendToAll(WSDestination.SUB_GET_WAIT_QNA_LIST.getDestination(), waitQna);
+          messageService.sendToAll(WSDestination.ALL_WAIT_QNA_LIST.getDestination(), waitQna);
         }
 
         String infoString = "해당 문의가 할당 됐습니다.";
-        messageService.sendToUser(principal.getName(), WSDestination.SUB_QNA_MATCH_RESULT.getDestination(), infoString);
+        messageService.sendToUser(principal.getName(), WSDestination.QUEUE_QNA_MATCH_RESULT.getDestination(), infoString);
 
         // 클라이언트에게 관리자 목록 전송
         List<ServiceCenterAdminInfos> accessAdminInfos = serviceAdminService.getAllAccessServiceAdminList();
@@ -166,11 +176,13 @@ public class ChatController {
         for (ServiceCenterAdminInfos info : accessAdminInfos) {
           accessAdminList.add(new ServiceCenterAdminInfos(info));
         }
-        messageService.sendToAll(WSDestination.SUB_ACCESS_ADMIN_LIST.getDestination(), accessAdminList);
+        messageService.sendToAll(WSDestination.ALL_ACCESS_ADMIN_LIST.getDestination(), accessAdminList);
       } else {
         String info = "다른 관리자에게 할당을 시도 중 이므로 수동 할당이 거부 됐습니다.";
-        messageService.sendToUser(principal.getName(), WSDestination.SUB_QNA_MATCH_RESULT.getDestination(), info);
+        messageService.sendToUser(principal.getName(), WSDestination.QUEUE_QNA_MATCH_RESULT.getDestination(), info);
       }
+    } catch (WebSocketBusinessException e) {
+      throw new WebSocketBusinessException(e.getMessage(), e.getCode(), principal.getName());
     } catch (Exception e) {
       throw new WebSocketBusinessException(e.getMessage(), 4001, principal.getName());
     }
@@ -195,12 +207,25 @@ public class ChatController {
       // 상세보기 데이터
       QnaDetailMessageDTO detailResponse = qnaService.getQnaDetails(qnaIdx, MessageStatus.RELOAD.getStatus(), adminIdx);
       // 해당 문의 정보 데이터
-      MatchedListMessageDTO matchedResponse = qnaService.getMatchedSingleQna(adminIdx, qnaIdx, MessageStatus.UPDATE.getStatus(), principal.getName());
+      List<String> notStatus = new ArrayList<>();
+      notStatus.add(QnaStatus.WAIT.getStatus());
+      //notStatus.add(QnaStatus.COMPLETE.getStatus());
+      notStatus.add(QnaStatus.DELETED.getStatus());
+      MatchedListMessageDTO matchedResponse = qnaService.getMatchedSingleQna(adminIdx, qnaIdx, MessageStatus.UPDATE.getStatus(), notStatus, principal.getName());
 
-      messageService.sendToUser(principal.getName(), WSDestination.SUB_GET_MATCHED_QNA_LIST.getDestination(), matchedResponse);
-      messageService.sendToUser(principal.getName(), WSDestination.SUB_GET_QNA_DETAIL.getDestination() + qnaIdx, detailResponse);
+      List<QnaMatchedListDTO> tempMatchedQna = matchedResponse.getMatchedQnA();
+      for (QnaMatchedListDTO tempQna : tempMatchedQna) {
+        if (tempQna.getQnaStatus().equals(QnaStatus.COMPLETE.getStatus())) {
+          messageService.sendToUser(principal.getName(), WSDestination.QUEUE_COMPLETE_QNA_LIST.getDestination(), matchedResponse);
+        } else {
+          messageService.sendToUser(principal.getName(), WSDestination.QUEUE_MATCHED_QNA_LIST.getDestination(), matchedResponse);
+        }
+      }
+      messageService.sendToUser(principal.getName(), WSDestination.QUEUE_QNA_DETAIL.getDestination() + qnaIdx, detailResponse);
 
       redisService.saveStringData(QNA_WATCHER + principal.getName(), String.valueOf(qnaIdx), 'h', 2);
+    } catch (WebSocketBusinessException e) {
+      throw new WebSocketBusinessException(e.getMessage(), e.getCode(), principal.getName());
     } catch (CustomException e) {
       if (e.getStatus() == HttpStatus.NOT_FOUND) {
         throw new WebSocketBusinessException(e.getMessage(), 4004, principal.getName());
@@ -210,7 +235,7 @@ public class ChatController {
       }
       throw new WebSocketBusinessException(e.getMessage(), 5000, principal.getName());
     } catch (Exception e) {
-      throw new WebSocketBusinessException(e.getMessage(), 4001, principal.getName());
+      throw new WebSocketBusinessException(e.getMessage(), 5000, principal.getName());
     }
   }
 
@@ -235,10 +260,28 @@ public class ChatController {
       notStatus.add(QnaStatus.SLEEP.getStatus());
 
       MatchedListMessageDTO request = qnaService.getlistAllQnaByFindNotStatus(adminIdx, MessageStatus.RELOAD.getStatus(), notStatus, principal.getName());
-      messageService.sendToUser(principal.getName(), "/queue/completed/qna/list", request);
+      messageService.sendToUser(principal.getName(), WSDestination.QUEUE_COMPLETE_QNA_LIST.getDestination(), request);
+    } catch (WebSocketBusinessException e) {
+      throw new WebSocketBusinessException(e.getMessage(), e.getCode(), e.getUsername());
     } catch (Exception e) {
-      throw new WebSocketBusinessException(e.getMessage(), 4001, principal.getName());
+      throw new WebSocketBusinessException(e.getMessage(), 5000, principal.getName());
     }
+  }
+
+  // 접속 상담원 문의 처리 통계 조회
+  @MessageMapping("/get/qna/statistics/init")
+  public void getQnaAdminStats(Principal principal,
+                               @Header("Authorization") String authHeader) {
+    try {
+      int adminIdx = handler.getUserIdxFromToken(authHeader);
+
+      ResponseQnaAdminStat qnaAdminStat = adminStatService.getQnaAdminStats(adminIdx);
+
+      messageService.sendToUser(principal.getName(), WSDestination.QUEUE_QNA_ADMIN_STATISTICS.getDestination(), qnaAdminStat);
+    } catch (Exception e) {
+      throw new WebSocketBusinessException(e.getMessage(), 5000, principal.getName());
+    }
+
   }
 
   // 에러 메시지 처리

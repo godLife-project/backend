@@ -23,7 +23,6 @@ import java.util.NoSuchElementException;
 @RequestMapping("/api/plan")
 public class PlanController {
 
-  @Autowired
   private final GlobalExceptionHandler handler;
 
   private final PlanService planService;

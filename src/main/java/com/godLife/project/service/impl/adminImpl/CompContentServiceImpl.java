@@ -72,6 +72,7 @@ public class CompContentServiceImpl implements CompContentService {
 
   // 직업 카테고리 수정
   public int updateJobCategory(JobCateDTO jobCateDTO) {
+
     int duplicateCount = compContentMapper.countJobCateNameExceptSelf(
             jobCateDTO.getName(),
             (long) jobCateDTO.getIdx()

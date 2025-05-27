@@ -11,6 +11,7 @@ import com.godLife.project.dto.qnaWebsocket.listMessage.QnaDetailMessageDTO;
 import com.godLife.project.dto.qnaWebsocket.listMessage.WaitListMessageDTO;
 import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminInfos;
 import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminList;
+import com.godLife.project.dto.statistics.response.ResponseQnaAdminStat;
 import com.godLife.project.enums.MessageStatus;
 import com.godLife.project.enums.QnaStatus;
 import com.godLife.project.enums.WSDestination;
@@ -23,6 +24,7 @@ import com.godLife.project.service.interfaces.AdminInterface.serviceCenter.Servi
 import com.godLife.project.service.interfaces.QnaMatchService;
 import com.godLife.project.service.interfaces.QnaService;
 import com.godLife.project.service.interfaces.UserService;
+import com.godLife.project.service.interfaces.statistics.ServiceAdminStatService;
 import com.godLife.project.utils.HtmlSanitizer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +48,7 @@ public class QnaServiceImpl implements QnaService {
   private final UserService userService;
   private final ServiceAdminService serviceAdminService;
   private final QnaMatchService qnaMatchService;
+  private final ServiceAdminStatService adminStatService;
 
   private static final String QNA_QUEUE_KEY = "qna_queue";
   private static final String QNA_WATCHER = "qna-watcher-";
@@ -67,7 +70,7 @@ public class QnaServiceImpl implements QnaService {
       waitQna.setStatus(MessageStatus.ADD.getStatus());
 
       // 관리자에게 실시간 대기중 문의 리스트 전송
-      messageService.sendToAll(WSDestination.SUB_GET_WAIT_QNA_LIST.getDestination(), waitQna);
+      messageService.sendToAll(WSDestination.ALL_WAIT_QNA_LIST.getDestination(), waitQna);
 
     } catch (Exception e) {
       log.error("QnaService - createQna :: 1:1 문의 저장 중 오류 발생: ", e);
@@ -103,19 +106,15 @@ public class QnaServiceImpl implements QnaService {
 
       return request;
     } catch (Exception e) {
+      log.error("QnaService - getlistAllQnaByFindNotStatus :: 서버 오류 발생", e);
       throw new WebSocketBusinessException("QnA 리스트를 불러오는 중 오류 발생", 5001, username);
     }
   }
 
   // 매칭된 단일 문의 리스트 조회 (개인)
   @Override
-  public MatchedListMessageDTO getMatchedSingleQna(int adminIdx, int qnaIdx, String status, String username) {
+  public MatchedListMessageDTO getMatchedSingleQna(int adminIdx, int qnaIdx, String status, List<String> notStatus, String username) {
     try {
-      List<String> notStatus = new ArrayList<>();
-      notStatus.add(QnaStatus.WAIT.getStatus());
-      notStatus.add(QnaStatus.COMPLETE.getStatus());
-      notStatus.add(QnaStatus.DELETED.getStatus());
-
       List<QnaMatchedListDTO> matchedQnaDTO = qnaMapper.getMatchedSingleQna(adminIdx, qnaIdx, notStatus);
 
       if (matchedQnaDTO != null) {
@@ -188,6 +187,11 @@ public class QnaServiceImpl implements QnaService {
         // 관리자가 작성 중일 경우 → 무조건 실행
         qnaMapper.increaseReplyCount(false, qnaParentIdx, setStatus, notStatus);
 
+        // 첫 답변을 달 경우 실행되는 로직
+        if (qnaParent.getRespondingDate() == null) {
+          qnaMapper.setRespondingDate(qnaParentIdx);
+        }
+
         String findStatus = QnaStatus.CONNECT.getStatus();
         qnaMapper.setQnaStatus(qnaParentIdx, QnaStatus.RESPONDING.getStatus(), Collections.singletonList(findStatus));
 
@@ -195,22 +199,27 @@ public class QnaServiceImpl implements QnaService {
             qnaParent.getAUserIdx(),
             qnaParent.getQnaIdx(),
             MessageStatus.UPDATE.getStatus(),
+            notStatus,
             username
         );
-        messageService.sendToUser(username, WSDestination.SUB_GET_MATCHED_QNA_LIST.getDestination(), matchedResponse);
+        messageService.sendToUser(username, WSDestination.QUEUE_MATCHED_QNA_LIST.getDestination(), matchedResponse);
       } else {
         // 유저가 작성 중일 경우
         if (!isWatched) {
           // 관리자가 보고 있지 않을 때만 실행
+          if (qnaParent.getQnaStatus().equals(QnaStatus.CONNECT.getStatus())) {
+            setStatus = QnaStatus.CONNECT.getStatus();
+          }
           qnaMapper.increaseReplyCount(true, qnaParentIdx, setStatus, notStatus);
 
           MatchedListMessageDTO matchedResponse = getMatchedSingleQna(
               qnaParent.getAUserIdx(),
               qnaParent.getQnaIdx(),
               MessageStatus.UPDATE.getStatus(),
+              notStatus,
               username
           );
-          messageService.sendToUser(username, WSDestination.SUB_GET_MATCHED_QNA_LIST.getDestination(), matchedResponse);
+          messageService.sendToUser(username, WSDestination.QUEUE_MATCHED_QNA_LIST.getDestination(), matchedResponse);
         }
       }
 
@@ -226,7 +235,7 @@ public class QnaServiceImpl implements QnaService {
 
         detailInfos.setComments(List.of(comment));
 
-        messageService.sendToUser(username, WSDestination.SUB_GET_QNA_DETAIL.getDestination() + qnaParentIdx, detailInfos);
+        messageService.sendToUser(username, WSDestination.QUEUE_QNA_DETAIL.getDestination() + qnaParentIdx, detailInfos);
       }
 
     } catch (CustomException e) {
@@ -394,14 +403,20 @@ public class QnaServiceImpl implements QnaService {
         // 관리자 ID 추출
         String username = userService.getUserIdByUserIdx(forValidate.getAUserIdx());
 
+        List<String> notStatus = new ArrayList<>();
+        notStatus.add(QnaStatus.WAIT.getStatus());
+        notStatus.add(QnaStatus.COMPLETE.getStatus());
+        notStatus.add(QnaStatus.DELETED.getStatus());
+
         MatchedListMessageDTO matchedResponse = getMatchedSingleQna(
             forValidate.getAUserIdx(),
             forValidate.getQnaIdx(),
             MessageStatus.UPDATE.getStatus(),
+            notStatus,
             username
         );
 
-        messageService.sendToUser(username, WSDestination.SUB_GET_MATCHED_QNA_LIST.getDestination(), matchedResponse);
+        messageService.sendToUser(username, WSDestination.QUEUE_MATCHED_QNA_LIST.getDestination(), matchedResponse);
 
         String whichQnA = redisService.getStringData(QNA_WATCHER + username);
         boolean isWatched = String.valueOf(qnaIdx).equals(whichQnA);
@@ -414,7 +429,7 @@ public class QnaServiceImpl implements QnaService {
 
           detailInfos.setBody(HtmlSanitizer.sanitize(modifyDTO.getContent()));
 
-          messageService.sendToUser(username, WSDestination.SUB_GET_QNA_DETAIL.getDestination() + qnaIdx, detailInfos);
+          messageService.sendToUser(username, WSDestination.QUEUE_QNA_DETAIL.getDestination() + qnaIdx, detailInfos);
         }
 
       } else {
@@ -426,7 +441,7 @@ public class QnaServiceImpl implements QnaService {
         waitQna.setStatus(MessageStatus.UPDATE.getStatus());
 
         // 관리자에게 실시간 대기중 문의 리스트 전송
-        messageService.sendToAll(WSDestination.SUB_GET_WAIT_QNA_LIST.getDestination(), waitQna);
+        messageService.sendToAll(WSDestination.ALL_WAIT_QNA_LIST.getDestination(), waitQna);
       }
     } catch (CustomException e) {
       log.info("QnaService - modifyQnA :: {}", e.getMessage());
@@ -487,7 +502,7 @@ public class QnaServiceImpl implements QnaService {
 
         detailInfos.setComments(List.of(comment));
 
-        messageService.sendToUser(username, WSDestination.SUB_GET_QNA_DETAIL.getDestination() + qnaIdx, detailInfos);
+        messageService.sendToUser(username, WSDestination.QUEUE_QNA_DETAIL.getDestination() + qnaIdx, detailInfos);
       }
     } catch (CustomException e) {
       log.info("QnaService - modifyReply :: {}", e.getMessage());
@@ -530,7 +545,7 @@ public class QnaServiceImpl implements QnaService {
             }}
         ));
         // 데이터 전송
-        messageService.sendToUser(username, WSDestination.SUB_GET_MATCHED_QNA_LIST.getDestination(), deleteMatchedQna);
+        messageService.sendToUser(username, WSDestination.QUEUE_MATCHED_QNA_LIST.getDestination(), deleteMatchedQna);
         // 매칭 수 재설정
         serviceAdminService.refreshMatchCount(adminIdx);
       } else if (qnaStatus.equals(QnaStatus.WAIT.getStatus())){
@@ -543,7 +558,7 @@ public class QnaServiceImpl implements QnaService {
             }}
         ));
         // 데이터 전송
-        messageService.sendToAll(WSDestination.SUB_GET_WAIT_QNA_LIST.getDestination(), deleteWaitQna);
+        messageService.sendToAll(WSDestination.ALL_WAIT_QNA_LIST.getDestination(), deleteWaitQna);
       }
     } catch (CustomException e) {
       log.info("QnaService - deleteQna :: {}", e.getMessage());
@@ -601,7 +616,7 @@ public class QnaServiceImpl implements QnaService {
           detailInfos.setStatus(MessageStatus.DELETE_COMM.getStatus());
           detailInfos.setComments(Collections.singletonList(comment));
 
-          messageService.sendToUser(username, WSDestination.SUB_GET_QNA_DETAIL.getDestination() + qnaIdx, detailInfos);
+          messageService.sendToUser(username, WSDestination.QUEUE_QNA_DETAIL.getDestination() + qnaIdx, detailInfos);
         }
       }
     } catch (CustomException e) {
@@ -635,23 +650,58 @@ public class QnaServiceImpl implements QnaService {
       if (userIdx != null) {
         boolean isWriter = whoAreYou(forValidate, userIdx);
         log.info("{} - {} 의 요청으로 문의의 상태값을 {} 으로 변경합니다.", isWriter ? "작성자" : "상담원", userIdx, setStatus);
-
-        // 모든 검증 통과 시 문의 상태값 변경
-        qnaMapper.setQnaStatus(qnaIdx, setStatus, findStatus);
-
-        // 매칭 리스트에 완료 된 문의 삭제 요청
-        String userId = userService.getUserIdByUserIdx(userIdx);
-
-        MatchedListMessageDTO matchedListQnAMessage = qnaMatchService.setMatchedListForMessage(qnaIdx,MessageStatus.REMOVE.getStatus());
-        messageService.sendToUser(userId, WSDestination.SUB_GET_MATCHED_QNA_LIST.getDestination(), matchedListQnAMessage);
-
-        // 상담원 명단 매칭수 최신화 하기
-        serviceAdminService.refreshMatchCount(userIdx);
-        List<ServiceCenterAdminInfos> accessAdminInfos = serviceAdminService.getAllAccessServiceAdminList();
-        List<ServiceCenterAdminList> accessAdminList = serviceAdminService.getAccessAdminListForMessage(accessAdminInfos);
-
-        messageService.sendToAll(WSDestination.SUB_ACCESS_ADMIN_LIST.getDestination(), accessAdminList);
       }
+
+      // 모든 검증 통과 시 문의 상태값 변경
+      qnaMapper.setQnaStatus(qnaIdx, setStatus, findStatus);
+
+      switch (setStatus) {
+        case "COMPLETE" :
+          int adminIdx = forValidate.getAUserIdx();
+          // 매칭 리스트에 완료 된 문의 삭제 요청을 위해 아이디 조회
+          String userId = userService.getUserIdByUserIdx(adminIdx);
+          // 메세지 패키징
+          MatchedListMessageDTO matchedListQnAMessage = qnaMatchService.setMatchedListForMessage(qnaIdx,MessageStatus.REMOVE.getStatus());
+          // 메세지 전송
+          messageService.sendToUser(userId, WSDestination.QUEUE_MATCHED_QNA_LIST.getDestination(), matchedListQnAMessage);
+
+
+          // 상담원 명단 매칭수 최신화 하기
+          serviceAdminService.refreshMatchCount(adminIdx);
+          List<ServiceCenterAdminInfos> accessAdminInfos = serviceAdminService.getAllAccessServiceAdminList();
+          List<ServiceCenterAdminList> accessAdminList = serviceAdminService.getAccessAdminListForMessage(accessAdminInfos);
+
+          messageService.sendToAll(WSDestination.ALL_ACCESS_ADMIN_LIST.getDestination(), accessAdminList);
+
+          // 완료 처리된 문의 완료 리스트 최신화 하기
+          List<String> notStatus = new ArrayList<>();
+          notStatus.add(QnaStatus.WAIT.getStatus());
+          notStatus.add(QnaStatus.CONNECT.getStatus());
+          notStatus.add(QnaStatus.RESPONDING.getStatus());
+          notStatus.add(QnaStatus.SLEEP.getStatus());
+          notStatus.add(QnaStatus.DELETED.getStatus());
+
+          MatchedListMessageDTO completeQnA = getMatchedSingleQna(adminIdx, qnaIdx, MessageStatus.ADD.getStatus(), notStatus, userId);
+          if (completeQnA != null) {
+            // 통계 데이터 최신화
+            ResponseQnaAdminStat qnaAdminStat = adminStatService.updateQnaAdminSummaryStats(qnaIdx, adminIdx);
+            messageService.sendToUser(userId, WSDestination.QUEUE_QNA_ADMIN_STATISTICS.getDestination(), qnaAdminStat);
+            messageService.sendToUser(userId, WSDestination.QUEUE_COMPLETE_QNA_LIST.getDestination(), completeQnA);
+          }
+          break;
+        case "WAIT" :
+          // 로직 추가시 구현할 것
+        case "CONNECT" :
+          // 로직 추가시 구현할 것
+        case "RESPONDING" :
+          // 로직 추가시 구현할 것
+        case "SLEEP" :
+          // 로직 추가시 구현할 것
+          break;
+        default:
+          throw new CustomException("사용하지 않는 문의의 상태값 입니다.", HttpStatus.CONFLICT);
+      }
+
 
     } catch (CustomException e) {
       log.error("QnaService - setQnaStatus :: {}", e.getMessage());

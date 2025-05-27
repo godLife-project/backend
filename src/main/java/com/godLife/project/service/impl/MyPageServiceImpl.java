@@ -4,6 +4,7 @@ import com.godLife.project.dto.datas.UserDTO;
 import com.godLife.project.dto.request.myPage.*;
 import com.godLife.project.dto.response.MyPageUserInfosResponseDTO;
 import com.godLife.project.mapper.MyPageMapper;
+import com.godLife.project.mapper.PlanMapper;
 import com.godLife.project.mapper.UserMapper;
 import com.godLife.project.service.interfaces.MyPageService;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ public class MyPageServiceImpl implements MyPageService {
 
     private final MyPageMapper myPageMapper;
     private final UserMapper userMapper;
+    private final PlanMapper planMapper;
 
     private final AuthServiceImpl authService;
     private final PasswordEncoder passwordEncoder;
@@ -259,6 +261,10 @@ public class MyPageServiceImpl implements MyPageService {
 
             if (result == 0) {
                 return 404;
+            }
+
+            for (int planIdx : planIndexes) {
+                planMapper.modifyLikeCount(planIdx);
             }
             return 200;
         } catch (Exception e) {

@@ -20,7 +20,9 @@ public class QnaReplyListDTO {
 
   private int qnaReplyIdx;
 
-  private String userName;
+  private String userNick;
+
+  private String nickTag;
 
   private int userIdx;
 

@@ -399,6 +399,8 @@ public class MyPageController {
     // userIdx 조회
     int userIdx = handler.getUserIdxFromToken(authHeader);
 
+    //System.out.println(planIndexes);
+
     // 서비스 로직 실행
     int result = myPageService.unLikeSelectPlans(userIdx, planIndexes);
 

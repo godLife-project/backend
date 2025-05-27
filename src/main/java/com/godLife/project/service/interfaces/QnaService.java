@@ -34,9 +34,11 @@ public interface QnaService {
    * @param adminIdx 검증하기 위한 관리자 인덱스 번호
    * @param qnaIdx 조회하기 위한 문의 인덱스 번호
    * @param status 클라이언트에게 보여 줄 상태 값
+   * @param notStatus 조회를 제외 할 문의의 상태 값
+   * @param username 오류 발생 시 메세지 전송을 위한 userId
    * @return MatchedListMessageDTO
    */
-  MatchedListMessageDTO getMatchedSingleQna(int adminIdx, int qnaIdx, String status, String username);
+  MatchedListMessageDTO getMatchedSingleQna(int adminIdx, int qnaIdx, String status, List<String> notStatus, String username);
 
   /**
    * 현재 'WAIT' 상태인 문의의 전체 리스트를 조회합니다.
@@ -122,5 +124,26 @@ public interface QnaService {
    */
   void deleteReply(int qnaIdx, int qnaReplyIdx, int userIdx);
 
+  /**
+   * <strong>문의 상태 전환 로직</strong>
+   * <p>클라이언트 요청과 서버 내부 서비스 로직 모두 사용 가능 하도록 {@code userIdx} 를 {@code Integer} 로 받습니다.</p>
+   * <p>서버 내부 서비스 로직에서 동작 하고 싶을 경우 {@code userIdx} 에 {@code null} 을 넣어주세요</p>
+   * <p>{@code List<String> findStatus} 를 통해 일치하는 상태의 문의를 조회하고, {@code setStatus} 를 통해 문의의 상태를 변경합니다.</p>
+   * <hr/>
+   * <h5>setStatus에 따른 선행 조건</h5>
+   * <ul>
+   *   <li>{@code COMPLETE} 문의를 complete 상태로 변경 할 경우, 기본적으로 매칭된 문의를 기준으로 동작되도록 설계했습니다.</li>
+   *   <li>{@code WAIT} 아직 구현된 로직 없음</li>
+   *   <li>{@code CONNECT} 아직 구현된 로직 없음</li>
+   *   <li>{@code RESPONDING} 아직 구현된 로직 없음</li>
+   *   <li>{@code SLEEP} 아직 구현된 로직 없음</li>
+   * </ul>
+   * <hr/>
+   * <h4>단, 삭제된 문의는 변경할 수 없습니다.</h4>
+   * @param qnaIdx 상태를 변경 할 문의의 인덱스 번호
+   * @param userIdx 문의 상태 변경 요청자
+   * @param setStatus 변경 할 문의의 상태 값
+   * @param findStatus 조회할 문의의 상태 값
+   */
   void setQnaStatus(int qnaIdx, Integer userIdx, String setStatus, List<String> findStatus);
 }

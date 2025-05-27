@@ -6,10 +6,7 @@ import com.godLife.project.dto.list.QnaDetailDTO;
 import com.godLife.project.dto.qnaWebsocket.QnaMatchedListDTO;
 import com.godLife.project.dto.qnaWebsocket.QnaReplyListDTO;
 import com.godLife.project.dto.qnaWebsocket.QnaWaitListDTO;
-import org.apache.ibatis.annotations.Delete;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
@@ -48,13 +45,14 @@ public interface QnaMapper {
    * 문의 검증용 기초 정보 조회
    * @param qnaIdx 조회 할 문의의 인덱스 번호
    * @param status 제외 할 문의 상태
-   * @return qnaIdx, qUserIdx, aUserIdx, qnaStatus
+   * @return qnaIdx, qUserIdx, aUserIdx, qnaStatus, respondingDate
    * @code qnaIdx : int
    * @code qUserIdx : int
    * @code aUserIdx : int
    * @code qnaStatus : String
+   * @code respondingDate : Date
    */
-  @Select("SELECT QNA_IDX, Q_USER_IDX, A_USER_IDX, QNA_STATUS FROM QNA_TABLE WHERE QNA_IDX = #{qnaIdx} AND QNA_STATUS != #{status}")
+  @Select("SELECT QNA_IDX, Q_USER_IDX, A_USER_IDX, QNA_STATUS, RESPONDING_DATE FROM QNA_TABLE WHERE QNA_IDX = #{qnaIdx} AND QNA_STATUS != #{status}")
   QnaDTO getQnaInfosByQnaIdx(int qnaIdx, String status);
 
   /**
@@ -146,5 +144,14 @@ public interface QnaMapper {
    * @param findStatus 해당 파라미터를 통해 어떤 상태의 문의를 update 할 지 결정합니다.
    */
   void setQnaStatus(int qnaIdx, String setStatus, List<String> findStatus);
+
+  /**
+   * <strong>최초 응답 시간 저장 쿼리</strong>
+   * <p>상담원의 문의 처리 통계를 계산하기 위해 저장하는 컬럼입니다.</p>
+   * <p>최초 답변 시 답변 일자를 기록합니다.</p>
+   * @param qnaIdx 응답 시간을 저장할 문의의 인덱스 번호
+   */
+  @Update("UPDATE QNA_TABLE SET RESPONDING_DATE = SYSDATE WHERE QNA_IDX = #{qnaIdx} AND RESPONDING_DATE IS NULL")
+  void setRespondingDate(int qnaIdx);
 
 }

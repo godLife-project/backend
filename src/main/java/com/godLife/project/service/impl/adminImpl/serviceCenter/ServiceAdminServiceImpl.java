@@ -8,12 +8,15 @@ import com.godLife.project.mapper.AdminMapper.ServiceAdminMapper;
 import com.godLife.project.mapper.VerifyMapper;
 import com.godLife.project.service.impl.redis.RedisService;
 import com.godLife.project.service.interfaces.AdminInterface.serviceCenter.ServiceAdminService;
+import com.godLife.project.service.interfaces.statistics.ServiceAdminStatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +28,8 @@ public class ServiceAdminServiceImpl implements ServiceAdminService {
 
   private final ServiceAdminMapper serviceAdminMapper;
 
+  private final ServiceAdminStatService adminStatService;
+
   private final VerifyMapper verifyMapper;
 
   private final RedisService redisService;
@@ -32,6 +37,7 @@ public class ServiceAdminServiceImpl implements ServiceAdminService {
 
   // 고객서비스 접근 가능 관리자 로그인 처리
   @Override
+  @Transactional(rollbackFor = Exception.class)
   public void setCenterLoginByAdmin3467(String username) {
     List<String> notStatus = new ArrayList<>();
     notStatus.add(QnaStatus.WAIT.getStatus());
@@ -44,12 +50,20 @@ public class ServiceAdminServiceImpl implements ServiceAdminService {
       log.info("AdminService - setCenterLoginByAdmin3467 :: 저장 성공..! 응대중 인 문의의 개수를 업데이트 합니다.");
       serviceAdminMapper.setMatchedByQuestionCount(userIdx, notStatus);
       log.info("AdminService - setCenterLoginByAdmin3467 :: 응대중 인 문의의 개수를 업데이트 완료.");
+      // 상담원 통계 초기 데이터 저장 로직
+      adminStatService.setInitServiceAdminStat(userIdx);
+
     } catch (DataIntegrityViolationException e) {
       log.warn("AdminService - setCenterLoginByAdmin3467 :: 이미 로그인 처리된 관리자 입니다. 로그인 등록을 건너 뜁니다.");
       serviceAdminMapper.setMatchedByQuestionCount(userIdx, notStatus);
       log.info("AdminService - setCenterLoginByAdmin3467 :: 등록을 건너 뛴 후 응대중 인 문의의 개수 업데이트 완료.");
+
+      // 상담원 통계 초기 데이터 저장 로직
+      adminStatService.setInitServiceAdminStat(userIdx);
+
     } catch (Exception e) {
       log.error("AdminService - setCenterLoginByAdmin3467 :: 고객센터 로그인 처리 중 문제가 발생했습니다: ", e);
+      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly(); // 수동 롤백
     }
   }
 

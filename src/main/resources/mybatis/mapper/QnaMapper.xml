@@ -88,7 +88,7 @@
 
     <!-- 1:1 문의 답변 조회 -->
     <select id="getQnaReplyByQnaIdx" parameterType="int" resultType="com.godLife.project.dto.qnaWebsocket.QnaReplyListDTO">
-        SELECT R.QNA_REPLY_IDX, U.USER_NAME, R.CONTENT, R.CREATED_AT, R.MODIFIED_AT
+        SELECT R.QNA_REPLY_IDX, U.USER_NICK, U.NICK_TAG, R.CONTENT, R.CREATED_AT, R.MODIFIED_AT
         FROM QNA_REPLY R
         INNER JOIN USER_TABLE U ON R.USER_IDX = U.USER_IDX
         WHERE QNA_IDX = #{qnaIdx}
@@ -142,11 +142,11 @@
 
     <!-- 가장 최근 답변 조회 -->
     <select id="getRecentComment" parameterType="int" resultType="com.godLife.project.dto.qnaWebsocket.QnaReplyListDTO">
-        SELECT R.*, U.USER_NAME
+        SELECT R.*, U.USER_NICK, U.NICK_TAG
         FROM QNA_REPLY R
         INNER JOIN USER_TABLE U ON R.USER_IDX = U.USER_IDX
-        WHERE QNA_IDX = #{qnaIdx}
-        ORDER BY CREATED_AT DESC
+        WHERE R.QNA_IDX = #{qnaIdx}
+        ORDER BY R.CREATED_AT DESC
         FETCH FIRST 1 ROWS ONLY
     </select>
 

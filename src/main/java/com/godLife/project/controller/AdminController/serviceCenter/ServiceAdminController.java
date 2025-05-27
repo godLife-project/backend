@@ -13,7 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -43,14 +42,19 @@ public class ServiceAdminController {
   @PatchMapping("/switch/status")
   public ResponseEntity<Map<String ,Object>> switchStatus(@RequestHeader("Authorization") String authHeader) {
     int userIdx = handler.getUserIdxFromToken(authHeader);
+    String username = handler.getUserNameFromToken(authHeader);
 
     String result = serviceAdminService.switchAdminStatus(userIdx);
+
+    if ("활성화".equals(result)) {
+      qnaQueueListener.wakeUp(userIdx, username);
+    }
 
     // 클라이언트에게 관리자 목록 전송
     List<ServiceCenterAdminInfos> accessAdminInfos = serviceAdminService.getAllAccessServiceAdminList();
 
     List<ServiceCenterAdminList> accessAdminList = serviceAdminService.getAccessAdminListForMessage(accessAdminInfos);
-    messageService.sendToAll(WSDestination.SUB_ACCESS_ADMIN_LIST.getDestination(), accessAdminList);
+    messageService.sendToAll(WSDestination.ALL_ACCESS_ADMIN_LIST.getDestination(), accessAdminList);
 
     return ResponseEntity.status(HttpStatus.OK).body(handler.createResponse(200, result));
   }

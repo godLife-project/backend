@@ -41,4 +41,9 @@ public class QnaDTO {
   private int aCount;
 
   private String qnaStatus;
+
+  @JsonSerialize(using = LocalDateTimeSerializer.class) // 직렬화
+  @JsonDeserialize(using = LocalDateTimeDeserializer.class) // 역직렬화
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+  private LocalDateTime respondingDate;
 }

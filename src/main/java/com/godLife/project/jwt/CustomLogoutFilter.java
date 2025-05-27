@@ -24,6 +24,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
   private final JWTUtil jwtUtil;
   private final RefreshService refreshService;
 
+
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 
@@ -103,6 +104,10 @@ public class CustomLogoutFilter extends GenericFilterBean {
     }
     response.addCookie(cookie);
 
+    // redis에 저장된 관리자 상태 정보 삭제
+    String userId = jwtUtil.getUsername(refresh);
+    refreshService.deleteAdminStatusByRedis(userId);
+
     // 성공 응답
     log.info("logoutFilter - doFilter :: refresh 토큰 삭제,, 로그아웃완료");
 
@@ -115,7 +120,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
   }
 
   private String getRefreshTokenFromCookies(HttpServletRequest request) {
-    printRequestDetails(request);
+    //printRequestDetails(request);
     Cookie[] cookies = request.getCookies();
     if (cookies == null)  {
       log.warn("logoutFilter - NoDatabase :: 쿠키 없음");

@@ -49,7 +49,7 @@
     <select id="countTargetCateNameExceptSelf" resultType="int">
         SELECT COUNT(*)
         FROM TARGET_CATEGORY
-        WHERE NAME = #{name}
+        WHERE TARGET_NAME = #{name}
         AND TARGET_IDX != #{idx}
     </select>
 
@@ -101,8 +101,8 @@
     <select id="countJobCateNameExceptSelf" resultType="int">
         SELECT COUNT(*)
         FROM JOB_CATEGORY
-        WHERE NAME = #{name}
-        AND JOB_IDX != #{Idx}
+        WHERE JOB_NAME = #{name}
+        AND JOB_IDX != #{idx}
     </select>
 
 

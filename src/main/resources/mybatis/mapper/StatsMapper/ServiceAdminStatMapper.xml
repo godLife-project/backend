@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godLife.project.mapper.StatsMapper.ServiceAdminStatMapper">
+
+  <!-- 상담원 일간 통계 데이터 업데이트 -->
+  <update id="updateQnaDailyStatsByAdminIdx" parameterType="map">
+    UPDATE QNA_DAILY_STATS
+    SET TOTAL_COUNT = TOTAL_COUNT + 1,
+    TOTAL_DURATION = TOTAL_DURATION + #{duration}
+    WHERE STAT_DATE = TRUNC(SYSDATE) AND ADMIN_IDX = #{adminIdx}
+  </update>
+  <!-- 상담원 월간 통계 데이터 업데이트 -->
+  <update id="updateQnaMonthStatsByAdminIdx" parameterType="map">
+    UPDATE QNA_MONTH_STATS
+    SET TOTAL_COUNT = TOTAL_COUNT + 1,
+    TOTAL_DURATION = TOTAL_DURATION + #{duration}
+    WHERE STAT_MONTH = TO_CHAR(SYSDATE, 'YYYY-MM') AND ADMIN_IDX = #{adminIdx}
+  </update>
+
+  <!-- 상담원 일간/월간 문의 처리 통계 일괄 조회-->
+  <select id="getQnaAdminDayAndMonthStats" parameterType="int" resultType="com.godLife.project.dto.statistics.DayAndMonthStats">
+    WITH daily AS (
+    SELECT TOTAL_COUNT AS D_TOTAL_COUNT, TOTAL_DURATION AS D_TOTAL_DURATION
+    FROM QNA_DAILY_STATS
+    WHERE STAT_DATE = TRUNC(SYSDATE) AND ADMIN_IDX = #{adminIdx}
+    ),
+    monthly AS (
+    SELECT
+    TOTAL_COUNT AS M_TOTAL_COUNT,
+    TOTAL_DURATION AS M_TOTAL_DURATION,
+    (SELECT COUNT(*)
+    FROM QNA_MONTH_STATS
+    WHERE ADMIN_IDX = 243) AS MONTH_COUNT
+    FROM QNA_MONTH_STATS
+    WHERE STAT_MONTH = TO_CHAR(SYSDATE, 'YYYY-MM') AND ADMIN_IDX = #{adminIdx}
+    FETCH FIRST 1 ROWS ONLY
+    )
+    SELECT
+    D_TOTAL_COUNT,
+    D_TOTAL_DURATION,
+    M_TOTAL_COUNT,
+    M_TOTAL_DURATION,
+    MONTH_COUNT
+    FROM daily
+    FULL OUTER JOIN monthly ON 1=1
+  </select>
+
+  <!-- 상담원 통계 테이블 최신화 -->
+  <update id="updateQnaAdminSummaryStats" parameterType="com.godLife.project.dto.statistics.QnaAdminStat">
+    UPDATE QNA_ADMIN_SUMMARY_STATS
+    SET TOTAL_COUNT = #{totalCount},
+        TOTAL_DURATION = #{totalDuration},
+        AVG_QNA_PER_DAY = #{avgQnaPerDay},
+        AVG_DURATION_PER_DAY = #{avgDurationPerDay},
+        AVG_QNA_PER_MONTH = #{avgQnaPerMonth},
+        AVG_DURATION_PER_MONTH = #{avgDurationPerMonth},
+        RECENT_DURATION = #{recentDuration}
+    WHERE ADMIN_IDX = #{adminIdx}
+  </update>
+
+</mapper>

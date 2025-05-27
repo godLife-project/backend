@@ -42,6 +42,7 @@ public class WebSocketEventListener {
   private final VerifyMapper verifyMapper;
 
   private static final String SAVE_SERVICE_ADMIN_STATUS = "save-service-admin-status:";
+  private static final String IS_LOGOUT_ADMIN = "admin-is-logout:";
 
   // 클라이언트가 연결되었을 때 세션 정보 저장
   @EventListener
@@ -67,6 +68,7 @@ public class WebSocketEventListener {
         if (validAuthList.contains(role)) {
           log.info("고객서비스 접근 권한 확인..고객센터 테이블에 데이터를 저장합니다.");
           serviceAdminService.setCenterLoginByAdmin3467(userName);  // 권한이 3,4,6,7 이면 고객센터 로그인 처리
+
         }
       }
     }
@@ -99,7 +101,8 @@ public class WebSocketEventListener {
         int status = temp.getStatus();
         int userIdx = temp.getUserIdx();
         // 활성화 상태 관리자의 정보 임시 저장
-        if (status == 1) {
+        String isLogout = redisService.getStringData(IS_LOGOUT_ADMIN + userIdx);
+        if (status == 1 && isLogout == null) {
           redisService.saveStringData(SAVE_SERVICE_ADMIN_STATUS + userIdx, String.valueOf(status), 'h', 2);
         }
       }
@@ -112,7 +115,7 @@ public class WebSocketEventListener {
       for (ServiceCenterAdminInfos info : accessAdminInfos) {
         accessAdminList.add(new ServiceCenterAdminInfos(info));
       }
-      messageService.sendToAll(WSDestination.SUB_ACCESS_ADMIN_LIST.getDestination(), accessAdminList);
+      messageService.sendToAll(WSDestination.ALL_ACCESS_ADMIN_LIST.getDestination(), accessAdminList);
 
       log.info("유저 : {} 연결 끊어짐", userName);
     }

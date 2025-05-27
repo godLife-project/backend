@@ -10,4 +10,6 @@ public interface RefreshService {
 
   // 리프레쉬 토큰 등록
   void addRefreshToken(String username, String refresh, Long expiredMs);
+
+  void deleteAdminStatusByRedis(String userId);
 }

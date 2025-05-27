@@ -233,11 +233,11 @@ public class ChallengeServiceImpl implements ChallengeService {
         }
 
         // 5. 인증 가능 시간인지 확인
-        LocalDateTime availableAuthTime = joinInfo.getStartTime().plusMinutes(joinInfo.getActivityTime());
         LocalDateTime now = LocalDateTime.now();
+        LocalDateTime availableAuthTime = challengeVerifyDTO.getStartTime().plusMinutes(joinInfo.getActivityTime());
 
-        if (now.isBefore(availableAuthTime)) {
-            throw new IllegalStateException("아직 인증할 수 없습니다. 인증 가능 시각: " + availableAuthTime);
+        if (now.isAfter(availableAuthTime)) {
+            throw new IllegalStateException("활동 시간이 초과되어 인증할 수 없습니다.");
         }
 
         // 6. 활동 시간 계산 (분 단위)
@@ -250,6 +250,8 @@ public class ChallengeServiceImpl implements ChallengeService {
         challengeMapper.insertVerify(
                 challengeVerifyDTO.getChallIdx(),
                 challengeVerifyDTO.getUserIdx(),
+                challengeVerifyDTO.getStartTime(),
+                challengeVerifyDTO.getEndTime(),
                 elapsedTime
         );
 

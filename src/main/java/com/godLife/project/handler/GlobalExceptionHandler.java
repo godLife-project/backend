@@ -1,6 +1,7 @@
 package com.godLife.project.handler;
 
 import com.godLife.project.dto.error.ErrorResponse;
+import com.godLife.project.dto.list.QnaListDTO;
 import com.godLife.project.exception.CustomException;
 import com.godLife.project.jwt.JWTUtil;
 import com.godLife.project.mapper.VerifyMapper;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @ControllerAdvice
@@ -126,4 +128,11 @@ public class GlobalExceptionHandler {
     return jwtUtil.getUsername(token);
   }
 
+  public Map<String, Object> createResponseWithData(int code, String message, Object data) {
+    Map<String, Object> response = new HashMap<>();
+    response.put("code", code);
+    response.put("message", message);
+    response.put("data", data);
+    return response;
+  }
 }

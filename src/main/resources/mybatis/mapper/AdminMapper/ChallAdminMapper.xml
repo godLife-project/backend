@@ -92,6 +92,7 @@
         AND CHALL_STATE != '종료됨'
     </update>
 
+
     <!-- 챌린지 제목, 카테고리 내에서 검색 -->
     <select id="searchChallenges" resultType="com.godLife.project.dto.contents.ChallengeDTO">
         SELECT c.*, cat.category_name

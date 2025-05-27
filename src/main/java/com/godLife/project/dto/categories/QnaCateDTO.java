@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class QnaCateDTO {
 
   private int categoryIdx;
-  private int parentIdx;
+  private Integer parentIdx;
   private String categoryName;
   private int categoryLevel;
 

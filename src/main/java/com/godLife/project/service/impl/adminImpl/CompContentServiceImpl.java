@@ -17,10 +17,6 @@ public class CompContentServiceImpl implements CompContentService {
   public CompContentServiceImpl(CompContentMapper compContentMapper){this.compContentMapper = compContentMapper;}
 //                             목표 카테고리 관리 테이블
 
-  // --------- 목표 카테고리 조회 ---------
-  public List<TargetCateDTO> targetCategoryList() {
-    return compContentMapper.targetCategoryList();
-  }
 
   //  목표 카테고리 추가
   @Override
@@ -51,17 +47,13 @@ public class CompContentServiceImpl implements CompContentService {
   }
 
   //  목표 카테고리 삭제
-  public int deleteTargetCategory(int targetCateIdx) {
-    return compContentMapper.deleteTargetCategory(targetCateIdx);
+  public int softDeleteTargetCategory(int idx) {
+    return compContentMapper.softDeleteTargetCategory(idx);
   }
 
 
   //                             직업 카테고리 관리 테이블
 
-  // 직업 카테고리 조회
-  public List<JobCateDTO> getAllJobCategories() {
-    return compContentMapper.getAllJobCategories();
-  }
 
   // 직업 카테고리 작성
   public int insertJobCategory(JobCateDTO jobCateDTO) {
@@ -93,10 +85,6 @@ public class CompContentServiceImpl implements CompContentService {
 
   //                            등급(불꽃) 관리 테이블
 
-  // 등급(불꽃) 조회
-  public List<FireDTO> selectAllFireGrades() {
-    return compContentMapper.selectAllFireGrades();
-  }
 
   // 등급(불꽃) 추가
   public int insertFire(FireDTO fireDTO) {
@@ -143,10 +131,6 @@ public class CompContentServiceImpl implements CompContentService {
 
 
   //                            챌린지 카테고리 관리 테이블
-  // 조회
-  public List<ChallengeCateDTO> selectChallCate(){
-    return compContentMapper.selectChallCate();
-  }
 
   //  챌린지 카테고리 추가
   @Override
@@ -178,4 +162,24 @@ public class CompContentServiceImpl implements CompContentService {
   public int deleteChallCate(int challCategoryIdx) {
     return compContentMapper.deleteChallCate(challCategoryIdx);
   }
+
+
+  /*
+    // --------- 목표 카테고리 조회 ---------
+  public List<TargetCateDTO> targetCategoryList() {
+    return compContentMapper.targetCategoryList();
+  }
+  // --------- 직업 카테고리 조회 ---------
+  public List<JobCateDTO> getAllJobCategories() {
+    return compContentMapper.getAllJobCategories();
+  }
+  // ---------  등급(불꽃) 조회 ---------
+  public List<FireDTO> selectAllFireGrades() {
+    return compContentMapper.selectAllFireGrades();
+  }
+  // ---------  챌린지 조회  ---------
+  public List<ChallengeCateDTO> selectChallCate(){
+    return compContentMapper.selectChallCate();
+  }
+   */
 }

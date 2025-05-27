@@ -59,4 +59,5 @@ public interface ChallAdminMapper {
 
   // 현재 참여자수 조회
   int countParticipants(@Param("challIdx") Long challIdx);
+
 }

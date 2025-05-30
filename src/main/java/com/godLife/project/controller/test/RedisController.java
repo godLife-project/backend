@@ -15,7 +15,7 @@ public class RedisController {
 
   @PostMapping("/save")
   public String saveData(@RequestParam String key, @RequestParam String value) {
-    redisService.saveStringData(key, value, 'h', 1);
+    redisService.saveStringData(key, value, 's', 5);
     return "Data saved to Redis";
   }
 

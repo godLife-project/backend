@@ -6,6 +6,7 @@ import com.godLife.project.dto.serviceAdmin.AdminIdxAndIdDTO;
 import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminInfos;
 import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminList;
 import com.godLife.project.enums.MessageStatus;
+import com.godLife.project.enums.QnaRedisKey;
 import com.godLife.project.enums.QnaStatus;
 import com.godLife.project.enums.WSDestination;
 import com.godLife.project.service.impl.redis.RedisService;
@@ -36,7 +37,6 @@ public class QnaQueueListener implements InitializingBean, DisposableBean {
   private final QnaService qnaService;
   private final QnaMatchService matchService;
 
-  private static final String QNA_QUEUE_KEY = "qna_queue";
   private static final Object lock = new Object();
 
   private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
@@ -83,7 +83,7 @@ public class QnaQueueListener implements InitializingBean, DisposableBean {
               continue;
             }
 
-            String result = redisService.brPopFromRedisQueue(QNA_QUEUE_KEY, 0);
+            String result = redisService.brPopFromRedisQueue(QnaRedisKey.QNA_QUEUE_KEY.getKey(), 0);
 
             if (result != null) {
               int qnaIdx = Integer.parseInt(result);
@@ -118,7 +118,7 @@ public class QnaQueueListener implements InitializingBean, DisposableBean {
                 if (waitCount % 6 == 0) {
                   log.info("QnaQueueListener - autoMatch :: 매칭 가능한 관리자가 없습니다. (5분 대기)");
                 }
-                redisService.rightPushToRedisQueue(QNA_QUEUE_KEY, String.valueOf(qnaIdx));
+                redisService.rightPushToRedisQueue(QnaRedisKey.QNA_QUEUE_KEY.getKey(), String.valueOf(qnaIdx));
                 waitCount++;
 
                 scheduler.schedule(() -> {

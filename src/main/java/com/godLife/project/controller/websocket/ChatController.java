@@ -11,6 +11,7 @@ import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminList;
 import com.godLife.project.dto.statistics.response.ResponseQnaAdminStat;
 import com.godLife.project.dto.test.TestChatDTO;
 import com.godLife.project.enums.MessageStatus;
+import com.godLife.project.enums.QnaRedisKey;
 import com.godLife.project.enums.QnaStatus;
 import com.godLife.project.enums.WSDestination;
 import com.godLife.project.exception.CustomException;
@@ -51,7 +52,6 @@ public class ChatController {
 
   private final RedisService redisService;
 
-  private static final String QNA_WATCHER = "qna-watcher-";
   private static final String SAVE_SERVICE_ADMIN_STATUS = "save-service-admin-status:";
 
 
@@ -223,7 +223,7 @@ public class ChatController {
       }
       messageService.sendToUser(principal.getName(), WSDestination.QUEUE_QNA_DETAIL.getDestination() + qnaIdx, detailResponse);
 
-      redisService.saveStringData(QNA_WATCHER + principal.getName(), String.valueOf(qnaIdx), 'h', 2);
+      redisService.saveStringData(QnaRedisKey.QNA_WATCHER.getKey() + principal.getName(), String.valueOf(qnaIdx), 'h', 2);
     } catch (WebSocketBusinessException e) {
       throw new WebSocketBusinessException(e.getMessage(), e.getCode(), principal.getName());
     } catch (CustomException e) {
@@ -242,7 +242,7 @@ public class ChatController {
   // 상세 보기 닫음
   @MessageMapping("/close/detail")
   public void detailClose(Principal principal) {
-    redisService.deleteData(QNA_WATCHER + principal.getName());
+    redisService.deleteData(QnaRedisKey.QNA_WATCHER.getKey() + principal.getName());
   }
 
   // 완료 처리된 문의 조회

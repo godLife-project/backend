@@ -3,6 +3,7 @@ package com.godLife.project.service.impl;
 import com.godLife.project.dto.contents.ChallengeDTO;
 import com.godLife.project.dto.infos.ChallengeJoinDTO;
 import com.godLife.project.dto.verify.ChallengeVerifyDTO;
+import com.godLife.project.dto.verify.VerifyRecordDTO;
 import com.godLife.project.enums.ChallengeState;
 import com.godLife.project.mapper.ChallJoinMapper;
 import com.godLife.project.mapper.ChallengeMapper;
@@ -73,15 +74,16 @@ public class ChallengeServiceImpl implements ChallengeService {
         int updatedClearTime = Math.max(0, challenge.getTotalClearTime() - elapsedClearTime); // 음수 방지
         challenge.setTotalClearTime(updatedClearTime); // 인증을 통한 총 클리어시간 감소 조회
 
-        // 종료 시간이 되면 상태를 "완료됨"으로 변경
+        // 종료 시간이 되면 상태를 "종료" 로 변경
         if (challenge.getChallEndTime() != null && LocalDateTime.now().isAfter(challenge.getChallEndTime())
-                && !challenge.getChallState().equals(ChallengeState.COMPLETED.getState())) {
-            challenge.setChallState(ChallengeState.COMPLETED.getState());
+                && !challenge.getChallState().equals(ChallengeState.END.getCode())) {
+            challenge.setChallState(ChallengeState.END.getCode());
         }
 
         // 참가자 상세 정보 조회 및 설정
         List<ChallengeJoinDTO> participants = challengeMapper.getChallengeParticipants(challIdx);
         challenge.setParticipants(participants);
+
 
         // DB 상태 업데이트 (최소화된 한 번의 업데이트)
         Map<String, Object> params = new HashMap<>();
@@ -94,6 +96,14 @@ public class ChallengeServiceImpl implements ChallengeService {
         challengeMapper.updateChallengeStartTime(params);
 
         return challenge;
+    }
+
+    // 인증기록 조회
+    public List<VerifyRecordDTO> getVerifyRecords(Long challIdx, Long userIdx) {
+        if (challIdx == null || userIdx == null) {
+            throw new IllegalArgumentException("챌린지 ID 또는 사용자 ID가 null입니다.");
+        }
+        return challengeMapper.getVerifyRecords(challIdx, userIdx);
     }
 
 
@@ -114,7 +124,7 @@ public class ChallengeServiceImpl implements ChallengeService {
 
             challengeDTO.setChallStartTime(startTime);
             challengeDTO.setChallEndTime(endTime);
-            challengeDTO.setChallState(ChallengeState.IN_PROGRESS.getState());
+            challengeDTO.setChallState(ChallengeState.IN_PROGRESS.getCode());
 
             Map<String, Object> params = new HashMap<>();
             params.put("challIdx", challIdx);
@@ -144,7 +154,7 @@ public class ChallengeServiceImpl implements ChallengeService {
         ChallengeDTO challenge = challengeMapper.challengeDetail(challIdx);
 
         // 챌린지 상태가 참여 가능한 상태인지 확인
-        if (!"게시중".equals(challenge.getChallState()) && !"진행중".equals(challenge.getChallState())) {
+        if (!"PUBLISHED".equals(challenge.getChallState()) && !"IN_PROGRESS".equals(challenge.getChallState())) {
             throw new IllegalStateException("참여할 수 없는 챌린지입니다.");
         }
 
@@ -167,7 +177,7 @@ public class ChallengeServiceImpl implements ChallengeService {
         // 유저 참여형 챌린지이고 아직 시작되지 않았다면 → 시작 처리
         if (challenge.getUserJoin() == 1 && challenge.getChallStartTime() == null) {
             challenge.setChallStartTime(now);
-            challenge.setChallState(ChallengeState.IN_PROGRESS.getState());
+            challenge.setChallState(ChallengeState.IN_PROGRESS.getCode());
 
             // duration은 서버 컬럼 기준으로 계산
             LocalDateTime challEndTime = calculateEndTime(now, challenge.getDuration());
@@ -197,7 +207,6 @@ public class ChallengeServiceImpl implements ChallengeService {
     }
 
     // ----------------- 챌린지 인증 -----------------
-    @Override
     public void verifyChallenge(ChallengeVerifyDTO challengeVerifyDTO) {
         // 1. 챌린지 존재 여부 확인
         if (!existsById(challengeVerifyDTO.getChallIdx())) {
@@ -224,7 +233,16 @@ public class ChallengeServiceImpl implements ChallengeService {
             throw new IllegalArgumentException("시작 시간과 종료 시간을 모두 입력해야 합니다.");
         }
 
-        if (!challengeVerifyDTO.getEndTime().isAfter(challengeVerifyDTO.getStartTime())) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startTime = challengeVerifyDTO.getStartTime();
+        LocalDateTime endTime = challengeVerifyDTO.getEndTime();
+
+        // start_time, end_time이 현재보다 미래이면 에러
+        if (startTime.isAfter(now) || endTime.isAfter(now)) {
+            throw new IllegalArgumentException("시작/종료 시간은 현재 시간보다 이전이어야 합니다.");
+        }
+        // end_time은 start_time 보다 이후여야 함
+        if (endTime.isBefore(startTime)) {
             throw new IllegalArgumentException("종료 시간은 시작 시간 이후여야 합니다.");
         }
 
@@ -232,12 +250,9 @@ public class ChallengeServiceImpl implements ChallengeService {
             throw new IllegalArgumentException("활동명을 입력해야 합니다.");
         }
 
-        // 5. 인증 가능 시간인지 확인
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime availableAuthTime = challengeVerifyDTO.getStartTime().plusMinutes(joinInfo.getActivityTime());
-
-        if (now.isAfter(availableAuthTime)) {
-            throw new IllegalStateException("활동 시간이 초과되어 인증할 수 없습니다.");
+        // 시작 시간이 하루(24시간) 이상 지난 경우 인증 불가
+        if (startTime.isBefore(now.minusDays(1))) {
+            throw new IllegalStateException("하루가 지난 활동은 인증할 수 없습니다.");
         }
 
         // 6. 활동 시간 계산 (분 단위)
@@ -286,6 +301,7 @@ public class ChallengeServiceImpl implements ChallengeService {
     }
 
 
+
     // 챌린지 존재 여부 확인 (서비스 구현 수정)
     @Override
     public boolean existsById(Long challIdx) {
@@ -294,8 +310,8 @@ public class ChallengeServiceImpl implements ChallengeService {
 
 
     // 챌린지 검색
-    public List<ChallengeDTO> searchChallenges(String challTitle, String challCategory, int offset, int size, String sort) {
-        return challengeMapper.searchChallenges(challTitle, challCategory, offset, size, sort);
+    public List<ChallengeDTO> searchChallenges(String challTitle, Integer challCategoryIdx, int offset, int size, String sort) {
+        return challengeMapper.searchChallenges(challTitle, challCategoryIdx, offset, size, sort);
     }
 }
 

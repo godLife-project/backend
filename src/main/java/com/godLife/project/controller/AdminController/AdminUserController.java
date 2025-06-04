@@ -24,7 +24,7 @@ public class AdminUserController {
     private final AdminUserService adminUserService;
 
 
-    private GlobalExceptionHandler handler;
+    private final GlobalExceptionHandler handler;
 
     // 유저 정보 리스트 조회
     @GetMapping

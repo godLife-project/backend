@@ -1,11 +1,14 @@
 package com.godLife.project.dto.contents;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.godLife.project.dto.infos.ChallengeJoinDTO;
+import com.godLife.project.dto.verify.ChallengeVerifyDTO;
+import com.godLife.project.dto.verify.VerifyRecordDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -66,6 +69,7 @@ public class ChallengeDTO {
 
     // 참가자 정보 리스트
     private List<ChallengeJoinDTO> participants;
-    // 챌린지 카테고리 이름
-    private String categoryName;
+
+    private boolean isJoined;
+
 }

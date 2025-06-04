@@ -2,6 +2,7 @@ package com.godLife.project.mapper;
 
 import com.godLife.project.dto.contents.ChallengeDTO;
 import com.godLife.project.dto.infos.ChallengeJoinDTO;
+import com.godLife.project.dto.verify.VerifyRecordDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -28,6 +29,9 @@ public interface ChallengeMapper {
 
     // 챌린지 상세조회
     ChallengeDTO challengeDetail(Long challIdx);
+    // 인증조회
+    List<VerifyRecordDTO> getVerifyRecords(@Param("challIdx") Long challIdx, @Param("userIdx") Long userIdx);
+
 
     // 상세조회시 참가자 조회
     List<ChallengeJoinDTO> getChallengeParticipants(Long challIdx);
@@ -75,9 +79,6 @@ public interface ChallengeMapper {
     // 총 클리어 시간 확인
     int getTotalClearTime(Long challIdx);
 
-    // 챌린지 상태 업데이트
-    int updateChallengesToCompleted();
-
 
     // 챌린지 존재 여부 확인
     int existsById(@Param("challIdx") Long challIdx);
@@ -88,7 +89,7 @@ public interface ChallengeMapper {
     // 챌린지 검색 (제목, 카테고리)
     List<ChallengeDTO> searchChallenges(
             @Param("challTitle") String challTitle,
-            @Param("challCategory") String challCategory,
+            @Param("challCategoryIdx") Integer challCategoryIdx,
             @Param("offset") int offset,
             @Param("size") int size,
             @Param("sort") String sort

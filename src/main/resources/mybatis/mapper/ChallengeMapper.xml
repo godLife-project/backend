@@ -94,6 +94,22 @@
         WHERE CHALL_IDX = #{challIdx}
     </select>
 
+    <!-- 인증 조회 -->
+    <select id="getVerifyRecords" resultType="com.godLife.project.dto.verify.VerifyRecordDTO">
+        SELECT
+        v.START_TIME AS startTime,
+        v.END_TIME AS endTime,
+        ( v.end_time - v.start_time ) * 24 * 60 AS elapsedMinutes,
+        cj. Activity AS activity
+        FROM verify_table v
+        JOIN chall_join cj
+        ON v.chall_idx = cj.chall_idx
+        AND v.user_idx = cj.user_idx
+        WHERE v.chall_idx = #{challIdx}
+        AND v.user_idx = #{userIdx}
+        ORDER BY v.start_time DESC
+    </select>
+
     <!-- 상세조회시 참가자 조회-->
     <select id="getChallengeParticipants" resultType="com.godLife.project.dto.infos.ChallengeJoinDTO">
         SELECT cj.CHALL_JOIN_IDX,
@@ -192,7 +208,7 @@
     <!-- 클리어 시간 0 이하 시 챌린지 종료 처리 -->
     <update id="finishChallenge">
         UPDATE CHALL_TABLE
-        SET CHALL_STATE = 'FINISHED'
+        SET CHALL_STATE = 'COMPLETED'
         WHERE CHALL_IDX = #{challIdx}
     </update>
 
@@ -216,13 +232,12 @@
         FROM chall_table
         WHERE 1=1
         <if test="challTitle != null and challTitle != ''">
-            AND LOWER(chall_name) LIKE '%' || LOWER(#{challTitle}) || '%'
+            AND LOWER(chall_title) LIKE CONCAT('%', LOWER(#{challTitle}), '%')
         </if>
-        <if test="challCategory != null and challCategory != ''">
-            AND LOWER(category) LIKE '%' || LOWER(#{challCategory}) || '%'
+        <if test="challCategoryIdx != null and challCategoryIdx != ''">
+            AND chall_category_idx = #{challCategoryIdx}
         </if>
-        ORDER BY ${sort}
-        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+        AND chall_state NOT IN ('COMPLETED','END')
     </select>
 
 </mapper>

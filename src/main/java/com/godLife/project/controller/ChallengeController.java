@@ -1,21 +1,23 @@
 package com.godLife.project.controller;
 
 import com.godLife.project.dto.contents.ChallengeDTO;
+import com.godLife.project.dto.jwtDTO.CustomUserDetails;
 import com.godLife.project.dto.request.ChallengeJoinRequest;
 import com.godLife.project.dto.verify.ChallengeVerifyDTO;
+import com.godLife.project.dto.verify.VerifyRecordDTO;
 import com.godLife.project.handler.GlobalExceptionHandler;
+import com.godLife.project.jwt.LoginFilter;
 import com.godLife.project.service.interfaces.ChallengeService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Slf4j
 @RestController
@@ -97,10 +99,50 @@ public class ChallengeController {
   }
 
   // 챌린지 상세 조회
-  @GetMapping("/detail/{challIdx}")
-  public ChallengeDTO getChallengeDetail(@PathVariable Long challIdx) {
-    // 서비스에서 챌린지 상세 정보 조회 및 업데이트
-    return challengeService.getChallengeDetail(challIdx);
+  @GetMapping("/{challIdx}")
+  public ResponseEntity<Map<String, Object>> getChallengeDetail(
+          @PathVariable Long challIdx) {
+    ChallengeDTO challengeDetail = challengeService.getChallengeDetail(challIdx);
+
+    Map<String, Object> response = new HashMap<>();
+    response.put("success", true);
+    response.put("challenge", challengeDetail);
+
+    return ResponseEntity.ok(response);
+  }
+
+  // 인증 기록 조회
+  @GetMapping("/verify-records/{challIdx}")
+  public ResponseEntity<Map<String, Object>> getVerifyRecords(
+          @PathVariable Long challIdx,
+          @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+    Long userIdx = null;
+
+    if (authHeader != null && authHeader.startsWith("Bearer ")) {
+      try {
+        userIdx = (long) handler.getUserIdxFromToken(authHeader);
+      } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                "success", false,
+                "message", "Invalid token"
+        ));
+      }
+    }
+
+    if (userIdx == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+              "success", false,
+              "message", "로그인이 필요합니다."
+      ));
+    }
+
+    List<VerifyRecordDTO> records = challengeService.getVerifyRecords(challIdx, userIdx);
+
+    return ResponseEntity.ok(Map.of(
+            "success", true,
+            "records", records
+    ));
   }
 
 
@@ -132,19 +174,39 @@ public class ChallengeController {
 
     // 챌린지 인증 (경과 시간 기록)
     @PostMapping("/auth/verify/{challIdx}")
-    public ResponseEntity<String> verifyChallenge(
+    public ResponseEntity<Map<String, Object>> verifyChallenge(
             @PathVariable Long challIdx,
             @RequestBody ChallengeVerifyDTO dto,
             @RequestHeader("Authorization") String authHeader) {
 
-      int userIdx = handler.getUserIdxFromToken(authHeader);
+      Map<String, Object> response = new LinkedHashMap<>();
+      try {
+        int userIdx = handler.getUserIdxFromToken(authHeader);
 
-      dto.setChallIdx(challIdx);
-      dto.setUserIdx((long) userIdx); // userIdx 세팅 누락 방지
+        dto.setChallIdx(challIdx);
+        dto.setUserIdx((long) userIdx); // userIdx 세팅 누락 방지
 
-      challengeService.verifyChallenge(dto);
+        challengeService.verifyChallenge(dto);
 
-      return ResponseEntity.ok("인증이 완료되었습니다.");
+        response.put("status", 200);
+        response.put("message", "인증이 완료되었습니다.");
+        response.put("timestamp", LocalDateTime.now());
+        return ResponseEntity.ok(response);
+
+      } catch (IllegalArgumentException | IllegalStateException e) {
+        response.put("status", 400);
+        response.put("error", "Bad Request");
+        response.put("message", e.getMessage());
+        response.put("timestamp", LocalDateTime.now());
+        return ResponseEntity.badRequest().body(response);
+
+      } catch (Exception e) {
+        response.put("status", 500);
+        response.put("error", "Internal Server Error");
+        response.put("message", "서버 오류가 발생했습니다.");
+        response.put("timestamp", LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+      }
     }
 
 
@@ -152,12 +214,12 @@ public class ChallengeController {
   @GetMapping("/search")
   public List<ChallengeDTO> searchChallenges(
           @RequestParam(required = false) String challTitle,
-          @RequestParam(required = false) String challCategory,
+          @RequestParam(required = false) Integer challCategoryIdx,
           @RequestParam(defaultValue = "0") int page,
           @RequestParam(defaultValue = "10") int size,
-          @RequestParam(defaultValue = "chall_idx DESC") String sort
+          @RequestParam(defaultValue = "chall_idx") String sort
   ) {
     int offset = page * size;
-    return challengeService.searchChallenges(challTitle, challCategory, offset, size, sort);
+    return challengeService.searchChallenges(challTitle, challCategoryIdx, offset, size, sort);
   }
 }

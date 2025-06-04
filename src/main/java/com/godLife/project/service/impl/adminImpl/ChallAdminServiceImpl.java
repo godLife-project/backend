@@ -36,7 +36,7 @@ public class ChallAdminServiceImpl implements ChallAdminService {
           throw new IllegalArgumentException("관리자 개입형 챌린지는 유효한 기간(Duration)이 필요합니다. (0 이상의 값으로 설정하세요)");
         }
 
-        challengeDTO.setChallState(ChallengeState.IN_PROGRESS.getState());
+        challengeDTO.setChallState(ChallengeState.IN_PROGRESS.getCode());
 
         // 현재 시간을 시작 시간으로 설정
         LocalDateTime startTime = LocalDateTime.now();
@@ -50,7 +50,7 @@ public class ChallAdminServiceImpl implements ChallAdminService {
       }
       // 유저 참여형 처리
       else if (challengeDTO.getUserJoin() == 1) {
-        challengeDTO.setChallState(ChallengeState.PUBLISHED.getState());
+        challengeDTO.setChallState(ChallengeState.PUBLISHED.getCode());
         challengeDTO.setChallStartTime(null); // 참가자가 생길 때 설정
         challengeDTO.setChallEndTime(null);
       } else {
@@ -158,8 +158,8 @@ public class ChallAdminServiceImpl implements ChallAdminService {
 
     // 종료 시간이 되면 상태를 "완료됨"으로 변경
     if (challenge.getChallEndTime() != null && LocalDateTime.now().isAfter(challenge.getChallEndTime())
-            && !challenge.getChallState().equals(ChallengeState.COMPLETED.getState())) {
-      challenge.setChallState(ChallengeState.COMPLETED.getState());
+            && !challenge.getChallState().equals(ChallengeState.COMPLETED.getCode())) {
+      challenge.setChallState(ChallengeState.COMPLETED.getCode());
     }
 
     // 참가자 상세 정보 조회 및 설정

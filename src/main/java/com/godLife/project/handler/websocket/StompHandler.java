@@ -40,9 +40,9 @@ public class StompHandler implements ChannelInterceptor {
       jwtUtil.validateToken(authorization);
 
       String role = jwtUtil.getRole(authorization);
-      List<String> allowedRoles = Arrays.asList("3", "4", "6", "7");
+      // List<String> allowedRoles = Arrays.asList("3", "4", "6", "7");
 
-      if (!allowedRoles.contains(role)) {
+      if (role.equals("1")) {
         throw UnauthorizedException.of("ForbiddenRole", "접속이 허용되지 않은 권한입니다.");
       }
 

@@ -26,6 +26,7 @@ public class RedisService {
       case 's' -> Duration.ofSeconds(timeout);
       case 'm' -> Duration.ofMinutes(timeout);
       case 'h' -> Duration.ofHours(timeout);
+      case 'd' -> Duration.ofDays(timeout);
       default -> null;
     };
 
@@ -45,6 +46,7 @@ public class RedisService {
         case 's' -> Duration.ofSeconds(timeout);
         case 'm' -> Duration.ofMinutes(timeout);
         case 'h' -> Duration.ofHours(timeout);
+        case 'd' -> Duration.ofDays(timeout);
         default -> null;
       };
 

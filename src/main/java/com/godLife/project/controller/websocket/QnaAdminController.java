@@ -9,7 +9,6 @@ import com.godLife.project.dto.serviceAdmin.AdminIdxAndIdDTO;
 import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminInfos;
 import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminList;
 import com.godLife.project.dto.statistics.response.ResponseQnaAdminStat;
-import com.godLife.project.dto.test.TestChatDTO;
 import com.godLife.project.enums.MessageStatus;
 import com.godLife.project.enums.QnaRedisKey;
 import com.godLife.project.enums.QnaStatus;
@@ -36,7 +35,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-public class ChatController {
+public class QnaAdminController {
 
   private final QnaService qnaService;
 
@@ -54,17 +53,6 @@ public class ChatController {
 
   private static final String SAVE_SERVICE_ADMIN_STATUS = "save-service-admin-status:";
 
-
-  // 채팅 기능
-  @MessageMapping("/roomChat/{roomNo}")
-  @SendTo("/sub/roomChat/{roomNo}")
-  public TestChatDTO broadcasting(final TestChatDTO request,
-                                  @DestinationVariable(value = "roomNo") final String chatRoomNo) {
-    request.setRoomNo(chatRoomNo);
-    log.info("{roomNo : {}, request : {}}", chatRoomNo, request);
-
-    return request;
-  }
 
   /// 구독중인 유저 전체에게
   // 대기중인 루틴 리스트 전송

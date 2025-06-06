@@ -6,9 +6,11 @@ import com.godLife.project.dto.contents.QnaReplyDTO;
 import com.godLife.project.dto.list.QnaDetailDTO;
 import com.godLife.project.dto.qnaWebsocket.listMessage.QnaDetailMessageDTO;
 import com.godLife.project.enums.MessageStatus;
+import com.godLife.project.enums.QnaRedisKey;
 import com.godLife.project.enums.QnaStatus;
 import com.godLife.project.exception.CustomException;
 import com.godLife.project.handler.GlobalExceptionHandler;
+import com.godLife.project.service.impl.redis.RedisService;
 import com.godLife.project.service.interfaces.QnaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,7 @@ public class QnaController {
   private final GlobalExceptionHandler handler;
 
   private final QnaService qnaService;
+  private final RedisService redisService;
 
 
 
@@ -174,6 +177,10 @@ public class QnaController {
 
     // 문의 상태 수정 (완료 처리)
     qnaService.setQnaStatus(qnaIdx, userIdx, setStatus, findStatus);
+
+    // 완료 처리 할 경우 레디스의 문의 추적 정보 삭제
+    redisService.deleteData(QnaRedisKey.QNA_ADMIN_ANSWERED.getKey() + qnaIdx);
+    redisService.deleteData(QnaRedisKey.QNA_IS_SLEEP.getKey() + qnaIdx);
 
     return ResponseEntity.ok().body(handler.createResponse(200, "해당 문의가 완료 처리 되었습니다."));
   }

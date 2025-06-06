@@ -67,7 +67,7 @@ public class QnaQueueListener implements InitializingBean, DisposableBean {
       synchronized (lock) {
         while (running) { // ✅ 2. 플래그 기반 실행
           try {
-            if (restartCount >= 3) {
+            if (restartCount >= 5) {
               log.info("QnaQueueListener - autoMatch :: 장시간 새로운 문의가 없어 10분 대기합니다.");
               scheduler.schedule(() -> {
                 synchronized (lock) {
@@ -133,7 +133,7 @@ public class QnaQueueListener implements InitializingBean, DisposableBean {
               }
             }
           } catch (QueryTimeoutException e) {
-            log.info("QnaQueueListener - autoMatch :: 1분간 새 문의 없음 → 10초 후 재시도");
+//            log.info("QnaQueueListener - autoMatch :: 1분간 새 문의 없음 → 10초 후 재시도");
             try {
               scheduler.schedule(() -> {
                 synchronized (lock) {

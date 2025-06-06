@@ -22,7 +22,12 @@ public enum QnaRedisKey {
    * 상담원이 답변을 남겼을 경우 해당 문의의 상태를 추적하기 위한 키 값
    * <p>{@code qnaIdx} 와 같이 사용 해야 함.</p>
    */
-  QNA_ADMIN_ANSWERED("qna-admin-answered::");
+  QNA_ADMIN_ANSWERED("qna-admin-answered::"),
+  /**
+   * 휴면처리 된 문의의 상태를 추적하기 위한 키 값
+   * <p>{@code qnaIdx} 와 같이 사용 해야 함.</p>
+   */
+  QNA_IS_SLEEP("qna-is-sleep::");
 
   private final String key;
 

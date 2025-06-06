@@ -40,18 +40,24 @@ public class RedisEventListener implements MessageListener {
     // 특정 이벤트에 대한 로직 분기
     // 특정 채널에 대한 로직을 구현하려면 eventPattern에서 채널별로 분리하는 로직 구현할 것.
     switch (eventType) {
-      case "expired":
+      case "expired": {
         // 만료 처리
         String expiredKey = message.toString();
         if (expiredKey.contains(QnaRedisKey.QNA_ADMIN_ANSWERED.getKey())) {
-          System.out.println("만료된 키 : " + expiredKey);
-          int qnaIdx = Integer.parseInt(expiredKey.substring(expiredKey.lastIndexOf(":") + 1));
+          // 문의 인덱스 조회
+          int qnaIdx = getQnaIdx(expiredKey);
           //System.out.println("문의 인덱스 : " + qnaIdx);
 
           qnaService.setQnaStatus(qnaIdx, null, QnaStatus.SLEEP.getStatus(), Collections.singletonList(QnaStatus.RESPONDING.getStatus()));
+        } else if (expiredKey.contains(QnaRedisKey.QNA_IS_SLEEP.getKey())) {
+          // 문의 인덱스 조회
+          int qnaIdx = getQnaIdx(expiredKey);
+
+          qnaService.setQnaStatus(qnaIdx, null, QnaStatus.COMPLETE.getStatus(), Collections.singletonList(QnaStatus.SLEEP.getStatus()));
         }
 
         break;
+      }
       case "del":
         // 삭제 처리
         break;
@@ -64,5 +70,11 @@ public class RedisEventListener implements MessageListener {
     }
 
 
+  }
+
+  public int getQnaIdx(String expiredKey) {
+    System.out.println("만료된 키 : " + expiredKey);
+
+    return Integer.parseInt(expiredKey.substring(expiredKey.lastIndexOf(":") + 1));
   }
 }

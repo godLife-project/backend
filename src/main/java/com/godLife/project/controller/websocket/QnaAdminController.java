@@ -9,8 +9,8 @@ import com.godLife.project.dto.serviceAdmin.AdminIdxAndIdDTO;
 import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminInfos;
 import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminList;
 import com.godLife.project.dto.statistics.response.ResponseQnaAdminStat;
-import com.godLife.project.dto.test.TestChatDTO;
 import com.godLife.project.enums.MessageStatus;
+import com.godLife.project.enums.QnaRedisKey;
 import com.godLife.project.enums.QnaStatus;
 import com.godLife.project.enums.WSDestination;
 import com.godLife.project.exception.CustomException;
@@ -35,7 +35,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-public class ChatController {
+public class QnaAdminController {
 
   private final QnaService qnaService;
 
@@ -51,20 +51,8 @@ public class ChatController {
 
   private final RedisService redisService;
 
-  private static final String QNA_WATCHER = "qna-watcher-";
   private static final String SAVE_SERVICE_ADMIN_STATUS = "save-service-admin-status:";
 
-
-  // 채팅 기능
-  @MessageMapping("/roomChat/{roomNo}")
-  @SendTo("/sub/roomChat/{roomNo}")
-  public TestChatDTO broadcasting(final TestChatDTO request,
-                                  @DestinationVariable(value = "roomNo") final String chatRoomNo) {
-    request.setRoomNo(chatRoomNo);
-    log.info("{roomNo : {}, request : {}}", chatRoomNo, request);
-
-    return request;
-  }
 
   /// 구독중인 유저 전체에게
   // 대기중인 루틴 리스트 전송
@@ -223,7 +211,7 @@ public class ChatController {
       }
       messageService.sendToUser(principal.getName(), WSDestination.QUEUE_QNA_DETAIL.getDestination() + qnaIdx, detailResponse);
 
-      redisService.saveStringData(QNA_WATCHER + principal.getName(), String.valueOf(qnaIdx), 'h', 2);
+      redisService.saveStringData(QnaRedisKey.QNA_WATCHER.getKey() + principal.getName(), String.valueOf(qnaIdx), 'h', 2);
     } catch (WebSocketBusinessException e) {
       throw new WebSocketBusinessException(e.getMessage(), e.getCode(), principal.getName());
     } catch (CustomException e) {
@@ -242,7 +230,7 @@ public class ChatController {
   // 상세 보기 닫음
   @MessageMapping("/close/detail")
   public void detailClose(Principal principal) {
-    redisService.deleteData(QNA_WATCHER + principal.getName());
+    redisService.deleteData(QnaRedisKey.QNA_WATCHER.getKey() + principal.getName());
   }
 
   // 완료 처리된 문의 조회

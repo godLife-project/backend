@@ -13,6 +13,7 @@ import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminInfos;
 import com.godLife.project.dto.serviceAdmin.ServiceCenterAdminList;
 import com.godLife.project.dto.statistics.response.ResponseQnaAdminStat;
 import com.godLife.project.enums.MessageStatus;
+import com.godLife.project.enums.QnaRedisKey;
 import com.godLife.project.enums.QnaStatus;
 import com.godLife.project.enums.WSDestination;
 import com.godLife.project.exception.CustomException;
@@ -33,6 +34,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -50,16 +53,12 @@ public class QnaServiceImpl implements QnaService {
   private final QnaMatchService qnaMatchService;
   private final ServiceAdminStatService adminStatService;
 
-  private static final String QNA_QUEUE_KEY = "qna_queue";
-  private static final String QNA_WATCHER = "qna-watcher-";
-
-
   @Override
   @Transactional(rollbackFor = Exception.class)
   public void createQna(QnaDTO qnaDTO) {
     try {
       qnaMapper.createQna(qnaDTO); // 문의 저장
-      redisService.leftPushToRedisQueue(QNA_QUEUE_KEY, String.valueOf(qnaDTO.getQnaIdx())); // 큐에 저장
+      redisService.leftPushToRedisQueue(QnaRedisKey.QNA_QUEUE_KEY.getKey(), String.valueOf(qnaDTO.getQnaIdx())); // 큐에 저장
       log.info("QnaService - createQna :: 문의 등록 후 큐에 추가됨 - {}", qnaDTO.getQnaIdx());
 
       // 관리자에게 전송할 객체 생성 및 데이터 전송
@@ -177,7 +176,7 @@ public class QnaServiceImpl implements QnaService {
       // 관리자 ID 추출
       String username = userService.getUserIdByUserIdx(qnaParent.getAUserIdx());
 
-      String whichQnA = redisService.getStringData(QNA_WATCHER + username);
+      String whichQnA = redisService.getStringData(QnaRedisKey.QNA_WATCHER.getKey() + username);
       boolean isWatched = String.valueOf(qnaParentIdx).equals(whichQnA);
 
       // 답변 수 증가 (조회 시 초기화 돼야 함. --> 알림용)
@@ -203,6 +202,12 @@ public class QnaServiceImpl implements QnaService {
             username
         );
         messageService.sendToUser(username, WSDestination.QUEUE_MATCHED_QNA_LIST.getDestination(), matchedResponse);
+
+        // 상담원이 응답했음을 레디스에 저장 (레디스 : 3일)
+        LocalDateTime now = LocalDateTime.now();
+        String formatted = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        String value = qnaParent.getAUserIdx() + "_" + formatted;
+        redisService.saveStringData(QnaRedisKey.QNA_ADMIN_ANSWERED.getKey() + qnaParentIdx, value, 'd', 3);
       } else {
         // 유저가 작성 중일 경우
         if (!isWatched) {
@@ -220,6 +225,10 @@ public class QnaServiceImpl implements QnaService {
               username
           );
           messageService.sendToUser(username, WSDestination.QUEUE_MATCHED_QNA_LIST.getDestination(), matchedResponse);
+
+          // 유저가 답변을 달 경우, 답변 추적 삭제
+          redisService.deleteData(QnaRedisKey.QNA_ADMIN_ANSWERED.getKey() + qnaParentIdx);
+          redisService.deleteData(QnaRedisKey.QNA_IS_SLEEP.getKey() + qnaParentIdx);
         }
       }
 
@@ -418,7 +427,7 @@ public class QnaServiceImpl implements QnaService {
 
         messageService.sendToUser(username, WSDestination.QUEUE_MATCHED_QNA_LIST.getDestination(), matchedResponse);
 
-        String whichQnA = redisService.getStringData(QNA_WATCHER + username);
+        String whichQnA = redisService.getStringData(QnaRedisKey.QNA_WATCHER.getKey() + username);
         boolean isWatched = String.valueOf(qnaIdx).equals(whichQnA);
 
         if (isWatched) {
@@ -487,7 +496,7 @@ public class QnaServiceImpl implements QnaService {
 
       // 관리자 ID 추출
       String username = userService.getUserIdByUserIdx(forValidate.getAUserIdx());
-      String whichQnA = redisService.getStringData(QNA_WATCHER + username);
+      String whichQnA = redisService.getStringData(QnaRedisKey.QNA_WATCHER.getKey() + username);
       boolean isWatched = String.valueOf(qnaIdx).equals(whichQnA);
 
       if (isWatched) {
@@ -603,7 +612,7 @@ public class QnaServiceImpl implements QnaService {
       // 관리자 ID 추출
       if (!forValidate.getQnaStatus().equals(QnaStatus.WAIT.getStatus())) {
         String username = userService.getUserIdByUserIdx(forValidate.getAUserIdx());
-        String whichQnA = redisService.getStringData(QNA_WATCHER + username);
+        String whichQnA = redisService.getStringData(QnaRedisKey.QNA_WATCHER.getKey() + username);
         boolean isWatched = String.valueOf(qnaIdx).equals(whichQnA);
 
         if (isWatched) {
@@ -639,6 +648,11 @@ public class QnaServiceImpl implements QnaService {
         throw new CustomException("존재하지 않거나, 삭제된 문의 입니다.", HttpStatus.NOT_FOUND);
       }
 
+//      System.out.println(forValidate);
+//      System.out.println(forValidate.getQnaStatus());
+//      System.out.println(findStatus);
+//      System.out.println(findStatus.contains(forValidate.getQnaStatus()));
+
       // 원본의 상태값이 findStatus 와 부합하는지 검증
       if (!findStatus.contains(forValidate.getQnaStatus())) {
         log.error("QnaService - setQnaStatus :: status 검증 불일치 [원본 status : {} ↔ 검증 satus : {}]", forValidate.getQnaStatus(), findStatus);
@@ -655,16 +669,16 @@ public class QnaServiceImpl implements QnaService {
       // 모든 검증 통과 시 문의 상태값 변경
       qnaMapper.setQnaStatus(qnaIdx, setStatus, findStatus);
 
-      switch (setStatus) {
-        case "COMPLETE" :
-          int adminIdx = forValidate.getAUserIdx();
-          // 매칭 리스트에 완료 된 문의 삭제 요청을 위해 아이디 조회
-          String userId = userService.getUserIdByUserIdx(adminIdx);
-          // 메세지 패키징
-          MatchedListMessageDTO matchedListQnAMessage = qnaMatchService.setMatchedListForMessage(qnaIdx,MessageStatus.REMOVE.getStatus());
-          // 메세지 전송
-          messageService.sendToUser(userId, WSDestination.QUEUE_MATCHED_QNA_LIST.getDestination(), matchedListQnAMessage);
+      int adminIdx = forValidate.getAUserIdx();
+      // 매칭 리스트에 완료 된 문의 삭제 요청을 위해 아이디 조회
+      String adminId = userService.getUserIdByUserIdx(adminIdx);
 
+      switch (setStatus) {
+        case "COMPLETE" : {
+          // 메세지 패키징
+          MatchedListMessageDTO matchedListQnAMessage = qnaMatchService.setMatchedListForMessage(qnaIdx, MessageStatus.REMOVE.getStatus());
+          // 메세지 전송
+          messageService.sendToUser(adminId, WSDestination.QUEUE_MATCHED_QNA_LIST.getDestination(), matchedListQnAMessage);
 
           // 상담원 명단 매칭수 최신화 하기
           serviceAdminService.refreshMatchCount(adminIdx);
@@ -681,23 +695,51 @@ public class QnaServiceImpl implements QnaService {
           notStatus.add(QnaStatus.SLEEP.getStatus());
           notStatus.add(QnaStatus.DELETED.getStatus());
 
-          MatchedListMessageDTO completeQnA = getMatchedSingleQna(adminIdx, qnaIdx, MessageStatus.ADD.getStatus(), notStatus, userId);
+          MatchedListMessageDTO completeQnA = getMatchedSingleQna(adminIdx, qnaIdx, MessageStatus.ADD.getStatus(), notStatus, adminId);
           if (completeQnA != null) {
             // 통계 데이터 최신화
             ResponseQnaAdminStat qnaAdminStat = adminStatService.updateQnaAdminSummaryStats(qnaIdx, adminIdx);
-            messageService.sendToUser(userId, WSDestination.QUEUE_QNA_ADMIN_STATISTICS.getDestination(), qnaAdminStat);
-            messageService.sendToUser(userId, WSDestination.QUEUE_COMPLETE_QNA_LIST.getDestination(), completeQnA);
+            messageService.sendToUser(adminId, WSDestination.QUEUE_QNA_ADMIN_STATISTICS.getDestination(), qnaAdminStat);
+            messageService.sendToUser(adminId, WSDestination.QUEUE_COMPLETE_QNA_LIST.getDestination(), completeQnA);
           }
           break;
-        case "WAIT" :
-          // 로직 추가시 구현할 것
-        case "CONNECT" :
-          // 로직 추가시 구현할 것
-        case "RESPONDING" :
-          // 로직 추가시 구현할 것
-        case "SLEEP" :
+        }
+        /*
+        case "WAIT" : {
           // 로직 추가시 구현할 것
           break;
+        }
+        case "CONNECT" : {
+          // 로직 추가시 구현할 것
+          break;
+        }
+        case "RESPONDING" : {
+          // 로직 추가시 구현할 것
+          break;
+        }
+         */
+        case "SLEEP" : {
+          System.out.println("sleep 로직 동작함..!");
+
+          List<String> notStatus = Collections.singletonList(QnaStatus.DELETED.getStatus());
+          MatchedListMessageDTO matchedQnA = getMatchedSingleQna(adminIdx, qnaIdx, MessageStatus.UPDATE.getStatus(), notStatus, adminId);
+
+          // 메세지 전송
+          messageService.sendToUser(adminId, WSDestination.QUEUE_MATCHED_QNA_LIST.getDestination(), matchedQnA);
+
+          // 상담원 명단 매칭수 최신화 하기
+          serviceAdminService.refreshMatchCount(adminIdx);
+          List<ServiceCenterAdminInfos> accessAdminInfos = serviceAdminService.getAllAccessServiceAdminList();
+          List<ServiceCenterAdminList> accessAdminList = serviceAdminService.getAccessAdminListForMessage(accessAdminInfos);
+
+          messageService.sendToAll(WSDestination.ALL_ACCESS_ADMIN_LIST.getDestination(), accessAdminList);
+
+          // 휴면 문의 만료 데이터 저장 (레디스 : 2일 유지)
+          LocalDateTime now = LocalDateTime.now();
+          String formatted = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+          redisService.saveStringData(QnaRedisKey.QNA_IS_SLEEP.getKey() + qnaIdx, formatted, 'd', 2);
+          break;
+        }
         default:
           throw new CustomException("사용하지 않는 문의의 상태값 입니다.", HttpStatus.CONFLICT);
       }

@@ -6,6 +6,7 @@ import com.godLife.project.dto.qnaWebsocket.listMessage.MatchedListMessageDTO;
 import com.godLife.project.dto.qnaWebsocket.listMessage.WaitListMessageDTO;
 import com.godLife.project.dto.serviceAdmin.AdminIdxAndIdDTO;
 import com.godLife.project.enums.MessageStatus;
+import com.godLife.project.enums.QnaRedisKey;
 import com.godLife.project.mapper.autoMatch.AutoMatchMapper;
 import com.godLife.project.service.interfaces.QnaMatchService;
 import lombok.RequiredArgsConstructor;
@@ -25,12 +26,9 @@ public class QnaMatchServiceImpl implements QnaMatchService {
     private final AutoMatchMapper autoMatchMapper;
     private final RedissonClient redissonClient;
 
-    private static final String QNA_LOCK = "qna-lock:";
-
-
     @Override
     public boolean matchSingleQna(int qnaIdx, int adminIdx) {
-        RLock lock = redissonClient.getLock(QNA_LOCK + qnaIdx);
+        RLock lock = redissonClient.getLock(QnaRedisKey.QNA_LOCK.getKey() + qnaIdx);
 
         try {
             if (lock.tryLock(5, 3, TimeUnit.SECONDS)) {

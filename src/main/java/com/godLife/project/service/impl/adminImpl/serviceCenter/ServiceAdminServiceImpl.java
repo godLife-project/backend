@@ -43,6 +43,7 @@ public class ServiceAdminServiceImpl implements ServiceAdminService {
     notStatus.add(QnaStatus.WAIT.getStatus());
     notStatus.add(QnaStatus.COMPLETE.getStatus());
     notStatus.add(QnaStatus.DELETED.getStatus());
+    notStatus.add(QnaStatus.SLEEP.getStatus());
 
     int userIdx = verifyMapper.getUserIdxByUserId(username);
     try  {
@@ -141,6 +142,7 @@ public class ServiceAdminServiceImpl implements ServiceAdminService {
     notStatus.add(QnaStatus.WAIT.getStatus());
     notStatus.add(QnaStatus.COMPLETE.getStatus());
     notStatus.add(QnaStatus.DELETED.getStatus());
+    notStatus.add(QnaStatus.SLEEP.getStatus());
 
     serviceAdminMapper.setMatchedByQuestionCount(adminIdx, notStatus);
   }

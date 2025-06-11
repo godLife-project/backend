@@ -8,6 +8,7 @@ import com.godLife.project.service.impl.redis.RedisService;
 import com.godLife.project.service.interfaces.ListService;
 import com.godLife.project.service.interfaces.MyPageService;
 import com.godLife.project.service.interfaces.jwtInterface.RefreshService;
+import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -45,6 +46,7 @@ public class MyPageController {
     int userIdx = handler.getUserIdxFromToken(authHeader);
 
     MyPageUserInfosResponseDTO result = myPageService.getUserInfos(userIdx);
+    System.out.println("result: " + result);
 
     if (result == null) {
       return ResponseEntity.status(404).body(handler.createResponse(404, "유저 정보가 없습니다."));

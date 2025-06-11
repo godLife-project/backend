@@ -140,4 +140,6 @@ public class PlanDTO {
     private boolean fireState;
 
     private String userDelete;
+
+    private Integer userAuthorityIdx;
 }

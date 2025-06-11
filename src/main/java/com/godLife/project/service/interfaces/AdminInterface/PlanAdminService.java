@@ -1,6 +1,8 @@
 package com.godLife.project.service.interfaces.AdminInterface;
 
+import com.godLife.project.dto.datas.PlanDTO;
 import com.godLife.project.dto.list.customDTOs.CustomAdminPlanListDTO;
+import com.godLife.project.mapper.AdminMapper.PlanAdminMapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
 
@@ -18,5 +20,7 @@ public interface PlanAdminService {
           @Param("offset") int offset, @Param("limit") int limit);
 
   List<CustomAdminPlanListDTO> selectPlanList (@Param("offset") int offset, @Param("limit") int limit);
+
+  int adminInsertPlan(PlanDTO planDTO);
 
 }

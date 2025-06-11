@@ -81,6 +81,7 @@ public class MyPageServiceImpl implements MyPageService {
     @Override
     public MyPageUserInfosResponseDTO getUserInfos(int userIdx) {
         MyPageUserInfosResponseDTO infos = myPageMapper.getUserInfos(userIdx);
+        System.out.println("infos : " + infos);
 
         if (infos == null) { return null; }
 

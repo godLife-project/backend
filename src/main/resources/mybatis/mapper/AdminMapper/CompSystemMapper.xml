@@ -189,7 +189,7 @@
                 VISIBLE = #{visible},
             </if>
         </set>
-        WHERE ICON_KEY = #{iconKey}
+        WHERE ICON_KEY = #{originalIconKey}
     </update>
 
     <!-- 삭제 -->

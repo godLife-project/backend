@@ -118,15 +118,9 @@ public class FaqController {
   }
 
   // FAQ 검색
-  @PostMapping("/search")
-  public ResponseEntity<List<FaQDTO>> searchFaq(@RequestBody SearchQueryDTO searchQuery) {
-    try {
-      List<FaQDTO> result = faqService.searchFaq(searchQuery);
-      return ResponseEntity.ok(result);
-    } catch (DataAccessException e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
-    }
+  @GetMapping("/search")
+  public ResponseEntity<List<FaQDTO>> searchFaq(@ModelAttribute SearchQueryDTO searchQuery) {
+    List<FaQDTO> result = faqService.searchFaq(searchQuery);
+    return ResponseEntity.ok(result);
   }
 }

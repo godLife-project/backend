@@ -57,7 +57,7 @@
         AND POPUP_END_DATE &gt;= SYSDATE
     </select>
 
-    <!-- 팝업 활성화 메퍼 -->
+    <!-- 팝업 활성화 -->
     <update id="setNoticePopup" parameterType="com.godLife.project.dto.contents.NoticeDTO">
         UPDATE NOTICE_TABLE
         SET IS_POPUP = #{isPopup},

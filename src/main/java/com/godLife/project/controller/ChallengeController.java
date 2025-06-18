@@ -102,13 +102,19 @@ public class ChallengeController {
   @GetMapping("/{challIdx}")
   public ResponseEntity<Map<String, Object>> getChallengeDetail(
           @PathVariable Long challIdx) {
-    ChallengeDTO challengeDetail = challengeService.getChallengeDetail(challIdx);
-
     Map<String, Object> response = new HashMap<>();
-    response.put("success", true);
-    response.put("challenge", challengeDetail);
 
-    return ResponseEntity.ok(response);
+    try {
+      ChallengeDTO challengeDetail = challengeService.getChallengeDetail(challIdx);
+      response.put("success", true);
+      response.put("challenge", challengeDetail);
+      return ResponseEntity.ok(response);
+
+    } catch (IllegalArgumentException e) {
+      response.put("success", false);
+      response.put("message", e.getMessage());
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
   }
 
   // 인증 기록 조회

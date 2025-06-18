@@ -23,12 +23,14 @@
         </set>
         WHERE target_idx = #{idx}
     </update>
+
     <!-- 삭제 -->
     <update id="softDeleteTargetCategory" parameterType="int">
         UPDATE TARGET_CATEGORY
         SET IS_DELETED = TRUE
         WHERE TARGET_IDX = #{idx}
     </update>
+
     <!-- 중복 카테고리 확인 -->
     <select id = "countByTargetCateName" parameterType="String" resultType="int">
         SELECT COUNT(*)
@@ -67,9 +69,12 @@
     </update>
 
     <!-- 삭제 -->
-    <delete id="deleteJobCategory" parameterType="int">
-        DELETE FROM JOB_CATEGORY WHERE JOB_IDX = #{idx}
-    </delete>
+    <update id="deleteJobCategory" parameterType="int">
+        UPDATE JOB_CATEGORY
+        SET IS_DELETED = TRUE
+        WHERE JOB_IDX = #{idx}
+    </update>
+
     <!-- 중복 카테고리 확인 -->
     <select id = "countByJobCateName" parameterType="String" resultType="int">
         SELECT COUNT(*)
@@ -185,9 +190,11 @@
     </update>
 
     <!-- 삭제 -->
-    <delete id="deleteChallCate" parameterType="int">
-        DELETE FROM CHALL_CATEGORY WHERE CHALL_CATEGORY_IDX = #{challCateIdx}
-    </delete>
+    <update  id="deleteChallCate" parameterType="int">
+        UPDATE CHALL_CATEGORY
+        SET IS_DELETED = TRUE
+        WHERE CHALL_CATEGORY_IDX = #{idx}
+    </update>
 
 
     <!-- 조회 쿼리문 -->

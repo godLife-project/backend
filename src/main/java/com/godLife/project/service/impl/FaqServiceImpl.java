@@ -68,10 +68,13 @@ public class FaqServiceImpl implements FaqService {
   // FAQ 검색
   public List<FaQDTO> searchFaq(SearchQueryDTO searchQuery) {
     String query = searchQuery.getQuery();
-    if (query == null || query.trim().isEmpty()) {
-      return Collections.emptyList();
+
+    if (query != null && !query.trim().isEmpty()) {
+      searchQuery.setFaqTitle(query.trim());
+      searchQuery.setFaqAnswer(query.trim());
     }
-    return faqMapper.searchFaq(query.trim()); // 공백 제거 후 검색
+
+    return faqMapper.searchFaq(searchQuery);
   }
 
 }

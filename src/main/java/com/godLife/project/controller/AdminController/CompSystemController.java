@@ -299,10 +299,12 @@ public class CompSystemController {
 
   // ICON 수정
   @PatchMapping("/icon/{iconKey}")
-  public ResponseEntity<Map<String, Object>> updateIcon(@PathVariable("iconKey")String iconKey,
-                                                           @RequestBody IconDTO iconDTO){
+  public ResponseEntity<Map<String, Object>> updateIcon(@PathVariable("iconKey") String iconKey,
+                                                        @RequestBody IconDTO iconDTO) {
     try {
-      iconDTO.setIconKey(iconKey);
+      iconDTO.setOriginalIconKey(iconKey);  //  WHERE 조건용
+      // iconDTO.setIconKey()는 JSON body에서 받은 값을 그대로 유지
+
       int result = compSystemService.updateIcon(iconDTO);
 
       if (result > 0) {

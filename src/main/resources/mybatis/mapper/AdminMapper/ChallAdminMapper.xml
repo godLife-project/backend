@@ -85,11 +85,11 @@
     <update id="earlyFinishChallenge" parameterType="long">
         UPDATE CHALL_TABLE
         SET
-        CHALL_STATE = '종료됨',
+        CHALL_STATE = 'END',
         CHALL_END_TIME = SYSDATE
         WHERE
         CHALL_IDX = #{challIdx}
-        AND CHALL_STATE != '종료됨'
+        AND CHALL_STATE != 'END'
     </update>
 
 

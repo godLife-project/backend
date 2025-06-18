@@ -75,8 +75,10 @@ public class ChallengeServiceImpl implements ChallengeService {
         challenge.setTotalClearTime(updatedClearTime); // 인증을 통한 총 클리어시간 감소 조회
 
         // 종료 시간이 되면 상태를 "종료" 로 변경
-        if (challenge.getChallEndTime() != null && LocalDateTime.now().isAfter(challenge.getChallEndTime())
-                && !challenge.getChallState().equals(ChallengeState.END.getCode())) {
+        if (challenge.getChallEndTime() != null
+                && LocalDateTime.now().isAfter(challenge.getChallEndTime())
+                && !challenge.getChallState().equals(ChallengeState.END.getCode())
+                && !challenge.getChallState().equals(ChallengeState.COMPLETED.getCode())) {
             challenge.setChallState(ChallengeState.END.getCode());
         }
 

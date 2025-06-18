@@ -48,16 +48,13 @@ public class NoticeDTO {
     private String isPopup; // 'Y' 또는 'N'
 
     @Schema(description = "팝업 활성 시작시간", example = "2025-02-16 HH:mm:ss")
-    @JsonSerialize(using = LocalDateSerializer.class) // 직렬화
-    @JsonDeserialize(using = LocalDateDeserializer.class) // 역직렬화
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate popupStartDate;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime  popupStartDate;
+
 
     @Schema(description = "팝업 활성 종료시간", example = "2025-02-16 HH:mm:ss")
-    @JsonSerialize(using = LocalDateSerializer.class) // 직렬화
-    @JsonDeserialize(using = LocalDateDeserializer.class) // 역직렬화
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate popupEndDate;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime  popupEndDate;
 
     private String writeName; // 작성자 이름
 }

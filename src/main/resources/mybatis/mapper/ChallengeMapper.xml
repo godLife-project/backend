@@ -92,6 +92,7 @@
             CHALL_START_TIME, CHALL_END_TIME, CHALL_CREATED_AT, CHALL_STATE, DURATION,  USER_JOIN
         FROM Chall_table
         WHERE CHALL_IDX = #{challIdx}
+            AND CHALL_STATE != 'END'
     </select>
 
     <!-- 인증 조회 -->

@@ -5,6 +5,8 @@ import com.godLife.project.dto.datas.FireDTO;
 import com.godLife.project.dto.datas.IconDTO;
 import com.godLife.project.dto.datas.UserLevelDTO;
 import com.godLife.project.dto.response.qna.QnaParent;
+import com.godLife.project.dto.response.top.TopMenu;
+import com.godLife.project.service.impl.redis.RedisService;
 import com.godLife.project.service.interfaces.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -18,12 +20,19 @@ import java.util.List;
 public class CategoryController {
 
     private final CategoryService categoryService;
+    private final RedisService redisService;
 
     /// ================================== 공용 혹은 유저 전용 =============================================
     // 탑메뉴 카테고리
     @Operation(summary = "카테고리 조회", description = "탑 메뉴")
     @GetMapping("/topMenu")
-    public List<TopCateDTO> topMenu() { return categoryService.getAllTopCategories(); }
+    public List<TopMenu> topMenu() {
+        List<TopMenu> data = redisService.getListData("category::topMenu", TopMenu.class);
+        if (data == null || data.isEmpty()) {
+            return categoryService.getProcessedAllTopCategories();
+        }
+        return data;
+    }
     // 직업 카테고리
     @Operation(summary = "카테고리 조회", description = "직업")
     @GetMapping("/job")

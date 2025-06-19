@@ -5,12 +5,15 @@ import com.godLife.project.dto.datas.FireDTO;
 import com.godLife.project.dto.datas.IconDTO;
 import com.godLife.project.dto.datas.UserLevelDTO;
 import com.godLife.project.dto.response.qna.QnaParent;
+import com.godLife.project.dto.response.top.TopMenu;
 
 import java.util.List;
 
 public interface CategoryService {
-    // 탑메뉴 카테고리 조회
-    List<TopCateDTO> getAllTopCategories();
+    // 탑메뉴 카테고리 조회 (데이터 가공)
+    List<TopMenu> getProcessedAllTopCategories();
+    // 탑메뉴 카테고리 조회 (데이터 원본)
+    List<TopCateDTO> getOriginAllTopCategories();
     // 직업 카테고리 조회
     List<JobCateDTO> getAllJobCategories();
     // 관심사 카테고리 조회

@@ -46,7 +46,7 @@ public class MyPageController {
     int userIdx = handler.getUserIdxFromToken(authHeader);
 
     MyPageUserInfosResponseDTO result = myPageService.getUserInfos(userIdx);
-    System.out.println("result: " + result);
+    //System.out.println("result: " + result);
 
     if (result == null) {
       return ResponseEntity.status(404).body(handler.createResponse(404, "유저 정보가 없습니다."));

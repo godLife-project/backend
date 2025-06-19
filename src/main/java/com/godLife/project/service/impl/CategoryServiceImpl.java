@@ -6,6 +6,7 @@ import com.godLife.project.dto.datas.IconDTO;
 import com.godLife.project.dto.datas.UserLevelDTO;
 import com.godLife.project.dto.response.qna.QnaChild;
 import com.godLife.project.dto.response.qna.QnaParent;
+import com.godLife.project.dto.response.top.TopMenu;
 import com.godLife.project.exception.CustomException;
 import com.godLife.project.mapper.CategoryMapper;
 import com.godLife.project.service.impl.redis.RedisService;
@@ -15,10 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -29,15 +27,64 @@ public class CategoryServiceImpl implements CategoryService {
     private final RedisService redisService;
 
 
-    // 탑메뉴 카테고리 조회
+    // 탑메뉴 카테고리 조회 (데이터 가공)
     @Override
-    public List<TopCateDTO> getAllTopCategories() {
-        List<TopCateDTO> data = redisService.getListData("category::topMenu", TopCateDTO.class);
-        if (data == null || data.isEmpty()) {
-            return categoryMapper.getAllTopCategories();
+    public List<TopMenu> getProcessedAllTopCategories() {
+        try {
+            List<TopCateDTO> origin = getOriginAllTopCategories();
+
+            if (origin == null || origin.isEmpty()) {
+                throw new CustomException("탑메뉴 카테고리가 조회되지 않습니다.", HttpStatus.NOT_FOUND);
+            }
+
+            // 순서 보장을 위해 LinkedHashMap 사용
+            Map<Integer, TopMenu> parentMap = new LinkedHashMap<>();
+
+            for (TopCateDTO dto : origin) {
+                int level = dto.getCategoryLevel();
+
+                TopMenu menu = new TopMenu();
+                menu.setTopIdx(dto.getTopIdx());
+                menu.setName(dto.getTopName());
+                menu.setAddr(dto.getTopAddr());
+                menu.setOrdCol(dto.getOrdCol());
+
+                if (level == 1) {
+                    // 대분류인 경우 자식 리스트 초기화 후 등록
+                    menu.setChildren(new ArrayList<>());
+                    parentMap.put(dto.getTopIdx(), menu);
+                } else {
+                    // 소분류인 경우
+                    TopMenu parent = parentMap.get(dto.getParentIdx());
+                    if (parent != null) {
+                        if (parent.getChildren() == null) {
+                            parent.setChildren(new ArrayList<>());
+                        }
+                        parent.getChildren().add(menu);
+                    } else {
+                        log.warn("소분류 [{}]의 부모 [{}]가 존재하지 않습니다.", dto.getTopIdx(), dto.getParentIdx());
+                    }
+                }
+            }
+
+            return new ArrayList<>(parentMap.values());
+
+        } catch (CustomException e) {
+            log.error(e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("알 수 없는 오류가 발생했습니다.", e);
+            throw e;
         }
-        return data;
     }
+
+
+    // 탑메뉴 카테고리 조회 (데이터 미가공)
+    @Override
+    public List<TopCateDTO> getOriginAllTopCategories() {
+        return categoryMapper.getAllTopCategories();
+    }
+
     // 직업 카테고리 조회
     @Override
     public List<JobCateDTO> getAllJobCategories() {

@@ -177,7 +177,8 @@ public class CompSystemServiceImpl implements CompSystemService {
   @Transactional
   public void updateOrderTopMenu(List<TopCateDTO> orderedList) {
     for (TopCateDTO topCateDTO : orderedList) {
-       compSystemMapper.updateOrderTopMenu(topCateDTO.getTopIdx(), topCateDTO.getOrdIdx());
+      /// [희만 - 20250619 - 탑메뉴 데이터 구조 변경으로 인해 임시로 주석 처리함]
+      // compSystemMapper.updateOrderTopMenu(topCateDTO.getTopIdx(), topCateDTO.getOrdIdx());
     }
   }
 

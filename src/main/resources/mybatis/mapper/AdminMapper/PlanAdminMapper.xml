@@ -3,6 +3,8 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.godLife.project.mapper.AdminMapper.PlanAdminMapper">
+
+
     <select id="selectAdminPlanList" resultType="com.godLife.project.dto.list.customDTOs.CustomAdminPlanListDTO">
         SELECT
         r.PLAN_IDX,

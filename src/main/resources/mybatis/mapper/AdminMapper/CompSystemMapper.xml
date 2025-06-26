@@ -125,22 +125,42 @@
 
     <!-- 추가 -->
     <insert id="insertTopMenu" parameterType="com.godLife.project.dto.categories.TopCateDTO">
-        INSERT INTO TOP_CATEGORY (TOP_IDX, TOP_NAME, TOP_ADDR, ORD_IDX)
-        VALUES (TOP_CATEGORY_SEQ.NEXTVAL, #{topName}, #{topAddr}, #{ordIdx})
+        INSERT INTO TOP_CATEGORY (
+        TOP_IDX,
+        PARENT_IDX,
+        TOP_NAME,
+        TOP_ADDR,
+        CATEGORY_LEVEL,
+        ORD_COL
+        )
+        VALUES (
+        TOP_CATEGORY_SEQ.NEXTVAL,
+        #{parentIdx},
+        #{topName},
+        #{topAddr},
+        #{categoryLevel},
+        #{ordCol}
+        )
     </insert>
 
     <!-- 수정 -->
     <update id="updateTopMenu" parameterType="com.godLife.project.dto.categories.TopCateDTO">
         UPDATE TOP_CATEGORY
         <set>
+            <if test="parentIdx != null">
+                PARENT_IDX = #{parentIdx},
+            </if>
             <if test="topName != null and topName != ''">
                 TOP_NAME = #{topName},
             </if>
             <if test="topAddr != null and topAddr != ''">
                 TOP_ADDR = #{topAddr},
             </if>
-            <if test="ordIdx != null">
-                ORD_IDX = #{ordIdx},
+            <if test="categoryLevel != null">
+                CATEGORY_LEVEL = #{categoryLevel},
+            </if>
+            <if test="ordCol != null">
+                ORD_COL = #{ordCol},
             </if>
         </set>
         WHERE TOP_IDX = #{topIdx}
@@ -158,9 +178,17 @@
         WHERE TOP_NAME = #{topName}
     </select>
 
+    <!-- 본인 제외 중복 검사 -->
+    <select id="countByTopMenuNameExceptSelf" resultType="int">
+        SELECT COUNT(*)
+        FROM TOP_CATEGORY
+        WHERE TOP_NAME = #{topName}
+        AND TOP_IDX != #{topIdx}
+    </select>
+
     <!-- 정렬 순서만 업데이트 -->
     <update id="updateOrderTopMenu">
-        UPDATE TOP_CATEGORY SET ORD_IDX = #{ordIdx}
+        UPDATE TOP_CATEGORY SET ORD_COL = #{ordCol}
         WHERE TOP_IDX = #{topIdx}
     </update>
 

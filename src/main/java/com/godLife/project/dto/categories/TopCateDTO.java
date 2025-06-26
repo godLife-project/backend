@@ -10,7 +10,7 @@ public class TopCateDTO {
     private int topIdx;
 
     @Schema(description = "부모 인덱스", example = "1")
-    private int parentIdx;
+    private Integer parentIdx;
 
     @Schema(description = "탑메뉴 이름", example = "New")
     private String topName;

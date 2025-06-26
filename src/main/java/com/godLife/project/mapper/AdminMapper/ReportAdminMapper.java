@@ -14,9 +14,12 @@ public interface ReportAdminMapper {
   int countAllReports();
   int countReportsByStatus(@Param("status") int status);
 
+  int countAllPlanReports();                    // 전체 신고 수
+  int countPlanReportsByStatus(int status);     // 상태별 신고 수
+  // 전체 신고 리스트 (루틴)
   List<PlanReportDTO> selectPlanReports(@Param("offset") int offset, @Param("limit") int limit);
-  List<PlanReportDTO> selectPlanReportsByStatus(@Param("status") int status, @Param("offset") int offset, @Param("size") int size);
-  int countAllPlanReports();
+  // 상태별 신고 리스트 (루틴)
+  List<PlanReportDTO> selectPlanReportsByStatus(@Param("status") int status, @Param("offset") int offset, @Param("limit") int limit);
 
   // 신고 상태 처리
   int userReportStateUpdate(UserReportDTO userReportDTO);
@@ -32,4 +35,7 @@ public interface ReportAdminMapper {
 
   // 신고 처리
   int planReportStateUpdate(PlanReportDTO planReportDTO);
+  Integer getPlanIdxByReportIdx(int planReportIdx);   // 루틴 idx 조회
+  int updatePlanVisible(PlanReportDTO planReportDTO);
+
 }

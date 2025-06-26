@@ -14,11 +14,17 @@ public interface ReportAdminService {
   int countAllReports();
   int countReportsByStatus(int status);
 
-List<PlanReportDTO> getAllPlanReports(int page, int size);
-List<PlanReportDTO> getPlanReportsByStatus(int status, int page, int size);
-int countAllPlanReports();
+  // 전체 루틴 신고 수
+  int countAllPlanReports();
+  // 상태별 루틴 신고 수
+  int countPlanReportsByStatus(int status);
+  // 전체 루틴 신고 리스트
+  List<PlanReportDTO> getAllPlanReports(int offset, int limit);
+  // 상태별 루틴 신고 리스트
+  List<PlanReportDTO> getPlanReportsByStatus(int status, int offset, int limit);
 
 void userReportStateUpdate(UserReportDTO userReportDTO);
-void planReportStateUpdate(PlanReportDTO planReportDTO);
+  int planReportStateUpdate (PlanReportDTO planReportDTO, int userIdx);
+
 }
 

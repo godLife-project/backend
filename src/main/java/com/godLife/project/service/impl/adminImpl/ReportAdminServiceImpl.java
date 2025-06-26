@@ -1,14 +1,16 @@
-package com.godLife.project.service.impl.AdminImpl;
+package com.godLife.project.service.impl.adminImpl;
 
 import com.godLife.project.dto.infos.PlanReportDTO;
 import com.godLife.project.dto.infos.UserReportDTO;
 import com.godLife.project.mapper.AdminMapper.ReportAdminMapper;
 import com.godLife.project.service.interfaces.AdminInterface.ReportAdminService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class ReportAdminServiceImpl implements ReportAdminService {
 
@@ -26,6 +28,7 @@ public class ReportAdminServiceImpl implements ReportAdminService {
 
   // 유저신고 처리상태별 조회
   public List<UserReportDTO> getReportsByStatus(int status, int page, int size) {
+
     int offset = (page - 1) * size;
     return reportAdminMapper.selectReportsByStatus(status, offset, size);
   }
@@ -65,28 +68,44 @@ public class ReportAdminServiceImpl implements ReportAdminService {
     }
   }
 
-
-  // 루틴신고 ALL 조회
-  public List<PlanReportDTO> getAllPlanReports(int page, int size) {
-    int offset = (page - 1) * size;
-    return reportAdminMapper.selectPlanReports(offset, size);
-  }
-  // 루틴신고 처리상태별 조회
-  public List<PlanReportDTO> getPlanReportsByStatus(int status, int page, int size) {
-    int offset = (page - 1) * size;
-    return reportAdminMapper.selectPlanReportsByStatus(status, offset, size);
-  }
-  // 루틴신고 총 개수
+  // 전체 루틴 신고 수
   public int countAllPlanReports() {
-    return reportAdminMapper.countAllPlanReports();
+    return reportAdminMapper.countAllPlanReports(); // ➜ Mapper에 정의 필요
   }
 
-  @Transactional
-  public void planReportStateUpdate(PlanReportDTO planReportDTO) {
-    // 신고 상태 업데이트
-    reportAdminMapper.planReportStateUpdate(planReportDTO);
+  // 상태별 루틴 신고 수
+  public int countPlanReportsByStatus(int status) {
+    return reportAdminMapper.countPlanReportsByStatus(status);
+  }
+
+  // 전체 루틴 신고 리스트
+  public List<PlanReportDTO> getAllPlanReports(int offset, int limit) {
+    return reportAdminMapper.selectPlanReports(offset, limit);
+  }
+
+  // 상태별 루틴 신고 리스트
+  public List<PlanReportDTO> getPlanReportsByStatus(int status, int offset, int limit) {
+    return reportAdminMapper.selectPlanReportsByStatus(status, offset, limit);
   }
 
 
+  // 루틴 처리 로직
+  public int planReportStateUpdate(PlanReportDTO planReportDTO, int userIdx) {
+
+    Integer expectedPlanIdx = reportAdminMapper.getPlanIdxByReportIdx(planReportDTO.getPlanReportIdx());
+
+    if (expectedPlanIdx == null || !expectedPlanIdx.equals(planReportDTO.getPlanIdx())) {
+      return 400; // Bad Request
+    }
+
+    try {
+      reportAdminMapper.planReportStateUpdate(planReportDTO);
+      planReportDTO.setIsShared(0);
+      reportAdminMapper.updatePlanVisible(planReportDTO);
+      return 200;
+    } catch (Exception e) {
+      return 500;
+    }
+  }
 }
 

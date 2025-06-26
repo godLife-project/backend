@@ -6,6 +6,7 @@ import com.godLife.project.handler.GlobalExceptionHandler;
 import com.godLife.project.service.interfaces.AdminInterface.ReportAdminService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -84,26 +85,25 @@ public class ReportAdminController {
   }
 
 
-
-
   @GetMapping("/planReport")
-  public Map<String, Object> getAllPlanReports(
+  public Map<String, Object> getPlanReports(
           @RequestParam(defaultValue = "1") int page,
           @RequestParam(defaultValue = "10") int size,
           @RequestParam(required = false) Integer status) {
 
-    // 전체 신고 수 조회
-    int total = reportAdminService.countAllPlanReports();
+    int offset = (page - 1) * size;
 
-    // 페이징된 신고 리스트 조회
-    List<PlanReportDTO> reports;
-    if (status == null) {
-      reports = reportAdminService.getAllPlanReports(page, size);
-    } else {
-      reports = reportAdminService.getPlanReportsByStatus(status, page, size);
-    }
+    //  전체 또는 상태별 루틴 신고 수 조회
+    int total = (status == null)
+            ? reportAdminService.countAllPlanReports()
+            : reportAdminService.countPlanReportsByStatus(status);
 
-    // 응답용 Map 생성
+    //  전체 또는 상태별 루틴 신고 리스트 조회
+    List<PlanReportDTO> reports = (status == null)
+            ? reportAdminService.getAllPlanReports(offset, size)
+            : reportAdminService.getPlanReportsByStatus(status, offset, size);
+
+    // 응답 구성
     Map<String, Object> response = new HashMap<>();
     response.put("page", page);
     response.put("size", size);
@@ -114,31 +114,24 @@ public class ReportAdminController {
   }
 
   // 루틴 신고 처리
-  @PostMapping("/planReportState")
-  public ResponseEntity<Map<String, Object>> planReportStateUpdate(
-          @RequestParam("planReportIdx") int planReportIdx,
-          @RequestParam("status") int status) {
-    try {
-      PlanReportDTO dto = new PlanReportDTO();
-      dto.setPlanReportIdx(planReportIdx);
-      dto.setStatus(status); // 클라이언트가 넘긴 값으로 처리
+  @PatchMapping("/plans/{planIdx}/reports/{planReportIdx}/status")
+  public ResponseEntity<?> updateReportStatus(
+          @RequestHeader("Authorization") String authHeader,
+          @PathVariable int planIdx,
+          @PathVariable int planReportIdx,
+          @RequestBody PlanReportDTO planReportDTO) {
 
-      reportAdminService.planReportStateUpdate(dto);
+    int userIdx = handler.getUserIdxFromToken(authHeader);
+    planReportDTO.setPlanReportIdx(planReportIdx);
+    planReportDTO.setPlanIdx(planIdx);
 
-      String message = (status == 1) ? "신고가 처리 완료되었습니다." : "신고 상태가 미처리로 변경되었습니다.";
-      return ResponseEntity.ok(
-              handler.createResponse(200, message)
-      );
+    int result = reportAdminService.planReportStateUpdate(planReportDTO, userIdx);
 
-    } catch (IllegalArgumentException e) {
-      log.error("잘못된 요청 값으로 인한 처리 실패: {}", e.getMessage(), e);
-      return ResponseEntity.status(handler.getHttpStatus(400))
-              .body(handler.createResponse(400, "요청 오류: " + e.getMessage()));
-    } catch (Exception e) {
-      log.error("신고 상태 업데이트 중 서버 오류 발생: {}", e.getMessage(), e);
-      return ResponseEntity.status(handler.getHttpStatus(500))
-              .body(handler.createResponse(500, "서버 오류로 인해 신고 상태를 변경할 수 없습니다."));
-    }
-  }
+    return switch (result) {
+      case 200 -> ResponseEntity.ok("신고가 처리되었고 루틴은 비공개로 전환되었습니다.");
+      case 403 -> ResponseEntity.status(HttpStatus.FORBIDDEN).body("권한이 없습니다.");
+      default -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("알 수 없는 오류가 발생했습니다.");
+    };
+}
 }
 

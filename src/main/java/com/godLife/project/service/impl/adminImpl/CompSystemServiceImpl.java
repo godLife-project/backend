@@ -161,26 +161,31 @@ public class CompSystemServiceImpl implements CompSystemService {
   // 수정
   @Override
   public int updateTopMenu(TopCateDTO topCateDTO) {
-    int count = compSystemMapper.countByTopMenuName(topCateDTO.getTopName());
+    // 본인의 topIdx를 제외하고 이름이 중복된 경우에만 true
+    int count = compSystemMapper.countByTopMenuNameExceptSelf(
+            topCateDTO.getTopName(), topCateDTO.getTopIdx());
+
     if (count > 0) {
-      throw new IllegalStateException("이미 존재하는 카테고리 이름입니다.");
+      return 409;  // Conflict
     }
     return compSystemMapper.updateTopMenu(topCateDTO);
   }
+
   // 삭제
   @Override
   public int deleteTopMenu(int topIdx) {
     return compSystemMapper.deleteTopMenu(topIdx);
   }
+
+
   // TopMenu 재배열
-  @Override
-  @Transactional
   public void updateOrderTopMenu(List<TopCateDTO> orderedList) {
-    for (TopCateDTO topCateDTO : orderedList) {
-      /// [희만 - 20250619 - 탑메뉴 데이터 구조 변경으로 인해 임시로 주석 처리함]
-      // compSystemMapper.updateOrderTopMenu(topCateDTO.getTopIdx(), topCateDTO.getOrdIdx());
+    for (TopCateDTO dto : orderedList) {
+      compSystemMapper.updateOrderTopMenu(dto.getTopIdx(), dto.getOrdCol());
     }
   }
+
+
 
   //                           ICON 관리 테이블
 

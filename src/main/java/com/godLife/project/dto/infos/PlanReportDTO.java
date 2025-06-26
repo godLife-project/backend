@@ -13,10 +13,10 @@ import java.time.LocalDateTime;
 @Data
 public class PlanReportDTO {
     @Schema(description = "신고자 인덱스", example = "1")
-    private int reporterIdx;
+    private Integer reporterIdx;
 
     @Schema(description = "루틴 인덱스", example = "1")
-    private int planIdx;
+    private Integer planIdx;
 
     @Schema(description = "신고 사유", example = "신고 사유를 작성합니다.")
     private String reportReason;
@@ -32,4 +32,6 @@ public class PlanReportDTO {
 
     @Schema(description = "신고 고유 인덱스", example = "1")
     private int planReportIdx;
+
+    private Integer isShared;  // 비공개 여부 (0: 비공개, 1: 공개)
 }

@@ -108,6 +108,7 @@
         SELECT ROWNUM AS row_num, inner_query.*
         FROM (
         SELECT
+        r.PLAN_REPORT_IDX,
         r.REPORTER_IDX,
         reporter.USER_NICK AS REPORTER_NICK,
         r.PLAN_IDX,
@@ -156,12 +157,32 @@
         WHERE r.STATUS = #{status}
     </select>
 
+    <!-- 상태별 루틴 신고 수 조회 -->
+    <select id="countPlanReportsByStatus" resultType="int">
+        SELECT COUNT(*)
+        FROM PLAN_REPORT
+        WHERE STATUS = #{status}
+    </select>
+
     <!-- 신고처리 -->
     <update id="planReportStateUpdate" parameterType="com.godLife.project.dto.infos.PlanReportDTO">
         UPDATE PLAN_REPORT
         SET STATUS = #{status}
         WHERE PLAN_REPORT_IDX = #{planReportIdx}
     </update>
+
+    <!-- 신고 루틴 idx 조회 -->
+    <select id="getPlanIdxByReportIdx" resultType="Integer">
+        SELECT PLAN_IDX FROM PLAN_REPORT WHERE PLAN_REPORT_IDX = #{planReportIdx}
+    </select>
+
+    <!-- 루틴 비공개 처리-->
+    <update id="updatePlanVisible" parameterType="com.godLife.project.dto.infos.PlanReportDTO">
+        UPDATE PLAN_TABLE
+        SET IS_SHARED = #{isShared}
+        WHERE PLAN_IDX = #{planIdx}
+    </update>
+
 
     <!-- 비공개처리 된 루틴 활성화-->
     <update id="updateIsShared">

@@ -10,6 +10,7 @@ import com.godLife.project.handler.GlobalExceptionHandler;
 import com.godLife.project.service.interfaces.AdminInterface.CompSystemService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -224,11 +225,16 @@ public class CompSystemController {
 
   // TopMenu 수정
   @PatchMapping("/topMenu/{topIdx}")
-  public ResponseEntity<Map<String, Object>> updateTopMenu(@PathVariable("topIdx")int topIdx,
-                                                           @RequestBody TopCateDTO topCateDTO){
+  public ResponseEntity<Map<String, Object>> updateTopMenu(@PathVariable("topIdx") int topIdx,
+                                                           @RequestBody TopCateDTO topCateDTO) {
     try {
       topCateDTO.setTopIdx(topIdx);
       int result = compSystemService.updateTopMenu(topCateDTO);
+
+      if (result == 409) {
+        return ResponseEntity.status(handler.getHttpStatus(409))
+                .body(handler.createResponse(409, "이미 존재하는 TopMenu 이름입니다."));
+      }
 
       if (result > 0) {
         return ResponseEntity.ok(handler.createResponse(200, "TopMenu 수정 성공"));
@@ -243,17 +249,24 @@ public class CompSystemController {
     }
   }
 
-  // TopMenu 삭제
-  @DeleteMapping("topMenu/{topIdx}")
-  public ResponseEntity<Map<String, Object>> deleteTopMenu(@PathVariable("topIdx") int topIdx){
+  @DeleteMapping("/topMenu/{topIdx}")
+  public ResponseEntity<Map<String, Object>> deleteTopMenu(@PathVariable("topIdx") int topIdx) {
     try {
       int result = compSystemService.deleteTopMenu(topIdx);
+
       if (result > 0) {
         return ResponseEntity.ok(handler.createResponse(200, "TopMenu 삭제 성공"));
       } else {
         return ResponseEntity.status(handler.getHttpStatus(404))
                 .body(handler.createResponse(404, "삭제할 TopMenu를 찾을 수 없습니다."));
       }
+
+    } catch (DataIntegrityViolationException e) {
+      // 자식 레코드 존재로 인한 삭제 불가
+      log.warn("TopMenu 삭제 실패 - 자식 메뉴 존재: {}", e.getMessage());
+      return ResponseEntity.status(handler.getHttpStatus(409))
+              .body(handler.createResponse(409, "하위 메뉴가 존재하여 삭제할 수 없습니다. 먼저 하위 메뉴를 삭제해주세요."));
+
     } catch (Exception e) {
       log.error("TopMenu 삭제 오류: {}", e.getMessage(), e);
       return ResponseEntity.status(handler.getHttpStatus(500))

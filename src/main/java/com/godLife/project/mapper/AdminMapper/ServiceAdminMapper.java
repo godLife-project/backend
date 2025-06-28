@@ -35,7 +35,7 @@ public interface ServiceAdminMapper {
 
   // 접속중인 상담원 목록 조회
   @Select("""
-      SELECT S.USER_IDX, U.USER_NAME, S.STATUS, S.MATCHED
+      SELECT S.USER_IDX, U.USER_NAME, U.USER_EMAIL, S.STATUS, S.MATCHED
         FROM SERVICE_CENTER S
       INNER JOIN USER_TABLE U ON S.USER_IDX = U.USER_IDX
       ORDER BY S.USER_IDX""")

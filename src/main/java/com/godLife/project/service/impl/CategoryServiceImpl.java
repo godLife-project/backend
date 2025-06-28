@@ -37,37 +37,50 @@ public class CategoryServiceImpl implements CategoryService {
                 throw new CustomException("탑메뉴 카테고리가 조회되지 않습니다.", HttpStatus.NOT_FOUND);
             }
 
-            // 순서 보장을 위해 LinkedHashMap 사용
-            Map<Integer, TopMenu> parentMap = new LinkedHashMap<>();
+            // 대분류 먼저 모으기
+            Map<Integer, TopMenu> parentMap = new HashMap<>();
 
-            for (TopCateDTO dto : origin) {
-                int level = dto.getCategoryLevel();
+            List<TopCateDTO> parentList = origin.stream()
+                .filter(dto -> dto.getCategoryLevel() == 1)
+                .sorted(Comparator.comparingInt(TopCateDTO::getOrdCol)) // 대분류 정렬
+                .toList();
 
-                TopMenu menu = new TopMenu();
-                menu.setTopIdx(dto.getTopIdx());
-                menu.setName(dto.getTopName());
-                menu.setAddr(dto.getTopAddr());
-                menu.setOrdCol(dto.getOrdCol());
+            for (TopCateDTO dto : parentList) {
+                TopMenu parent = new TopMenu();
+                parent.setTopIdx(dto.getTopIdx());
+                parent.setName(dto.getTopName());
+                parent.setAddr(dto.getTopAddr());
+                parent.setOrdCol(dto.getOrdCol());
+                parent.setChildren(new ArrayList<>());
 
-                if (level == 1) {
-                    // 대분류인 경우 자식 리스트 초기화 후 등록
-                    menu.setChildren(new ArrayList<>());
-                    parentMap.put(dto.getTopIdx(), menu);
+                parentMap.put(dto.getTopIdx(), parent);
+            }
+
+            // 소분류 정렬 후 부모에 추가
+            List<TopCateDTO> childList = origin.stream()
+                .filter(dto -> dto.getCategoryLevel() != 1)
+                .sorted(Comparator.comparingInt(TopCateDTO::getOrdCol)) // 소분류 정렬
+                .toList();
+
+            for (TopCateDTO dto : childList) {
+                TopMenu child = new TopMenu();
+                child.setTopIdx(dto.getTopIdx());
+                child.setName(dto.getTopName());
+                child.setAddr(dto.getTopAddr());
+                child.setOrdCol(dto.getOrdCol());
+
+                TopMenu parent = parentMap.get(dto.getParentIdx());
+                if (parent != null) {
+                    parent.getChildren().add(child);
                 } else {
-                    // 소분류인 경우
-                    TopMenu parent = parentMap.get(dto.getParentIdx());
-                    if (parent != null) {
-                        if (parent.getChildren() == null) {
-                            parent.setChildren(new ArrayList<>());
-                        }
-                        parent.getChildren().add(menu);
-                    } else {
-                        log.warn("소분류 [{}]의 부모 [{}]가 존재하지 않습니다.", dto.getTopIdx(), dto.getParentIdx());
-                    }
+                    log.warn("소분류 [{}]의 부모 [{}]가 존재하지 않습니다.", dto.getTopIdx(), dto.getParentIdx());
                 }
             }
 
-            return new ArrayList<>(parentMap.values());
+            // 최종 정렬된 대분류 리스트 반환 (이미 ordCol 기준 정렬됨)
+            return new ArrayList<>(parentList.stream()
+                .map(p -> parentMap.get(p.getTopIdx()))
+                .toList());
 
         } catch (CustomException e) {
             log.error(e.getMessage());
@@ -77,6 +90,7 @@ public class CategoryServiceImpl implements CategoryService {
             throw e;
         }
     }
+
 
 
     // 탑메뉴 카테고리 조회 (데이터 미가공)

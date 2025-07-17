@@ -7,8 +7,8 @@
 
     <!-- 추가 -->
     <insert id="insertTargetCategory" parameterType="com.godLife.project.dto.categories.TargetCateDTO">
-        INSERT INTO TARGET_CATEGORY (TARGET_IDX, TARGET_NAME, ICON_KEY)
-        VALUES (TARGET_CATEGORY_SEQ.NEXTVAL, #{name}, #{iconKey})
+        INSERT INTO TARGET_CATEGORY (TARGET_NAME, ICON_KEY)
+        VALUES (#{name}, #{iconKey})
     </insert>
     <!-- 수정 -->
     <update id="updateTargetCategory" parameterType="com.godLife.project.dto.categories.TargetCateDTO">
@@ -27,7 +27,7 @@
     <!-- 삭제 -->
     <update id="softDeleteTargetCategory" parameterType="int">
         UPDATE TARGET_CATEGORY
-        SET IS_DELETED = TRUE
+        SET IS_DELETED = 1
         WHERE TARGET_IDX = #{idx}
     </update>
 
@@ -50,8 +50,8 @@
 
     <!-- 작성 -->
     <insert id="insertJobCategory" parameterType="com.godLife.project.dto.categories.JobCateDTO">
-        INSERT INTO JOB_CATEGORY (JOB_IDX, JOB_NAME, ICON_KEY)
-        VALUES (JOB_SEQ.NEXTVAL, #{name}, #{iconKey})
+        INSERT INTO JOB_CATEGORY (JOB_NAME, ICON_KEY)
+        VALUES (#{name}, #{iconKey})
     </insert>
 
     <!-- 수정 -->
@@ -71,7 +71,7 @@
     <!-- 삭제 -->
     <update id="deleteJobCategory" parameterType="int">
         UPDATE JOB_CATEGORY
-        SET IS_DELETED = TRUE
+        SET IS_DELETED = 1
         WHERE JOB_IDX = #{idx}
     </update>
 
@@ -95,8 +95,8 @@
 
     <!-- 등급 추가 -->
     <insert id="insertFire" parameterType="com.godLife.project.dto.datas.FireDTO">
-        INSERT INTO FIRE_TABLE (LV_IDX, MIN_EXP, MAX_EXP, FIRE_NAME, FIRE_COLOR, FIRE_EFFECT)
-        VALUES (FIRE_SEQ.NEXTVAL, #{minExp}, #{maxExp}, #{fireName}, #{fireColor}, #{fireEffect})
+        INSERT INTO FIRE_TABLE (MIN_EXP, MAX_EXP, FIRE_NAME, FIRE_COLOR, FIRE_EFFECT)
+        VALUES (#{minExp}, #{maxExp}, #{fireName}, #{fireColor}, #{fireEffect})
     </insert>
 
     <!-- 등급 수정 -->
@@ -162,8 +162,8 @@
 
     <!-- 카테고리 추가 -->
     <insert id="insertChallCate" parameterType="com.godLife.project.dto.categories.ChallengeCateDTO">
-        INSERT INTO CHALL_CATEGORY (CHALL_CATEGORY_IDX, CHALL_NAME, ICON_KEY)
-        VALUES (FIRE_SEQ.NEXTVAL, #{challName}, #{iconKey})
+        INSERT INTO CHALL_CATEGORY (CHALL_NAME, ICON_KEY)
+        VALUES (#{challName}, #{iconKey})
     </insert>
 
 
@@ -192,7 +192,7 @@
     <!-- 삭제 -->
     <update  id="deleteChallCate" parameterType="int">
         UPDATE CHALL_CATEGORY
-        SET IS_DELETED = TRUE
+        SET IS_DELETED = 1
         WHERE CHALL_CATEGORY_IDX = #{idx}
     </update>
 

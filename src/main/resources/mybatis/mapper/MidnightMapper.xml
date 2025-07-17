@@ -15,7 +15,7 @@
         END AS VERIFY_RATE
         FROM PLAN_TABLE P
         LEFT JOIN PLAN_ACTIVITY A ON P.PLAN_IDX = A.PLAN_IDX
-        LEFT JOIN VERIFY_TABLE V ON A.ACTIVITY_IDX = V.ACTIVITY_IDX AND V.VERIFY_DATE = TRUNC(SYSDATE)
+        LEFT JOIN VERIFY_TABLE V ON A.ACTIVITY_IDX = V.ACTIVITY_IDX AND V.VERIFY_DATE = CURDATE()
         WHERE (P.IS_ACTIVE = 1 AND P.IS_COMPLETED = 0) AND P.IS_DELETED = 0
         GROUP BY P.PLAN_IDX, P.CERT_EXP, P.LAST_EXP
         HAVING ROUND((COUNT(DISTINCT V.ACTIVITY_IDX) / COUNT(DISTINCT A.ACTIVITY_IDX)) * 100, 2) <![CDATA[ < ]]> 90
@@ -31,22 +31,22 @@
     <!-- 탈퇴 회원 삭제 처리 -->
     <update id="clearAccount" parameterType="int">
         UPDATE USER_TABLE
-        SET USER_NAME = '탈퇴회원' || TO_CHAR(USER_DELETE_SEQ.NEXTVAL),
-        USER_ID = 'DELETED ' || TO_CHAR(USER_DELETE_SEQ.NEXTVAL),
+        SET USER_NAME = CONCAT('탈퇴회원', NEXTVAL(USER_DELETE_SEQ)),
+        USER_ID = CONCAT('DELETED', LASTVAL(USER_DELETE_SEQ)),
         USER_PW = 'DELETED',
         USER_NICK = '탈퇴회원',
-        USER_EMAIL = '탈퇴회원 '|| TO_CHAR(USER_DELETE_SEQ.NEXTVAL),
+        USER_EMAIL = CONCAT('탈퇴회원', LASTVAL(USER_DELETE_SEQ)),
         JOB_IDX = 1,
         TARGET_IDX = 1,
         USER_PHONE = '000-0000-0000',
         USER_GENDER = 0,
         AUTHORITY_IDX = 1,
-        NICK_TAG = '#' || TO_CHAR(USER_DELETE_SEQ.NEXTVAL),
+        NICK_TAG = CONCAT('#', LASTVAL(USER_DELETE_SEQ)),
         COMBO = 0,
         USER_EXP = 0,
         IS_DELETED = 'D'
         WHERE IS_DELETED = 'Y'
-        AND DELETE_DATE + #{expire} <![CDATA[ <= ]]> SYSDATE
+        AND DATE_ADD(DELETE_DATE, INTERVAL #{expire} DAY) <![CDATA[ <= ]]> NOW()
     </update>
 
     <!-- REFRESH 토큰이 만료된 고객관리자 로그아웃 처리 -->
@@ -56,7 +56,7 @@
             SELECT 1
             FROM USER_TABLE U
             JOIN REFRESH_TOKEN R ON R.USERNAME = U.USER_ID
-            WHERE R.EXPIRATION <![CDATA[ < ]]> SYSDATE
+            WHERE R.EXPIRATION <![CDATA[ < ]]> NOW()
             AND U.USER_IDX = SC.USER_IDX
         )
     </delete>

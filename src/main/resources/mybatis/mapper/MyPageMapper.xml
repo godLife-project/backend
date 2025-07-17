@@ -27,10 +27,11 @@
     </resultMap>
     <!-- 회원 정보 추가 제공 -->
     <select id="getUserInfos" parameterType="int" resultMap="MyPageGetUserInfoResultMap">
-        SELECT U.USER_EMAIL, U.USER_PHONE, U.USER_GENDER, U.USER_JOIN, U.USER_ID,
-        J.JOB_IDX, J.JOB_NAME, J.ICON_KEY AS JOB_ICONKEY, IJ.ICON AS JOB_ICON, IJ.COLOR AS JOB_COLOR,
-        T.TARGET_IDX, T.TARGET_NAME, T.ICON_KEY AS TARGET_ICONKEY, IT.ICON AS TARGET_ICON, IT.COLOR AS TARGET_COLOR,
-        L.MAX_EXP
+        SELECT
+            U.USER_EMAIL, U.USER_PHONE, U.USER_GENDER, U.USER_JOIN, U.USER_ID,
+            J.JOB_IDX, J.JOB_NAME, J.ICON_KEY AS JOB_ICONKEY, IJ.ICON AS JOB_ICON, IJ.COLOR AS JOB_COLOR,
+            T.TARGET_IDX, T.TARGET_NAME, T.ICON_KEY AS TARGET_ICONKEY, IT.ICON AS TARGET_ICON, IT.COLOR AS TARGET_COLOR,
+            L.MAX_EXP
         FROM USER_TABLE U
         INNER JOIN JOB_CATEGORY J ON U.JOB_IDX = J.JOB_IDX
         INNER JOIN ICON_TABLE IJ ON J.ICON_KEY = IJ.ICON_KEY
@@ -43,7 +44,7 @@
     <!-- 회원 탈퇴 쿼리 -->
     <update id="deleteAccount" parameterType="int">
         UPDATE USER_TABLE
-        SET IS_DELETED = 'Y', DELETE_DATE = SYSDATE
+        SET IS_DELETED = 'Y', DELETE_DATE = NOW()
         WHERE USER_IDX = #{userIdx}
         AND IS_DELETED = 'N'
     </update>

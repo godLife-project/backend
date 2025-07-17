@@ -10,6 +10,7 @@ import com.godLife.project.exception.QnaCategoryDeletePendingException;
 import com.godLife.project.mapper.AdminMapper.CompSystemMapper;
 import com.godLife.project.service.impl.redis.RedisService;
 import com.godLife.project.service.interfaces.AdminInterface.CompSystemService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,15 +19,10 @@ import java.util.List;
 
 @Slf4j
 @Service
+@AllArgsConstructor
 public class CompSystemServiceImpl implements CompSystemService {
-  private CompSystemMapper compSystemMapper;
-  private RedisService redisService;
-
-  public CompSystemServiceImpl(CompSystemMapper compSystemMapper, RedisService redisService) {
-    this.compSystemMapper = compSystemMapper;
-    this.redisService = redisService;
-  }
-
+  private final CompSystemMapper compSystemMapper;
+  private final RedisService redisService;
 
   //                           FAQ 카테고리 관리 테이블
   // FAQ 카테고리 LIST 조회
@@ -91,9 +87,9 @@ public class CompSystemServiceImpl implements CompSystemService {
 
   //                           QNA 카테고리 관리 테이블
   // QNA 카테고리 LIST 조회
-  public List<QnaCateDTO> selectQnaCate() {
-    return compSystemMapper.selectAllQnaCate();
-  }
+//  public List<QnaCateDTO> selectQnaCate() {
+//    return compSystemMapper.selectAllQnaCate();
+//  }
 
   // QNA 카테고리 추가
   public int insertQnaCate(QnaCateDTO qnaCateDTO) {

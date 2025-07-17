@@ -151,7 +151,7 @@ public interface QnaMapper {
    * <p>최초 답변 시 답변 일자를 기록합니다.</p>
    * @param qnaIdx 응답 시간을 저장할 문의의 인덱스 번호
    */
-  @Update("UPDATE QNA_TABLE SET RESPONDING_DATE = SYSDATE WHERE QNA_IDX = #{qnaIdx} AND RESPONDING_DATE IS NULL")
+  @Update("UPDATE QNA_TABLE SET RESPONDING_DATE = NOW() WHERE QNA_IDX = #{qnaIdx} AND RESPONDING_DATE IS NULL")
   void setRespondingDate(int qnaIdx);
 
 }

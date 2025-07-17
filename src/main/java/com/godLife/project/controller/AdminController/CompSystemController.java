@@ -122,26 +122,26 @@ public class CompSystemController {
 
   //                                  QNA 카테고리 관리 테이블
   // QNA 카테고리 조회
-  @GetMapping("/qnaCategory")
-  public ResponseEntity<Map<String, Object>> selectQnaCate() {
-    try {
-      List<QnaCateDTO> qnaCateDTOList = compSystemService.selectQnaCate();
-
-      if (qnaCateDTOList.isEmpty()) {
-        return ResponseEntity.status(handler.getHttpStatus(404))
-                .body(handler.createResponse(404, "등록된 QNA 카테고리가 없습니다."));
-      }
-
-      Map<String, Object> response = handler.createResponse(200, "QNA 카테고리 조회 성공");
-      response.put("qnaCategory", qnaCateDTOList);
-
-      return ResponseEntity.ok(response);
-    } catch (Exception e) {
-      log.error("QNA 카테고리 조회 실패: {}", e.getMessage());
-      return ResponseEntity.status(handler.getHttpStatus(500))
-              .body(handler.createResponse(500, "서버 오류로 인해 QNA 카테고리 조회에 실패했습니다."));
-    }
-  }
+//  @GetMapping("/qnaCategory")
+//  public ResponseEntity<Map<String, Object>> selectQnaCate() {
+//    try {
+//      List<QnaCateDTO> qnaCateDTOList = compSystemService.selectQnaCate();
+//
+//      if (qnaCateDTOList.isEmpty()) {
+//        return ResponseEntity.status(handler.getHttpStatus(404))
+//                .body(handler.createResponse(404, "등록된 QNA 카테고리가 없습니다."));
+//      }
+//
+//      Map<String, Object> response = handler.createResponse(200, "QNA 카테고리 조회 성공");
+//      response.put("qnaCategory", qnaCateDTOList);
+//
+//      return ResponseEntity.ok(response);
+//    } catch (Exception e) {
+//      log.error("QNA 카테고리 조회 실패: {}", e.getMessage());
+//      return ResponseEntity.status(handler.getHttpStatus(500))
+//              .body(handler.createResponse(500, "서버 오류로 인해 QNA 카테고리 조회에 실패했습니다."));
+//    }
+//  }
 
   // QNA 추가
   @PostMapping("/qnaCategory")

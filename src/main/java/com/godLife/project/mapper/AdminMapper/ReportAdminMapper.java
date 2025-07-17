@@ -22,20 +22,20 @@ public interface ReportAdminMapper {
   List<PlanReportDTO> selectPlanReportsByStatus(@Param("status") int status, @Param("offset") int offset, @Param("limit") int limit);
 
   // 신고 상태 처리
-  int userReportStateUpdate(UserReportDTO userReportDTO);
+  void userReportStateUpdate(UserReportDTO userReportDTO);
   // 신고 인덱스로 피신고자(REPROTED_IDX) 찾기
   int findReportedIdxByReportIdx(@Param("userReportIdx") int userReportIdx);
   // 신고 누적 수 증가
-  int incrementReportCount(@Param("userIdx") int userIdx);
+  void incrementReportCount(@Param("userIdx") int userIdx);
   // 현재 신고 누적 수 조회
   Integer getReportCount(@Param("userIdx") int userIdx);
   // 유저 정지 처리
-  int banUser(@Param("userIdx") int userIdx);
+  void banUser(@Param("userIdx") int userIdx);
 
 
   // 신고 처리
-  int planReportStateUpdate(PlanReportDTO planReportDTO);
+  void planReportStateUpdate(PlanReportDTO planReportDTO);
   Integer getPlanIdxByReportIdx(int planReportIdx);   // 루틴 idx 조회
-  int updatePlanVisible(PlanReportDTO planReportDTO);
+  void updatePlanVisible(PlanReportDTO planReportDTO);
 
 }

@@ -17,7 +17,7 @@ public interface CompSystemService {
   int deleteFaqCate(int faqCategoryIdx);          // FAQ 카테고리 삭제
 
   // QNA 카테고리 관리
-  List<QnaCateDTO> selectQnaCate();               // QNA 카테고리 LIST 조회
+//  List<QnaCateDTO> selectQnaCate();               // QNA 카테고리 LIST 조회
   int insertQnaCate(QnaCateDTO qnaCateDTO);       // QNA 카테고리 추가
   int updateQnaCate(QnaCateDTO qnaCateDTO);       // QNA 카테고리 수정
   int deleteQnaCate(int categoryIdx);          // QNA 카테고리 삭제

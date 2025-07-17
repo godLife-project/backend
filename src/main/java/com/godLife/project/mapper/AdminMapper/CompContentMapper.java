@@ -12,7 +12,7 @@ import java.util.List;
 @Mapper
 public interface CompContentMapper {
   // 목표 카테고리
-  List<TargetCateDTO> targetCategoryList();                 // 목표 전체 카테고리 조회
+  // List<TargetCateDTO> targetCategoryList();                 // 목표 전체 카테고리 조회
   int insertTargetCategory(TargetCateDTO targetCateDTO);    // 목표 카테고리 등록
   int updateTargetCategory(TargetCateDTO targetCateDTO);    // 목표 카테고리 수정
   int softDeleteTargetCategory(int idx);              // 목표 카테고리 삭제
@@ -21,7 +21,7 @@ public interface CompContentMapper {
 
 
   // 직업 카테고리 CRUD
-  List<JobCateDTO> getAllJobCategories();        // 직업 카테고리 조회
+  //List<JobCateDTO> getAllJobCategories();        // 직업 카테고리 조회
   int insertJobCategory(JobCateDTO jobCateDTO);  // 직업 카테고리 추가
   int updateJobCategory(JobCateDTO jobCateDTO);  // 직업 카테고리 수정
   int deleteJobCategory(int jobIdx);             // 직업 카테고리 삭제
@@ -29,7 +29,7 @@ public interface CompContentMapper {
   int countJobCateNameExceptSelf(@Param("name") String name, @Param("idx") Long idx); // 수정시 중복체크할 때 자기자신 제외
 
   // 등급(불꽃) 테이블 관리 CRUD
-  List<FireDTO> selectAllFireGrades();          // 등급(불꽃) 조회
+  //List<FireDTO> selectAllFireGrades();          // 등급(불꽃) 조회
   int insertFire(FireDTO fireDTO);              // 등급(불꽃) 추가
   int updateFire(FireDTO fireDTO);              // 등급(불꽃) 수정
   int deleteFire(int lvIdx);                    // 등급(불꽃) 삭제
@@ -42,7 +42,7 @@ public interface CompContentMapper {
                               @Param("lvIdx") Long lvIdx);
 
   // 챌린지 카테고리 관리
-  List<ChallengeCateDTO> selectChallCate();     // 챌린지 카테고리 조회
+  //List<ChallengeCateDTO> selectChallCate();     // 챌린지 카테고리 조회
   int insertChallCate(ChallengeCateDTO challengeCateDTO); // 챌린지 카테고리 추가
   int updateChallCate(ChallengeCateDTO challengeCateDTO); // 챌린지 카테고리 수정
   int deleteChallCate(int ChallCategoryIdx);              // 챌린지 카테고리 삭제

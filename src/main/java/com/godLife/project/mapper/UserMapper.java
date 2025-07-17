@@ -7,8 +7,8 @@ import org.apache.ibatis.annotations.*;
 @Mapper
 public interface UserMapper {
     // 회원가입
-    @Insert("INSERT INTO USER_TABLE(USER_IDX, USER_NAME, USER_ID, USER_PW, USER_NICK, NICK_TAG, USER_EMAIL, JOB_IDX, TARGET_IDX, USER_PHONE, USER_GENDER)" +
-            "VALUES (USER_SEQ.NEXTVAL, #{userName}, #{userId}, #{userPw}, #{userNick}, #{nickTag}, #{userEmail}, #{jobIdx}, #{targetIdx}, #{userPhone}, #{userGender})")
+    @Insert("INSERT INTO USER_TABLE(USER_NAME, USER_ID, USER_PW, USER_NICK, NICK_TAG, USER_EMAIL, JOB_IDX, TARGET_IDX, USER_PHONE, USER_GENDER)" +
+            "VALUES (#{userName}, #{userId}, #{userPw}, #{userNick}, #{nickTag}, #{userEmail}, #{jobIdx}, #{targetIdx}, #{userPhone}, #{userGender})")
     void insertUser(UserDTO joinUserDTO);
 
     // 아이디 중복 체크

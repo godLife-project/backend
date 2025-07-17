@@ -15,6 +15,6 @@ public interface RefreshMapper {
   @Delete("DELETE FROM REFRESH_TOKEN WHERE REFRESH = #{refresh}")
   void deleteByRefresh(String refresh);
 
-  @Insert("INSERT INTO REFRESH_TOKEN(USER_NAME, REFRESH, EXPIRATION) VALUES (#{username}, #{refresh}, #{expiration})")
+  @Insert("INSERT INTO REFRESH_TOKEN(USERNAME, REFRESH, EXPIRATION) VALUES (#{username}, #{refresh}, #{expiration})")
   void addRefreshToken(RefreshDTO refreshDTO);
 }

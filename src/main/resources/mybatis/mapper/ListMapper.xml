@@ -95,7 +95,7 @@
     <!-- 검색 필터 (상위 쿼리에서 재사용) -->
     <sql id="searchFilter">
         <if test="keywords != null and keywords != ''">
-            MATCH(PS.SEARCH_TEXT) AGAINST(#{keywords} IN BOOLEAN MODE)
+            AND MATCH(PS.SEARCH_TEXT) AGAINST(#{keywords} IN BOOLEAN MODE)
         </if>
     </sql>
 
@@ -292,7 +292,7 @@
                 </foreach>
             </if>
             <if test="keywords != null and keywords != ''">
-                MATCH(RANKED.SEARCH_TEXT) AGAINST(#{keyword} IN BOOLEAN MODE)
+                AND MATCH(RANKED.SEARCH_TEXT) AGAINST(#{keyword} IN BOOLEAN MODE)
             </if>
         </if>
         ORDER BY
@@ -404,7 +404,7 @@
     <!-- 문의 검색 쿼리 조각 -->
     <sql id="qnaSearchFilter">
         <if test="keywords != null and keywords != ''">
-            MATCH(TITLE) AGAINST(#{keywords} IN BOOLEAN MODE)
+            AND MATCH(TITLE) AGAINST(#{keywords} IN BOOLEAN MODE)
         </if>
     </sql>
 

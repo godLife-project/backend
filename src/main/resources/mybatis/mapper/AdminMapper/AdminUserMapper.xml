@@ -39,7 +39,7 @@
     <update id="banUserByIdx" parameterType="int">
         UPDATE USER_TABLE
         SET IS_DELETED = 'Y',
-        DELETE_DATE = SYSDATE
+        DELETE_DATE = NOW()
         WHERE USER_IDX = #{userIdx}
     </update>
 

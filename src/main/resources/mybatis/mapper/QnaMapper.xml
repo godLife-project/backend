@@ -5,12 +5,9 @@
 <mapper namespace="com.godLife.project.mapper.QnaMapper">
 
     <!-- 1:1 문의 작성 -->
-    <insert id="createQna" parameterType="com.godLife.project.dto.contents.QnaDTO">
-        <selectKey keyProperty="qnaIdx" resultType="int" order="BEFORE">
-            SELECT QNA_SEQ.NEXTVAL FROM DUAL
-        </selectKey>
-        INSERT INTO QNA_TABLE(QNA_IDX, Q_USER_IDX, TITLE, CONTENT, CREATED_AT, CATEGORY, QNA_STATUS)
-        VALUES(#{qnaIdx}, #{qUserIdx}, #{title}, #{content}, SYSDATE, #{category}, 'WAIT')
+    <insert id="createQna" parameterType="com.godLife.project.dto.contents.QnaDTO" useGeneratedKeys="true" keyProperty="qnaIdx">
+        INSERT INTO QNA_TABLE(Q_USER_IDX, TITLE, CONTENT, CREATED_AT, CATEGORY, QNA_STATUS)
+        VALUES(#{qUserIdx}, #{title}, #{content}, NOW(), #{category}, 'WAIT')
     </insert>
 
     <!-- 'WAIT' 상태 문의 리스트용 정보 가져오기 -->
@@ -58,12 +55,9 @@
     </select>
 
     <!-- 문의 답변 달기 -->
-    <insert id="commentReply" parameterType="com.godLife.project.dto.contents.QnaReplyDTO">
-        <selectKey keyProperty="qnaReplyIdx" resultType="int" order="BEFORE">
-            SELECT QNA_CONTENT_SEQ.NEXTVAL FROM DUAL
-        </selectKey>
-        INSERT INTO QNA_REPLY(QNA_REPLY_IDX, QNA_IDX, USER_IDX, CONTENT, CREATED_AT)
-        VALUES(#{qnaReplyIdx}, #{qnaIdx}, #{userIdx}, #{content}, SYSDATE)
+    <insert id="commentReply" parameterType="com.godLife.project.dto.contents.QnaReplyDTO" useGeneratedKeys="true" keyProperty="qnaReplyIdx">
+        INSERT INTO QNA_REPLY(QNA_IDX, USER_IDX, CONTENT, CREATED_AT)
+        VALUES(#{qnaIdx}, #{userIdx}, #{content}, SYSDATE)
     </insert>
 
     <!-- 문의 답변 수 증가 -->
@@ -130,7 +124,7 @@
         SET
             TITLE = #{modifyDTO.title},
             CONTENT = #{modifyDTO.content},
-            MODIFIED_AT = SYSDATE,
+            MODIFIED_AT = NOW(),
             CATEGORY = #{modifyDTO.category}
         WHERE QNA_IDX = #{modifyDTO.qnaIdx}
         AND Q_USER_IDX = #{modifyDTO.qUserIdx}
@@ -147,7 +141,7 @@
         INNER JOIN USER_TABLE U ON R.USER_IDX = U.USER_IDX
         WHERE R.QNA_IDX = #{qnaIdx}
         ORDER BY R.CREATED_AT DESC
-        FETCH FIRST 1 ROWS ONLY
+        LIMIT 1
     </select>
 
     <!-- 답변 수정 -->

@@ -81,7 +81,7 @@
     LEFT JOIN (
         SELECT V.ACTIVITY_IDX, COUNT(V.ACTIVITY_IDX) AS VERIFIED
         FROM VERIFY_TABLE V
-        WHERE V.VERIFY_DATE = TRUNC(SYSDATE)
+        WHERE V.VERIFY_DATE = CURDATE()
         GROUP BY V.ACTIVITY_IDX
       ) V ON A.ACTIVITY_IDX = V.ACTIVITY_IDX
     WHERE A.PLAN_IDX = #{planIdx}
@@ -153,7 +153,7 @@
         TARGET_IDX = #{targetIdx},
         JOB_IDX = #{jobIdx},
         PLAN_IMP = #{planImp},
-        PLAN_SUB_MOD = SYSDATE,
+        PLAN_SUB_MOD = NOW(),
         IS_SHARED = #{isShared}
     WHERE PLAN_IDX = #{planIdx} AND USER_IDX = #{userIdx}
   </update>
@@ -190,7 +190,7 @@
     UPDATE JOB_ETC_CATEGORY
     SET JOB_NAME = #{name},
         ICON_KEY = #{iconKey},
-        CREATED_AT = SYSDATE
+        CREATED_AT = NOW()
     WHERE PLAN_IDX = #{planIdx}
   </update>
 
@@ -226,8 +226,8 @@
     UPDATE PLAN_TABLE
        SET IS_ACTIVE = #{isActive},
            <if test="isActive == 1">
-             PLAN_SUB_START = SYSDATE,
-             PLAN_SUB_END = SYSDATE + END_TO
+             PLAN_SUB_START = NOW(),
+             PLAN_SUB_END = DATE_ADD(NOW(), INTERVAL END_TO DAY)
            </if>
            <if test="isActive == 0">
              PLAN_SUB_START = NULL,
@@ -253,7 +253,7 @@
   <update id="updateCompleteByPlanIdx" parameterType="int">
     UPDATE PLAN_TABLE
     SET IS_COMPLETED = 1, IS_ACTIVE = 0
-    WHERE PLAN_IDX = #{planIdx} AND ((IS_ACTIVE = 1 AND IS_COMPLETED = 0 AND IS_DELETED = 0) AND PLAN_SUB_END <![CDATA[ <= ]]> SYSDATE)
+    WHERE PLAN_IDX = #{planIdx} AND ((IS_ACTIVE = 1 AND IS_COMPLETED = 0 AND IS_DELETED = 0) AND PLAN_SUB_END <![CDATA[ <= ]]> NOW())
   </update>
   <!-- 루틴 조기 완료 처리 -->
   <update id="updateEarlyComplete" parameterType="map">
@@ -264,6 +264,6 @@
 
   <!-- 추천 하기 -->
   <insert id="likePlan" parameterType="map">
-    INSERT INTO LIKE_TABLE VALUES (#{userIdx}, #{planIdx}, SYSDATE)
+    INSERT INTO LIKE_TABLE VALUES (#{userIdx}, #{planIdx}, NOW())
   </insert>
 </mapper>

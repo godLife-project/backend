@@ -16,11 +16,11 @@ public interface VerifyMapper {
   int getUserIdxByUserId(String username);
 
   // 활동 인증 처리
-  @Insert("INSERT INTO VERIFY_TABLE(VERIFY_IDX, ACTIVITY_IDX, USER_IDX) VALUES (VERIFY_SEQ.NEXTVAL, #{activityIdx}, #{userIdx})")
+  @Insert("INSERT INTO VERIFY_TABLE(ACTIVITY_IDX, USER_IDX) VALUES (#{activityIdx}, #{userIdx})")
   void verifyActivity(VerifyRequestDTO verifyRequestDTO);
 
   // 금일 인증 여부 확인
-  @Select("SELECT COUNT(*) FROM VERIFY_TABLE WHERE ACTIVITY_IDX = #{activityIdx} AND VERIFY_DATE = TRUNC(SYSDATE)")
+  @Select("SELECT COUNT(*) FROM VERIFY_TABLE WHERE ACTIVITY_IDX = #{activityIdx} AND VERIFY_DATE = CURDATE()")
   boolean checkTodayVerified(VerifyRequestDTO verifyRequestDTO);
 
   // 활동 인증 시 루틴 경험치 증가

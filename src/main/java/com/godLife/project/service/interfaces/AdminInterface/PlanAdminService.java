@@ -21,6 +21,4 @@ public interface PlanAdminService {
 
   List<CustomAdminPlanListDTO> selectPlanList (@Param("offset") int offset, @Param("limit") int limit);
 
-  int adminInsertPlan(PlanDTO planDTO);
-
 }

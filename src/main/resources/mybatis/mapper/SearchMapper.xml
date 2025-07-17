@@ -8,10 +8,10 @@
   <insert id="setSearchLogs" parameterType="com.godLife.project.dto.infos.SearchLogDTO">
     <choose>
       <when test="uniqueId != null">
-        INSERT INTO SEARCH_LOG(LOG_IDX, UNIQUE_ID, SEARCH_KEYWORD) VALUES (LOG_SEQ.NEXTVAL, #{uniqueId}, #{searchKeyword})
+        INSERT INTO SEARCH_LOG(UNIQUE_ID, SEARCH_KEYWORD) VALUES (#{uniqueId}, #{searchKeyword})
       </when>
       <otherwise>
-        INSERT INTO SEARCH_LOG(LOG_IDX, USER_IDX, SEARCH_KEYWORD) VALUES (LOG_SEQ.NEXTVAL, #{userIdx}, #{searchKeyword})
+        INSERT INTO SEARCH_LOG(USER_IDX, SEARCH_KEYWORD) VALUES (#{userIdx}, #{searchKeyword})
       </otherwise>
     </choose>
   </insert>
@@ -21,23 +21,19 @@
     <choose>
       <when test="uniqueId != null">
         SELECT LOG_IDX, SEARCH_KEYWORD
-        FROM (
-        SELECT LOG_IDX, SEARCH_KEYWORD
         FROM SEARCH_LOG
-        WHERE UNIQUE_ID = #{uniqueId} AND IS_DELETED = 0
+        WHERE UNIQUE_ID = #{uniqueId}
+        AND IS_DELETED = 0
         ORDER BY SEARCH_DATE DESC
-        )
-        WHERE ROWNUM <![CDATA[ <= ]]> 10
+        LIMIT 10
       </when>
       <otherwise>
         SELECT LOG_IDX, SEARCH_KEYWORD
-        FROM (
-        SELECT LOG_IDX, SEARCH_KEYWORD
         FROM SEARCH_LOG
-        WHERE USER_IDX = #{userIdx}  AND IS_DELETED = 0
+        WHERE USER_IDX = #{userIdx}
+        AND IS_DELETED = 0
         ORDER BY SEARCH_DATE DESC
-        )
-        WHERE ROWNUM <![CDATA[ <= ]]> 10
+        LIMIT 10
       </otherwise>
     </choose>
   </select>
@@ -65,12 +61,12 @@
     <choose>
       <when test="isDeleted == 1">
         UPDATE SEARCH_LOG
-        SET SEARCH_DATE = SYSDATE, SEARCH_COUNT = SEARCH_COUNT + 1, IS_DELETED = 0
+        SET SEARCH_DATE = NOW(), SEARCH_COUNT = SEARCH_COUNT + 1, IS_DELETED = 0
         WHERE LOG_IDX = #{logIdx} AND IS_DELETED = #{isDeleted}
       </when>
       <otherwise>
         UPDATE SEARCH_LOG
-        SET SEARCH_DATE = SYSDATE, SEARCH_COUNT = SEARCH_COUNT + 1
+        SET SEARCH_DATE = NOW(), SEARCH_COUNT = SEARCH_COUNT + 1
         WHERE LOG_IDX = #{logIdx} AND IS_DELETED = #{isDeleted}
       </otherwise>
     </choose>

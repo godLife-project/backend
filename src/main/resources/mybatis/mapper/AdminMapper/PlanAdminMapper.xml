@@ -12,30 +12,13 @@
         r.TARGET_IDX,
         r.PLAN_SUB_DATE,
         r.USER_IDX
-        FROM (
-        SELECT
-        r.PLAN_IDX,
-        r.PLAN_TITLE,
-        r.TARGET_IDX,
-        r.PLAN_SUB_DATE,
-        r.USER_IDX,
-        ROWNUM AS row_num
-        FROM (
-        SELECT
-        r.PLAN_IDX,
-        r.PLAN_TITLE,
-        r.TARGET_IDX,
-        r.PLAN_SUB_DATE,
-        r.USER_IDX
         FROM PLAN_TABLE r
         INNER JOIN USER_TABLE u ON r.USER_IDX = u.USER_IDX
         WHERE u.AUTHORITY_IDX BETWEEN 2 AND 7
         ORDER BY r.PLAN_SUB_DATE DESC
-        ) r
-        WHERE ROWNUM &lt;= #{offset} + #{limit}
-        ) r
-        WHERE r.row_num > #{offset}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
+
 
     <select id="getTotalAdminPlanCount" resultType="int">
         SELECT COUNT(*)
@@ -51,15 +34,15 @@
         r.TARGET_IDX,
         r.PLAN_SUB_DATE,
         r.USER_IDX
-        FROM (
-        SELECT
-        r.PLAN_IDX,
-        r.PLAN_TITLE,
-        r.TARGET_IDX,
-        r.PLAN_SUB_DATE,
-        r.USER_IDX,
-        ROWNUM AS row_num
-        FROM (
+        FROM PLAN_TABLE r
+        INNER JOIN USER_TABLE u ON r.USER_IDX = u.USER_IDX
+        WHERE r.TARGET_IDX = #{targetIdx}
+        AND u.AUTHORITY_IDX BETWEEN 2 AND 7
+        ORDER BY r.PLAN_SUB_DATE DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="selectPlanList" resultType="com.godLife.project.dto.list.customDTOs.CustomAdminPlanListDTO">
         SELECT
         r.PLAN_IDX,
         r.PLAN_TITLE,
@@ -68,119 +51,9 @@
         r.USER_IDX
         FROM PLAN_TABLE r
         INNER JOIN USER_TABLE u ON r.USER_IDX = u.USER_IDX
-        WHERE r.TARGET_IDX = #{targetIdx}
-        AND u.AUTHORITY_IDX BETWEEN 2 AND 7
+        WHERE u.AUTHORITY_IDX = 1
         ORDER BY r.PLAN_SUB_DATE DESC
-        ) r
-        WHERE ROWNUM &lt;= #{offset} + #{limit}
-        ) r
-        WHERE r.row_num > #{offset}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
-        <select id="selectPlanList" resultType="com.godLife.project.dto.list.customDTOs.CustomAdminPlanListDTO">
-            SELECT
-            r.PLAN_IDX,
-            r.PLAN_TITLE,
-            r.TARGET_IDX,
-            r.PLAN_SUB_DATE,
-            r.USER_IDX
-            FROM (
-            SELECT
-            r.PLAN_IDX,
-            r.PLAN_TITLE,
-            r.TARGET_IDX,
-            r.PLAN_SUB_DATE,
-            r.USER_IDX,
-            ROWNUM AS row_num
-            FROM (
-            SELECT
-            r.PLAN_IDX,
-            r.PLAN_TITLE,
-            r.TARGET_IDX,
-            r.PLAN_SUB_DATE,
-            r.USER_IDX
-            FROM PLAN_TABLE r
-            INNER JOIN USER_TABLE u ON r.USER_IDX = u.USER_IDX
-            WHERE u.AUTHORITY_IDX = 1
-            ORDER BY r.PLAN_SUB_DATE DESC
-            ) r
-            WHERE ROWNUM &lt;= #{offset} + #{limit}
-            ) r
-            WHERE r.row_num > #{offset}
-        </select>
-
-
-    <!-- 루틴 저장 쿼리 -->
-    <insert id="adminInsertPlan" parameterType="com.godLife.project.dto.datas.PlanDTO">
-        INSERT INTO PLAN_TABLE(
-        PLAN_IDX, USER_IDX, PLAN_TITLE, END_TO, TARGET_IDX, IS_SHARED, PLAN_IMP, JOB_IDX
-        <if test="isActive != null and isActive == 1">
-            , IS_ACTIVE, PLAN_SUB_START, PLAN_SUB_END
-        </if>
-        <if test="repeatDays != null">
-            , REPEAT_DAYS
-        </if>
-        <if test="forked == true">
-            , FORK_IDX
-        </if>
-        )
-        VALUES (
-        PLAN_SEQ.NEXTVAL, #{userIdx}, #{planTitle}, #{endTo}, #{targetIdx}, #{isShared}, #{planImp}, #{jobIdx}
-        <if test="isActive != null and isActive == 1">
-            , #{isActive}, SYSDATE, SYSDATE + #{endTo}
-        </if>
-        <if test="repeatDays != null">
-            , #{repeatDays, typeHandler=com.godLife.project.handler.typehandler.ListStringTypeHandler}
-        </if>
-        <if test="forked == true">
-            , #{forkIdx}
-        </if>
-        )
-        <selectKey keyProperty="planIdx" resultType="int" order="AFTER">
-            SELECT PLAN_SEQ.CURRVAL FROM DUAL
-        </selectKey>
-    </insert>
-
-    <!-- 활동 저장 쿼리 -->
-    <insert id="adminInsertActivity" parameterType="com.godLife.project.dto.datas.ActivityDTO">
-        <choose>
-            <when test="setTime != null ">
-                INSERT INTO PLAN_ACTIVITY (ACTIVITY_IDX, PLAN_IDX, ACTIVITY_NAME, SET_TIME,
-                <if test="description != null">
-                    DESCRIPTION,
-                </if>
-                ACTIVITY_IMP)
-                VALUES (ACTIVITY_SEQ.NEXTVAL, #{planIdx}, #{activityName}, #{setTime},
-                <if test="description != null">
-                    #{description},
-                </if>
-                #{activityImp})
-            </when>
-            <otherwise>
-                INSERT INTO PLAN_ACTIVITY (ACTIVITY_IDX, PLAN_IDX, ACTIVITY_NAME,
-                <if test="description != null">
-                    DESCRIPTION,
-                </if>
-                ACTIVITY_IMP)
-                VALUES (ACTIVITY_SEQ.NEXTVAL, #{planIdx}, #{activityName},
-                <if test="description != null">
-                    #{description},
-                </if>
-                #{activityImp})
-            </otherwise>
-        </choose>
-    </insert>
-
-    <!-- 기타 직업 추가 쿼리 -->
-    <insert id="insertJobEtc" parameterType="com.godLife.project.dto.categories.JobEtcCateDTO">
-        INSERT INTO JOB_ETC_CATEGORY
-        VALUES (JOB_ETC_SEQ.NEXTVAL, #{planIdx}, #{name}, #{iconKey}, SYSDATE)
-    </insert>
-
-    <!-- 루틴 포크수 증가 -->
-    <update id="modifyForkCount" parameterType="map">
-        UPDATE PLAN_TABLE
-        SET FORK_COUNT = (SELECT COUNT(*) FROM PLAN_TABLE WHERE FORK_IDX = #{planIdx} AND IS_DELETED = #{isDeleted})
-        WHERE PLAN_IDX = #{planIdx}
-    </update>
 
 </mapper>

@@ -26,7 +26,7 @@ public class RefreshServiceImpl implements RefreshService {
   // 리프레쉬 토큰 유무 확인
   @Override
   public Boolean existsByRefresh(String refresh) {
-    return refreshMapper.existsByRefresh(refresh);
+    return refreshMapper.existsByRefresh(refresh) > 0;
   }
 
   // 리프레쉬 토큰 삭제

@@ -6,10 +6,6 @@
 
     <!-- 유저 정보 조회  (아이디, 닉네임, 태그, 이메일, 가입일자, 루틴 수, 신고수, 관리 -->
     <select id="selectAllActiveUsers" resultType="com.godLife.project.dto.list.customDTOs.AdminUserDTO">
-        SELECT *
-        FROM (
-        SELECT ROWNUM AS RNUM, A.*
-        FROM (
         SELECT
         u.USER_IDX,
         u.USER_NAME,
@@ -19,7 +15,7 @@
         u.USER_EMAIL,
         u.USER_JOIN,
         u.REPORT_COUNT,
-        NVL(p.PLAN_COUNT, 0) AS PLAN_COUNT
+        IFNULL(p.PLAN_COUNT, 0) AS PLAN_COUNT
         FROM USER_TABLE u
         LEFT JOIN (
         SELECT USER_IDX, COUNT(*) AS PLAN_COUNT
@@ -28,11 +24,9 @@
         ) p ON u.USER_IDX = p.USER_IDX
         WHERE u.IS_DELETED = 'N'
         ORDER BY u.USER_JOIN DESC
-        ) A
-        WHERE ROWNUM &lt;= #{endRow}
-        )
-        WHERE RNUM &gt;= #{startRow}
+        LIMIT #{offset}, #{limit}
     </select>
+
 
     <!-- 전체 유저 수 조회 (페이징용) -->
     <select id="countAllActiveUsers" resultType="int">

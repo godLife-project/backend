@@ -12,7 +12,7 @@
         WHERE S.STATUS = 1
         AND MATCHED <![CDATA[ < ]]> 10
         ORDER BY MATCHED
-        FETCH FIRST 1 ROWS ONLY
+        LIMIT 1
     </select>
 
     <!-- 문의 등록 시 단일 문의 자동 매칭 -->

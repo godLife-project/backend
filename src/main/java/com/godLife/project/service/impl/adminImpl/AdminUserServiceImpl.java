@@ -20,9 +20,8 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     // 유저 리스트 조회
     public List<AdminUserDTO> getPagedUserList(int page, int size) {
-        int startRow = (page - 1) * size + 1;
-        int endRow = page * size;
-        return adminUserMapper.selectAllActiveUsers(startRow, endRow);
+        int offset = (page - 1) * size;
+      return adminUserMapper.selectAllActiveUsers(offset, size);
     }
 
     // 페이징

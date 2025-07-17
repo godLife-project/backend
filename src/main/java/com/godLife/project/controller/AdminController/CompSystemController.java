@@ -7,7 +7,10 @@ import com.godLife.project.dto.datas.IconDTO;
 import com.godLife.project.exception.FaqCategoryDeletePendingException;
 import com.godLife.project.exception.QnaCategoryDeletePendingException;
 import com.godLife.project.handler.GlobalExceptionHandler;
+import com.godLife.project.service.impl.redis.RedisService;
 import com.godLife.project.service.interfaces.AdminInterface.CompSystemService;
+import com.godLife.project.service.interfaces.CategoryService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -21,6 +24,7 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequestMapping("/api/admin/compSystem")
+@RequiredArgsConstructor
 public class CompSystemController {
   @Autowired
   private GlobalExceptionHandler handler;
@@ -28,10 +32,9 @@ public class CompSystemController {
   @Autowired
   private final CompSystemService compSystemService;
 
+  private final RedisService redisService;
 
-  public CompSystemController(CompSystemService compSystemService) {
-    this.compSystemService = compSystemService;
-  }
+  private final CategoryService categoryService;
 
   //                                  FAQ 카테고리 관리 테이블
   // FAQ 카테고리 조회
@@ -212,14 +215,15 @@ public class CompSystemController {
         return ResponseEntity.status(handler.getHttpStatus(409))
                 .body(handler.createResponse(409, "이미 존재하는 TopMenu 이름입니다."));
       }
-
+      // 탑메뉴 최신화
+      redisService.saveListData("category::topMenu", categoryService.getProcessedAllTopCategories(), 'n', 0);
       return ResponseEntity.status(handler.getHttpStatus(201))
               .body(handler.createResponse(201, "TopMenu 등록 성공"));
 
     } catch (Exception e) {
       log.error("TopMenu 등록 실패: {}", e.getMessage(), e);
       return ResponseEntity.status(handler.getHttpStatus(500))
-              .body(handler.createResponse(500, "TopMenu 등록 중 서버 오류가 발생했습니다."));
+              .body(handler.createResponse(500, e.getMessage()));
     }
   }
 
@@ -237,6 +241,9 @@ public class CompSystemController {
       }
 
       if (result > 0) {
+        // 탑메뉴 최신화
+        redisService.saveListData("category::topMenu", categoryService.getProcessedAllTopCategories(), 'n', 0);
+
         return ResponseEntity.ok(handler.createResponse(200, "TopMenu 수정 성공"));
       } else {
         return ResponseEntity.status(handler.getHttpStatus(404))
@@ -255,6 +262,9 @@ public class CompSystemController {
       int result = compSystemService.deleteTopMenu(topIdx);
 
       if (result > 0) {
+        // 탑메뉴 최신화
+        redisService.saveListData("category::topMenu", categoryService.getProcessedAllTopCategories(), 'n', 0);
+
         return ResponseEntity.ok(handler.createResponse(200, "TopMenu 삭제 성공"));
       } else {
         return ResponseEntity.status(handler.getHttpStatus(404))
@@ -279,6 +289,9 @@ public class CompSystemController {
   public ResponseEntity<Map<String, Object>> reorderTopMenu(@RequestBody List<TopCateDTO> orderedList) {
     try {
       compSystemService.updateOrderTopMenu(orderedList);
+      // 탑메뉴 최신화
+      redisService.saveListData("category::topMenu", categoryService.getProcessedAllTopCategories(), 'n', 0);
+
       return ResponseEntity.ok(handler.createResponse(200, "TopMenu 순서 업데이트 성공"));
     } catch (Exception e) {
       log.error("TopMenu 순서 업데이트 오류: {}", e.getMessage(), e);

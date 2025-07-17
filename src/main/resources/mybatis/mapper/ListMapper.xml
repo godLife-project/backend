@@ -94,28 +94,8 @@
 
     <!-- 검색 필터 (상위 쿼리에서 재사용) -->
     <sql id="searchFilter">
-        <if test="keywords != null and keywords.size() > 0">
-            <if test="keywords['or'] != null and keywords['or'].size() > 0">
-                <foreach collection="keywords['or']" item="or" open="AND (" separator=" AND " close=")">
-                    P.PLAN_TITLE LIKE CONCAT('%', #{or}, '%')
-                    OR T.TARGET_NAME LIKE CONCAT('%', #{or}, '%')
-                    OR J.JOB_NAME LIKE CONCAT('%', #{or}, '%')
-                </foreach>
-            </if>
-            <if test="keywords['and'] != null and keywords['and'].size() > 0">
-                <foreach collection="keywords['and']" item="and" open="AND (" separator=" AND " close=")">
-                    P.PLAN_TITLE LIKE CONCAT('%', #{and}, '%')
-                    OR T.TARGET_NAME LIKE CONCAT('%', #{and}, '%')
-                    OR J.JOB_NAME LIKE CONCAT('%', #{and}, '%')
-                </foreach>
-            </if>
-            <if test="keywords['not'] != null and keywords['not'].size() > 0">
-                <foreach collection="keywords['not']" item="not" open="AND (" separator=" AND " close=")">
-                    P.PLAN_TITLE NOT LIKE CONCAT('%', #{not}, '%')
-                    AND T.TARGET_NAME NOT LIKE CONCAT('%', #{not}, '%')
-                    AND J.JOB_NAME NOT LIKE CONCAT('%', #{not}, '%')
-                </foreach>
-            </if>
+        <if test="keywords != null and keywords != ''">
+            MATCH(PS.SEARCH_TEXT) AGAINST(#{keywords} IN BOOLEAN MODE)
         </if>
     </sql>
 
@@ -142,6 +122,7 @@
     <!-- 공통 부분 (JOIN 및 WHERE 절) -->
     <sql id="commonJoin">
         INNER JOIN USER_TABLE U ON P.USER_IDX = U.USER_IDX
+        INNER JOIN PLAN_SEARCH PS ON P.PLAN_IDX = PS.PLAN_IDX
         INNER JOIN FIRE_TABLE F ON P.CERT_EXP BETWEEN F.MIN_EXP AND F.MAX_EXP
         INNER JOIN TARGET_CATEGORY T ON P.TARGET_IDX = T.TARGET_IDX
         LEFT JOIN ICON_TABLE IT ON T.ICON_KEY = IT.ICON_KEY
@@ -184,7 +165,8 @@
         ETC.JOB_NAME AS ETC_JOB_NAME,
         ETC.ICON_KEY AS ETC_ICON_KEY,
         IE.ICON AS ETC_ICON,
-        IE.COLOR AS ETC_COLOR
+        IE.COLOR AS ETC_COLOR,
+        PS.SEARCH_TEXT
     </sql>
 
     <!-- 공통 ORDER BY 부분 -->
@@ -240,12 +222,13 @@
 
     <!-- (개인용) 전체 조회 -->
     <select id="getMyPlansByUserIdx" parameterType="int" resultType="com.godLife.project.dto.list.customDTOs.CustomPlanDTO">
-        SELECT PLAN_IDX, PLAN_TITLE, END_TO, PLAN_SUB_END,
-        IS_SHARED, IS_ACTIVE, PLAN_IMP, CERT_EXP,
-        REPEAT_DAYS, FIRE_STATE
+        SELECT
+            PLAN_IDX, PLAN_TITLE, END_TO, PLAN_SUB_END,
+            IS_SHARED, IS_ACTIVE, PLAN_IMP, CERT_EXP,
+            REPEAT_DAYS, FIRE_STATE
         FROM PLAN_TABLE
         WHERE USER_IDX = #{userIdx} AND IS_DELETED = 0 AND IS_COMPLETED = 0
-        ORDER BY IS_ACTIVE DESC, PLAN_IMP DESC, PLAN_SUB_START DESC NULLS LAST
+        ORDER BY IS_ACTIVE DESC, PLAN_IMP DESC, PLAN_SUB_START IS NULL, PLAN_SUB_START DESC
     </select>
 
     <!-- (공용) 전체 조회 쿼리 -->
@@ -294,7 +277,7 @@
             </otherwise>
         </choose>
 
-        <if test="mode == 'rank' and ((keywords != null and keywords.size() > 0) or (target != null and target.size() > 0) or (job != null and job.size() > 0))">
+        <if test="mode == 'rank' and ((keywords != null and keywords != '') or (target != null and target.size() > 0) or (job != null and job.size() > 0))">
             WHERE 1=1
             <if test="target != null and target.size() > 0 ">
                 AND RANKED.TARGET_IDX IN
@@ -308,28 +291,8 @@
                     #{item}
                 </foreach>
             </if>
-            <if test="keywords != null and keywords.size() > 0">
-                <if test="keywords['or'] != null and keywords['or'].size() > 0">
-                    <foreach collection="keywords['or']" item="or" open="AND (" separator=" AND " close=")">
-                        RANKED.PLAN_TITLE LIKE CONCAT('%', #{or}, '%')
-                        OR RANKED.TARGET_NAME LIKE CONCAT('%', #{or}, '%')
-                        OR RANKED.JOB_NAME LIKE CONCAT('%', #{or}, '%')
-                    </foreach>
-                </if>
-                <if test="keywords['and'] != null and keywords['and'].size() > 0">
-                    <foreach collection="keywords['and']" item="and" open="AND (" separator=" AND " close=")">
-                        RANKED.PLAN_TITLE LIKE CONCAT('%', #{and}, '%')
-                        OR RANKED.TARGET_NAME LIKE CONCAT('%', #{and}, '%')
-                        OR RANKED.JOB_NAME LIKE CONCAT('%', #{and}, '%')
-                    </foreach>
-                </if>
-                <if test="keywords['not'] != null and keywords['not'].size() > 0">
-                    <foreach collection="keywords['not']" item="not" open="AND (" separator=" AND " close=")">
-                        RANKED.PLAN_TITLE NOT LIKE CONCAT('%', #{not}, '%')
-                        AND RANKED.TARGET_NAME NOT LIKE CONCAT('%', #{not}, '%')
-                        AND RANKED.JOB_NAME NOT LIKE CONCAT('%', #{not}, '%')
-                    </foreach>
-                </if>
+            <if test="keywords != null and keywords != ''">
+                MATCH(RANKED.SEARCH_TEXT) AGAINST(#{keyword} IN BOOLEAN MODE)
             </if>
         </if>
         ORDER BY
@@ -344,7 +307,7 @@
             </otherwise>
         </choose>
 
-        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+        LIMIT #{size} OFFSET #{offset}
     </select>
 
     <!-- 좋아요 한 루틴 리스트 조회 -->
@@ -377,7 +340,7 @@
             <otherwise> asc</otherwise>
         </choose>
 
-        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+        LIMIT #{size} OFFSET #{offset}
     </select>
 
 
@@ -440,22 +403,8 @@
 
     <!-- 문의 검색 쿼리 조각 -->
     <sql id="qnaSearchFilter">
-        <if test="keywords != null and keywords.size() > 0">
-            <if test="keywords['or'] != null and keywords['or'].size() > 0">
-                <foreach collection="keywords['or']" item="or" open="AND (" separator=" AND " close=")">
-                    TITLE LIKE CONCAT('%', #{or}, '%')
-                </foreach>
-            </if>
-            <if test="keywords['and'] != null and keywords['and'].size() > 0">
-                <foreach collection="keywords['and']" item="and" open="AND (" separator=" AND " close=")">
-                    TITLE LIKE CONCAT('%', #{and}, '%')
-                </foreach>
-            </if>
-            <if test="keywords['not'] != null and keywords['not'].size() > 0">
-                <foreach collection="keywords['not']" item="not" open="AND (" separator=" AND " close=")">
-                    TITLE NOT LIKE CONCAT('%', #{not}, '%')
-                </foreach>
-            </if>
+        <if test="keywords != null and keywords != ''">
+            MATCH(TITLE) AGAINST(#{keywords} IN BOOLEAN MODE)
         </if>
     </sql>
 
@@ -489,7 +438,7 @@
                 <when test="order == 'desc'"> DESC</when>
                 <otherwise> asc</otherwise>
             </choose>
-        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+        LIMIT #{size} OFFSET #{offset}
     </select>
 
     <!-- 조회할 문의 리스트의 총 문의 수 -->

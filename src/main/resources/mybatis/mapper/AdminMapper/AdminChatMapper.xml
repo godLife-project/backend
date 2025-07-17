@@ -5,22 +5,20 @@
 <mapper namespace="com.godLife.project.mapper.AdminMapper.AdminChatMapper">
 
     <!-- 채팅방 생성 쿼리 -->
-    <insert id="createChatRoom" parameterType="com.godLife.project.dto.chat.ChatRoomDTO">
-        <selectKey keyProperty="roomIdx" resultType="int" order="AFTER">
-            SELECT ROOM_IDX_SEQ.CURRVAL FROM DUAL
-        </selectKey>
-
+    <insert id="createChatRoom" parameterType="com.godLife.project.dto.chat.ChatRoomDTO" useGeneratedKeys="true" keyProperty="roomIdx">
         INSERT INTO ADMIN_CHAT_ROOMS(ROOM_IDX, NAME, IS_PUBLIC, CREATED_BY)
-        VALUES (ROOM_IDX_SEQ.NEXTVAL,
-        <choose>
-            <when test="name == null">
-                '채팅방 이름 미정'
-            </when>
-            <otherwise>
-                #{name}
-            </otherwise>
-        </choose>
-        , #{isPublic}, #{createdBy})
+        VALUES (
+            <choose>
+                <when test="name == null">
+                    '채팅방 이름 미정'
+                </when>
+                <otherwise>
+                    #{name}
+                </otherwise>
+            </choose> ,
+            #{isPublic},
+            #{createdBy}
+        )
     </insert>
 
     <!-- 공개 채팅방 생성 시 접근 가능 권한 설정 쿼리 -->

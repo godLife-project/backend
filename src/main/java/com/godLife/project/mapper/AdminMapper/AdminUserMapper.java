@@ -11,7 +11,7 @@ import java.util.List;
 
 @Mapper
 public interface AdminUserMapper {
-    List<AdminUserDTO> selectAllActiveUsers(@Param("startRow")int startRow, @Param("endRow")int endRow);      // 유저 정보 리스트 조회
+    List<AdminUserDTO> selectAllActiveUsers(@Param("offset")int offset, @Param("limit")int limit);      // 유저 정보 리스트 조회
     int countAllActiveUsers();                     // 전체 유저 수 조회 (페이징)
     int banUserByIdx(int userIdx);                // 유저 정지
 

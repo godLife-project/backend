@@ -147,7 +147,7 @@
     <update id="updateTopMenu" parameterType="com.godLife.project.dto.categories.TopCateDTO">
         UPDATE TOP_CATEGORY
         <set>
-            <if test="parentIdx != null">
+            <if test="parentIdx != 0">
                 PARENT_IDX = #{parentIdx},
             </if>
             <if test="topName != null and topName != ''">
@@ -156,10 +156,10 @@
             <if test="topAddr != null and topAddr != ''">
                 TOP_ADDR = #{topAddr},
             </if>
-            <if test="categoryLevel != null">
+            <if test="categoryLevel != 0">
                 CATEGORY_LEVEL = #{categoryLevel},
             </if>
-            <if test="ordCol != null">
+            <if test="ordCol != 0">
                 ORD_COL = #{ordCol},
             </if>
         </set>

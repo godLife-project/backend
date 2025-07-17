@@ -44,8 +44,8 @@
 
     <!-- FAQ 작성 -->
     <insert id="insertFaq" parameterType="com.godLife.project.dto.contents.FaQDTO">
-        INSERT INTO FAQ_TABLE (FAQ_IDX, FAQ_TITLE, FAQ_ANSWER, FAQ_CATEGORY)
-        VALUES (Faq_SEQ.NEXTVAL, #{faqTitle}, #{faqAnswer}, #{faqCategory})
+        INSERT INTO FAQ_TABLE (FAQ_TITLE, FAQ_ANSWER, FAQ_CATEGORY)
+        VALUES (#{faqTitle}, #{faqAnswer}, #{faqCategory})
     </insert>
 
     <!-- FAQ 수정 update 쿼리 -->
@@ -58,17 +58,15 @@
     </update>
 
     <!-- FAQ 제목 또는 내용에 검색어가 포함된 FAQ를 검색하는 select 쿼리 -->
-    <select id="searchFaq" parameterType="com.godLife.project.dto.infos.SearchQueryDTO" resultType="com.godLife.project.dto.contents.FaQDTO">
+    <select id="searchFaq" parameterType="com.godLife.project.dto.infos.SearchQueryDTO"
+            resultType="com.godLife.project.dto.contents.FaQDTO">
         SELECT f.FAQ_IDX, f.FAQ_TITLE, f.FAQ_ANSWER, c.FAQ_CATEGORY_NAME
-        FROM faq_table f
-        JOIN faq_category c ON f.FAQ_CATEGORY = c.FAQ_CATEGORY_IDX
+        FROM FAQ_TABLE f
+        JOIN FAQ_CATEGORY c ON f.FAQ_CATEGORY = c.FAQ_CATEGORY_IDX
         WHERE
         <choose>
             <when test="faqTitle != null and faqTitle != ''">
-                (
-                CONTAINS(f.FAQ_TITLE, #{faqTitle}) > 0
-                OR CONTAINS(f.FAQ_ANSWER, #{faqAnswer}) > 0
-                )
+                MATCH(f.FAQ_TITLE, f.FAQ_ANSWER) AGAINST (#{faqTitle} IN BOOLEAN MODE)
             </when>
             <otherwise>
                 1=1

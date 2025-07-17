@@ -86,14 +86,14 @@ public class ListServiceImpl implements ListService {
       //System.out.println("--서비스--");
       //System.out.println(page + " " +  size + " " + status + " " + target + " " + job + " " + sort + " " + order);
 
-      Map<String, List<String>> keywords = new HashMap<>();
-      if (search != null) {
-        keywords = parseKeywords(search);
-        System.out.println(keywords);
-      }
+//      Map<String, List<String>> keywords = new HashMap<>();
+//      if (search != null) {
+//        keywords = parseKeywords(search);
+//        System.out.println(keywords);
+//      }
 
-      List<PlanListDTO> plans = listMapper.getAllPlanList(mode, offset, size, status, target, job, sort, order, keywords, userIdx);
-      int totalPlans = listMapper.getTotalPlanCount(mode, status, target, job, keywords, userIdx);
+      List<PlanListDTO> plans = listMapper.getAllPlanList(mode, offset, size, status, target, job, sort, order, search, userIdx);
+      int totalPlans = listMapper.getTotalPlanCount(mode, status, target, job, search, userIdx);
 
       Map<String, Object> response = new HashMap<>();
       response.put("plans", plans);
@@ -130,13 +130,13 @@ public class ListServiceImpl implements ListService {
       //System.out.println("--서비스--");
       //System.out.println(page + " " +  size + " " + status + " " + target + " " + job + " " + sort + " " + order);
 
-      Map<String, List<String>> keywords = new HashMap<>();
-      if (search != null) {
-        keywords = parseKeywords(search);
-        System.out.println(keywords);
-      }
-      List<PlanListDTO> plans = listMapper.getLikePlanList(mode, offset, size, target, job, order, keywords, userIdx);
-      int totalPlans = listMapper.getTotalPlanCount(mode, status, target, job, keywords, userIdx);
+//      Map<String, List<String>> keywords = new HashMap<>();
+//      if (search != null) {
+//        keywords = parseKeywords(search);
+//        System.out.println(keywords);
+//      }
+      List<PlanListDTO> plans = listMapper.getLikePlanList(mode, offset, size, target, job, order, search, userIdx);
+      int totalPlans = listMapper.getTotalPlanCount(mode, status, target, job, search, userIdx);
 
       Map<String, Object> response = new HashMap<>();
       response.put("plans", plans);
@@ -170,18 +170,18 @@ public class ListServiceImpl implements ListService {
       int offset = page * size;
       String notStatus = QnaStatus.DELETED.getStatus();
 
-      Map<String, List<String>> keywords = new HashMap<>();
-      if (search != null) {
-        keywords = parseKeywords(search);
-      }
+//      Map<String, List<String>> keywords = new HashMap<>();
+//      if (search != null) {
+//        keywords = parseKeywords(search);
+//      }
 
-      List<QnaListDTO> QnAs = listMapper.getQnaList(qUserIdx, notStatus, offset, size, status, sort, order, keywords);
+      List<QnaListDTO> QnAs = listMapper.getQnaList(qUserIdx, notStatus, offset, size, status, sort, order, search);
 
       if (QnAs == null || QnAs.isEmpty()) {
         throw new CustomException("문의가 존재하지 않습니다.", HttpStatus.NO_CONTENT);
       }
 
-      int totalQna = listMapper.getTotalQnaCount(qUserIdx, notStatus, status, keywords);
+      int totalQna = listMapper.getTotalQnaCount(qUserIdx, notStatus, status, search);
 
       Map<String, Object> response = new HashMap<>();
       response.put("QnAs", QnAs);

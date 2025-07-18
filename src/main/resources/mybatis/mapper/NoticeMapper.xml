@@ -6,23 +6,17 @@
 
     <!-- 공지사항 List 조회 - 페이지네이션 적용 -->
     <select id="getNoticeList" resultType="com.godLife.project.dto.contents.NoticeDTO">
-        SELECT *
-        FROM (
-        SELECT inner_result.*, ROWNUM AS rnum
-        FROM (
-        SELECT n.notice_Idx AS noticeIdx,
-        n.notice_Title AS noticeTitle,
-        n.notice_Sub AS noticeSub,
-        n.notice_Date AS noticeDate,
-        n.notice_Modify AS noticeModify,
+        SELECT
+        n.notice_idx AS noticeIdx,
+        n.notice_title AS noticeTitle,
+        n.notice_sub AS noticeSub,
+        n.notice_date AS noticeDate,
+        n.notice_modify AS noticeModify,
         a.user_name AS writeName
         FROM NOTICE_TABLE n
         JOIN USER_TABLE a ON n.user_idx = a.user_idx
-        ORDER BY n.notice_Date DESC
-        ) inner_result
-        WHERE ROWNUM &lt;= #{offset} + #{size}
-        )
-        WHERE rnum &gt; #{offset}
+        ORDER BY n.notice_date DESC
+        LIMIT #{size} OFFSET #{offset}
     </select>
 
     <!-- 공지사항 개수 조회 -->
@@ -53,8 +47,8 @@
         SELECT *
         FROM NOTICE_TABLE
         WHERE IS_POPUP = 'Y'
-        AND POPUP_START_DATE &lt; SYSDATE
-        AND POPUP_END_DATE &gt;= SYSDATE
+        AND POPUP_START_DATE <![CDATA[ < ]]> NOW()
+        AND POPUP_END_DATE <![CDATA[ <= ]]> NOW()
     </select>
 
     <!-- 팝업 활성화 -->
@@ -68,8 +62,8 @@
 
     <!-- 공지사항 작성 -->
     <insert id="createNotice" parameterType="com.godLife.project.dto.contents.NoticeDTO">
-        INSERT INTO NOTICE_TABLE (NOTICE_IDX, NOTICE_TITLE, NOTICE_SUB, USER_IDX, NOTICE_DATE, IS_POPUP, POPUP_START_DATE, POPUP_END_DATE)
-        VALUES (NOTICE_SEQ.NEXTVAL, #{noticeTitle}, #{noticeSub}, #{userIdx}, SYSDATE, #{isPopup}, #{popupStartDate}, #{popupEndDate})
+        INSERT INTO NOTICE_TABLE (NOTICE_TITLE, NOTICE_SUB, USER_IDX, NOTICE_DATE, IS_POPUP, POPUP_START_DATE, POPUP_END_DATE)
+        VALUES (#{noticeTitle}, #{noticeSub}, #{userIdx}, SYSDATE, #{isPopup}, #{popupStartDate}, #{popupEndDate})
     </insert>
 
 

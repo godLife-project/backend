@@ -16,5 +16,6 @@ public class ServiceCenterAdminInfos extends ServiceCenterAdminList{
     super.setUserName(base.getUserName());
     super.setMatched(base.getMatched());
     super.setStatus(base.getStatus());
+    super.setUserEmail(base.getUserEmail());
   }
 }

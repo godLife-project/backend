@@ -14,6 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -41,7 +44,9 @@ public class ServiceAdminStatServiceImpl implements ServiceAdminStatService {
 
       log.info("monthStats 존재 여부: {}", monthStatIsExist ? "데이터 있음" : "데이터 없음");
       if (!monthStatIsExist) {
-        serviceAdminStatMapper.setQnaMonthStatsByAdminIdx(userIdx);
+
+        String currentMonth = new SimpleDateFormat("yyyy-MM").format(new Date());
+        serviceAdminStatMapper.setQnaMonthStatsByAdminIdx(currentMonth, userIdx);
         log.info("월별 문의 처리 통계 초기 데이터 세팅 완료.");
       }
 

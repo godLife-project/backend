@@ -16,10 +16,10 @@ public interface FaqMapper {
   List<FaqListDTO> selectAllFaq();
   List<FaqListDTO> selectCateFaq(@Param("faqCategory")Integer faqCategory);
   int insertFaq(FaQDTO faq);
-  int updateFaq(FaQDTO faq);
+  void updateFaq(FaQDTO faq);
 
   @Delete("DELETE FROM FAQ_TABLE WHERE FAQ_IDX = #{faqIdx}")
-  int deleteFaq(@Param("faqIdx") int faqIdx);
+  void deleteFaq(@Param("faqIdx") int faqIdx);
 
   // 검색
   List<FaQDTO> searchFaq(SearchQueryDTO searchQuery);

@@ -8,9 +8,9 @@ import com.godLife.project.dto.list.QnaListDTO;
 import com.godLife.project.exception.FaqCategoryDeletePendingException;
 import com.godLife.project.exception.QnaCategoryDeletePendingException;
 import com.godLife.project.mapper.AdminMapper.CompSystemMapper;
-import com.godLife.project.mapper.CategoryMapper;
 import com.godLife.project.service.impl.redis.RedisService;
 import com.godLife.project.service.interfaces.AdminInterface.CompSystemService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,17 +19,10 @@ import java.util.List;
 
 @Slf4j
 @Service
+@AllArgsConstructor
 public class CompSystemServiceImpl implements CompSystemService {
-  private CompSystemMapper compSystemMapper;
-  private RedisService redisService;
-  private CategoryMapper categoryMapper;
-
-  public CompSystemServiceImpl(CompSystemMapper compSystemMapper, RedisService redisService, CategoryMapper categoryMapper) {
-    this.compSystemMapper = compSystemMapper;
-    this.redisService = redisService;
-    this.categoryMapper = categoryMapper;
-  }
-
+  private final CompSystemMapper compSystemMapper;
+  private final RedisService redisService;
 
   //                           FAQ 카테고리 관리 테이블
   // FAQ 카테고리 LIST 조회
@@ -94,9 +87,9 @@ public class CompSystemServiceImpl implements CompSystemService {
 
   //                           QNA 카테고리 관리 테이블
   // QNA 카테고리 LIST 조회
-  public List<QnaCateDTO> selectQnaCate() {
-    return compSystemMapper.selectAllQnaCate();
-  }
+//  public List<QnaCateDTO> selectQnaCate() {
+//    return compSystemMapper.selectAllQnaCate();
+//  }
 
   // QNA 카테고리 추가
   public int insertQnaCate(QnaCateDTO qnaCateDTO) {
@@ -151,12 +144,6 @@ public class CompSystemServiceImpl implements CompSystemService {
 
   //                           TopMenu 카테고리 관리 테이블
 
-  //  Redis 캐시 갱신
-  public void refreshTopMenuCache() {
-    List<TopCateDTO> topMenus = categoryMapper.getAllTopCategories(); // 또는 필요한 가공 포함
-    redisService.saveListData("category::topMenu", topMenus, 'n', 0); // 영구 저장
-  }
-
   // 추가
   @Override
   public int insertTopMenu(TopCateDTO topCateDTO) {
@@ -164,9 +151,7 @@ public class CompSystemServiceImpl implements CompSystemService {
     if (count > 0) {
       throw new IllegalStateException("이미 존재하는 카테고리 이름입니다.");
     }
-    int result = compSystemMapper.insertTopMenu(topCateDTO);
-    refreshTopMenuCache(); // 추가 후 캐시 최신화
-    return result;
+    return compSystemMapper.insertTopMenu(topCateDTO);
   }
 
   // 수정
@@ -179,17 +164,13 @@ public class CompSystemServiceImpl implements CompSystemService {
     if (count > 0) {
       return 409;  // Conflict
     }
-    int result = compSystemMapper.updateTopMenu(topCateDTO);
-    refreshTopMenuCache(); // 수정 후 캐시 최신화
-    return result;
+    return compSystemMapper.updateTopMenu(topCateDTO);
   }
 
   // 삭제
   @Override
   public int deleteTopMenu(int topIdx) {
-    int result = compSystemMapper.deleteTopMenu(topIdx);
-    refreshTopMenuCache(); // 삭제 후 캐시 최신화
-    return result;
+    return compSystemMapper.deleteTopMenu(topIdx);
   }
 
 
@@ -203,11 +184,6 @@ public class CompSystemServiceImpl implements CompSystemService {
 
 
   //                           ICON 관리 테이블
-  //  Redis 캐시 갱신
-  public void refreshIconCache() {
-    List<IconDTO> icons = categoryMapper.getUserIconInfos(); // 또는 필요한 가공 포함
-    redisService.saveListData("category::userIcon", icons, 'n', 0); // 영구 저장
-  }
 
   // ICON 추가
   public int insertIcon(IconDTO iconDTO) {
@@ -215,9 +191,7 @@ public class CompSystemServiceImpl implements CompSystemService {
     if (count > 0) {
       throw new IllegalStateException("이미 존재하는 ICON 이름입니다.");
     }
-    int result = compSystemMapper.insertIcon(iconDTO);
-    refreshIconCache();
-    return result;
+    return compSystemMapper.insertIcon(iconDTO);
   }
 
   // ICON 수정
@@ -229,16 +203,23 @@ public class CompSystemServiceImpl implements CompSystemService {
     if (count > 0) {
       throw new IllegalStateException("이미 존재하는 ICON 이름입니다.");
     }
-    int result = compSystemMapper.updateIcon(iconDTO);
-    refreshIconCache();
-    return result;
+    return compSystemMapper.updateIcon(iconDTO);
   }
 
   // ICON 삭제
   public int deleteIcon(String iconKey) {
-    int result = compSystemMapper.deleteIcon(iconKey);
-    refreshIconCache();
-    return result;
+    return compSystemMapper.deleteIcon(iconKey);
   }
 
+  /*
+    // 조회
+  public List<TopCateDTO> selectTopMenu() {
+    return compSystemMapper.selectTopMenu();
+  }
+
+  // ICON   조회
+  public List<IconDTO> selectIcon() {
+    return compSystemMapper.selectIcon();
+  }
+   */
 }

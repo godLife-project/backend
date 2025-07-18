@@ -6,10 +6,6 @@
 
     <!-- 유저 신고 조회 -->
     <select id="getAllReports" resultType="com.godLife.project.dto.infos.UserReportDTO">
-        SELECT *
-        FROM (
-        SELECT ROWNUM AS row_num, inner_query.*
-        FROM (
         SELECT
         r.REPORTER_IDX,
         reporter.USER_NICK AS REPORTER_NICK,
@@ -19,16 +15,13 @@
         r.STATUS,
         r.REPORT_DATE,
         r.USER_REPORT_IDX
-        FROM
-        USER_REPORT r
+        FROM USER_REPORT r
         JOIN USER_TABLE reporter ON r.REPORTER_IDX = reporter.USER_IDX
         JOIN USER_TABLE reported ON r.REPORTED_IDX = reported.USER_IDX
         ORDER BY r.REPORT_DATE DESC
-        ) inner_query
-        WHERE ROWNUM &lt; #{offset} + #{limit}
-        )
-        WHERE row_num &gt; #{offset}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
+
 
     <!-- 전체 신고수 -->
     <select id="countAllReports" resultType="int">
@@ -45,10 +38,6 @@
 
     <!-- 상태별 조회 status : 0 처리중, 1 처리완료 -->
     <select id="selectReportsByStatus" resultType="com.godLife.project.dto.infos.UserReportDTO">
-        SELECT *
-        FROM (
-        SELECT ROWNUM AS row_num, inner_query.*
-        FROM (
         SELECT
         r.REPORTER_IDX,
         reporter.USER_NICK AS REPORTER_NICK,
@@ -62,11 +51,9 @@
         JOIN USER_TABLE reported ON r.REPORTED_IDX = reported.USER_IDX
         WHERE r.STATUS = #{status}
         ORDER BY r.REPORT_DATE DESC
-        ) inner_query
-        WHERE ROWNUM &lt; #{offset} + #{limit}
-        )
-        WHERE row_num &gt; #{offset}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
+
 
     <!-- 신고처리 -->
     <update id="userReportStateUpdate" parameterType="com.godLife.project.dto.infos.UserReportDTO">
@@ -103,10 +90,6 @@
     <!--                  루틴 신고 관련               -->
     <!-- 전체 루틴 신고 조회 -->
     <select id="selectPlanReports" resultType="com.godLife.project.dto.infos.PlanReportDTO">
-        SELECT *
-        FROM (
-        SELECT ROWNUM AS row_num, inner_query.*
-        FROM (
         SELECT
         r.PLAN_REPORT_IDX,
         r.REPORTER_IDX,
@@ -115,23 +98,16 @@
         r.REPORT_REASON,
         r.STATUS,
         r.REPORT_DATE
-        FROM
-        PLAN_REPORT r
+        FROM PLAN_REPORT r
         JOIN USER_TABLE reporter ON r.REPORTER_IDX = reporter.USER_IDX
         JOIN PLAN_TABLE plan ON r.PLAN_IDX = plan.PLAN_IDX
         ORDER BY r.REPORT_DATE DESC
-        ) inner_query
-        WHERE ROWNUM &lt; #{offset} + #{limit}
-        )
-        WHERE row_num &gt; #{offset}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
+
 
     <!-- 상태별 조회 status : 0 처리중, 1 처리완료 -->
     <select id="selectPlanReportsByStatus" resultType="com.godLife.project.dto.infos.PlanReportDTO">
-        SELECT *
-        FROM (
-        SELECT ROWNUM AS row_num, inner_query.*
-        FROM (
         SELECT
         r.REPORTER_IDX,
         reporter.USER_NICK AS REPORTER_NICK,
@@ -139,17 +115,14 @@
         r.REPORT_REASON,
         r.STATUS,
         r.REPORT_DATE
-        FROM
-        PLAN_REPORT r
+        FROM PLAN_REPORT r
         JOIN USER_TABLE reporter ON r.REPORTER_IDX = reporter.USER_IDX
         JOIN PLAN_TABLE plan ON r.PLAN_IDX = plan.PLAN_IDX
         WHERE r.STATUS = #{status}
         ORDER BY r.REPORT_DATE DESC
-        ) inner_query
-        WHERE ROWNUM &lt; #{offset} + #{limit}
-        )
-        WHERE row_num &gt; #{offset}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
+
     <!-- 루틴 신고 수 -->
     <select id="countAllPlanReports" resultType="int" parameterType="map">
         SELECT COUNT(*)
@@ -182,16 +155,4 @@
         SET IS_SHARED = #{isShared}
         WHERE PLAN_IDX = #{planIdx}
     </update>
-
-
-    <!-- 비공개처리 된 루틴 활성화-->
-    <update id="updateIsShared">
-        UPDATE PLAN
-        SET IS_SHARED = #{isShared}
-        WHERE PLAN_IDX = #{planIdx}
-    </update>
-
-    <select id="checkPlanExists" resultType="boolean">
-        SELECT COUNT(*) > 0 FROM PLAN WHERE PLAN_IDX = #{planIdx}
-    </select>
 </mapper>

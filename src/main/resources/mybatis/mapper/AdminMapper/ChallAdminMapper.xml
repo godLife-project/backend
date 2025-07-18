@@ -7,14 +7,14 @@
     <!-- 챌린지 생성 (유저 참여형일 때는 START_TIME과 END_TIME을 NULL로 저장) -->
     <insert id="createChallenge">
         INSERT INTO CHALL_TABLE (
-        CHALL_IDX, CHALL_TITLE, CHALL_DESCRIPTION, CHALL_CATEGORY_IDX,
+        CHALL_TITLE, CHALL_DESCRIPTION, CHALL_CATEGORY_IDX,
         MIN_PARTICIPATION_TIME, TOTAL_CLEAR_TIME, MAX_PARTICIPANTS,
         CHALL_CREATED_AT, CHALL_STATE, CHALL_START_TIME, CHALL_END_TIME, USER_JOIN, DURATION
         )
         VALUES (
-        CHALL_SEQ.NEXTVAL, #{challTitle}, #{challDescription}, #{challCategoryIdx},
+        #{challTitle}, #{challDescription}, #{challCategoryIdx},
         #{minParticipationTime}, #{totalClearTime}, #{maxParticipants},
-        SYSDATE, #{challState},  #{challStartTime}, #{challEndTime}, #{userJoin}, #{duration}
+        NOW(), #{challState},  #{challStartTime}, #{challEndTime}, #{userJoin}, #{duration}
         )
     </insert>
 
@@ -50,7 +50,7 @@
     <select id="countLatestChallenges" resultType="int">
         SELECT COUNT(*)
         FROM CHALL_TABLE
-        WHERE CHALL_END_TIME IS NULL OR CHALL_END_TIME > SYSDATE
+        WHERE CHALL_END_TIME IS NULL OR CHALL_END_TIME > NOW()
     </select>
 
     <!-- 챌린지 수정 -->
@@ -86,7 +86,7 @@
         UPDATE CHALL_TABLE
         SET
         CHALL_STATE = 'END',
-        CHALL_END_TIME = SYSDATE
+        CHALL_END_TIME = NOW()
         WHERE
         CHALL_IDX = #{challIdx}
         AND CHALL_STATE != 'END'
@@ -100,10 +100,10 @@
         JOIN chall_category cat ON c.chall_category_idx = cat.chall_category_idx
         WHERE 1=1
         <if test="challTitle != null and challTitle != ''">
-            AND LOWER(c.challTitle) LIKE '%' || LOWER(#{challTitle}) || '%'
+            AND LOWER(c.challTitle) LIKE CONCAT('%', LOWER(#{challTitle}), '%')
         </if>
         <if test="challCategory != null and challCategory != ''">
-            AND LOWER(cat.category_name) LIKE '%' || LOWER(#{challCategory}) || '%'
+            AND LOWER(cat.category_name) LIKE CONCAT('%', LOWER(#{challCategory}), '%')
         </if>
         <choose>
             <when test="sort == 'challCreatedAt'">
@@ -116,7 +116,7 @@
                 ORDER BY c.chall_idx DESC
             </otherwise>
         </choose>
-        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+        LIMIT #{size} OFFSET #{offset}
     </select>
 
     <!-- 챌린지 존재 확인 -->
@@ -135,7 +135,7 @@
         CHALL_END_TIME
         FROM CHALL_TABLE
         ORDER BY CHALL_CREATED_AT DESC
-        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+        LIMIT #{size} OFFSET #{offset}
     </select>
 
     <!-- 카테고리별 챌린지 조회 (페이징 적용) -->
@@ -150,9 +150,9 @@
         CT.CHALL_CREATED_AT
         FROM CHALL_TABLE CT
         WHERE CT.CHALL_CATEGORY_IDX = #{challCategoryIdx}
-        AND (CT.CHALL_END_TIME IS NULL OR CT.CHALL_END_TIME > SYSDATE)
+        AND (CT.CHALL_END_TIME IS NULL OR CT.CHALL_END_TIME > NOW())
         ORDER BY CT.CHALL_CREATED_AT DESC
-        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+        LIMIT #{size} OFFSET #{offset}
     </select>
 
     <!-- 카테고리별 챌린지 총 개수 조회 -->
@@ -160,7 +160,7 @@
         SELECT COUNT(*)
         FROM CHALL_TABLE
         WHERE CHALL_CATEGORY_IDX = #{challCategoryIdx}
-        AND (CHALL_END_TIME IS NULL OR CHALL_END_TIME > SYSDATE)
+        AND (CHALL_END_TIME IS NULL OR CHALL_END_TIME > NOW())
     </select>
 
 

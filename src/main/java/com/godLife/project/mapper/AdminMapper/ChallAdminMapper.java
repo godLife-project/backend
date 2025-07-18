@@ -20,8 +20,8 @@ public interface ChallAdminMapper {
   // 챌린지 삭제
   int deleteChallenge(@Param("challIdx") Long challIdx);
   // 자식 테이블(조인,인증 테이블) 삭제
-  int deleteVerifyByChallIdx(@Param("challIdx") Long challIdx);
-  int deleteChallJoinByChallIdx(@Param("challIdx") Long challIdx);
+  void deleteVerifyByChallIdx(@Param("challIdx") Long challIdx);
+  void deleteChallJoinByChallIdx(@Param("challIdx") Long challIdx);
   // 조기 종료 처리
   int earlyFinishChallenge(Long challIdx);
   // 유저 참여형 챌린지 최초 참여시 시작/종료시간, 상태 업데이트

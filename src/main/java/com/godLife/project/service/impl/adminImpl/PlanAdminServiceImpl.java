@@ -42,8 +42,7 @@ public class PlanAdminServiceImpl implements PlanAdminService {
           Integer targetIdx, int page, int size){
     // 페이징 처리 계산
     int offset = (page - 1) * size;
-    int limit = size;
-    return planAdminMapper.selectAdminPlanListByTargetIdx(targetIdx, offset, limit);
+    return planAdminMapper.selectAdminPlanListByTargetIdx(targetIdx, offset, size);
   }
 
   // 루틴 전체 조회
@@ -51,51 +50,7 @@ public class PlanAdminServiceImpl implements PlanAdminService {
   public List<CustomAdminPlanListDTO> selectPlanList(int page, int size) {
     // 페이징 처리 계산
     int offset = (page - 1) * size;
-    int limit = size;
-    return planAdminMapper.selectPlanList(offset, limit);
+    return planAdminMapper.selectPlanList(offset, size);
   }
 
-  // 루틴 작성 로직
-  @Transactional(rollbackFor = Exception.class)
-  public int adminInsertPlan(PlanDTO planDTO) {
-    try {
-      int userIdx = planDTO.getUserIdx();
-      int isCompleted = planDTO.getIsCompleted(); // 0
-      int isDeleted = planDTO.getIsDeleted();     // 0
-      if (planAdminMapper.getCntOfPlanByUserIdxNIsCompleted(userIdx, isCompleted, isDeleted) > 4) {
-        return 412;
-      }
-      //System.out.println(planDTO);
-      if (!planAdminMapper.getUserIsDeleted(userIdx).contains("N")) { return 410; }
-      // 루틴 삽입하기
-      planAdminMapper.adminInsertPlan(planDTO);
-
-      int planIdx = planDTO.getPlanIdx();
-
-      // 해당 루틴의 활동 삽입
-      for (ActivityDTO activityDTO : planDTO.getActivities()) {
-        activityDTO.setPlanIdx(planIdx);
-        planAdminMapper.adminInsertActivity(activityDTO);
-      }
-
-      if (planDTO.getJobIdx() == 999) {
-        JobEtcCateDTO jobEtcCateDTO = new JobEtcCateDTO();
-        jobEtcCateDTO = planDTO.getJobEtcCateDTO();
-        jobEtcCateDTO.setPlanIdx(planIdx);
-
-        planAdminMapper.insertJobEtc(jobEtcCateDTO);
-      }
-
-      if (planDTO.isForked()) {
-        int forkIdx = planDTO.getForkIdx();
-        planAdminMapper.modifyForkCount(forkIdx, isDeleted); // fork 하여 루틴 작성시 원본 루틴의 포크수 증가
-      }
-
-      return 201;
-    } catch (Exception e) {
-      log.error("e: ", e);
-      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly(); // 수동 롤백
-      return 500;
-    }
-  }
-  }
+}

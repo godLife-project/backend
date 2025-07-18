@@ -20,8 +20,8 @@
 
     <!-- FAQ_CATEGORY 추가 -->
     <insert id="insertFaqCate" parameterType="com.godLife.project.dto.categories.FaqCateDTO">
-        INSERT INTO FAQ_CATEGORY (FAQ_CATEGORY_IDX, FAQ_CATEGORY_NAME)
-        VALUES (FAQ_CATEGORY_SEQ.NEXTVAL, #{faqCategoryName})
+        INSERT INTO FAQ_CATEGORY (FAQ_CATEGORY_NAME)
+        VALUES (#{faqCategoryName})
     </insert>
 
     <!-- FAQ_CATEGORY 수정 -->
@@ -58,10 +58,11 @@
     <!--            QNA CATEGORY 관리 테이블 CRUD Mapper         -->
 
     <!-- QNA_CATEGORY LIST 조회 -->
-    <select id="selectAllQnaCate" resultType="com.godLife.project.dto.categories.QnaCateDTO">
-        SELECT *
-        FROM QNA_CATEGORY
-    </select>
+<!--    <select id="selectAllQnaCate" resultType="com.godLife.project.dto.categories.QnaCateDTO">-->
+<!--        SELECT *-->
+<!--        FROM QNA_CATEGORY-->
+<!--    </select>-->
+
     <!-- QNA CATEGORY 별 조회 -->
     <select id="qnaListByCategory" resultType="com.godLife.project.dto.list.QnaListDTO">
         SELECT *
@@ -71,8 +72,8 @@
 
     <!-- QNA 카테고리 추가 -->
     <insert id="insertQnaCate" parameterType="com.godLife.project.dto.categories.QnaCateDTO">
-        INSERT INTO QNA_CATEGORY (CATEGORY_IDX, PARENT_IDX, CATEGORY_NAME, CATEGORY_LEVEL, CREATE_DATE, UPDATE_DATE, DEPRECATED)
-        VALUES (QNA_CATEGORY_SEQ.NEXTVAL, #{parentIdx}, #{categoryName}, #{categoryLevel}, SYSDATE, SYSDATE, 0)
+        INSERT INTO QNA_CATEGORY (PARENT_IDX, CATEGORY_NAME, CATEGORY_LEVEL)
+        VALUES (#{parentIdx}, #{categoryName}, #{categoryLevel})
     </insert>
 
     <!-- QNA_CATEGORY 수정 -->
@@ -147,7 +148,7 @@
     <update id="updateTopMenu" parameterType="com.godLife.project.dto.categories.TopCateDTO">
         UPDATE TOP_CATEGORY
         <set>
-            <if test="parentIdx != null">
+            <if test="parentIdx != 0">
                 PARENT_IDX = #{parentIdx},
             </if>
             <if test="topName != null and topName != ''">
@@ -156,10 +157,10 @@
             <if test="topAddr != null and topAddr != ''">
                 TOP_ADDR = #{topAddr},
             </if>
-            <if test="categoryLevel != null">
+            <if test="categoryLevel != 0">
                 CATEGORY_LEVEL = #{categoryLevel},
             </if>
-            <if test="ordCol != null">
+            <if test="ordCol != 0">
                 ORD_COL = #{ordCol},
             </if>
         </set>

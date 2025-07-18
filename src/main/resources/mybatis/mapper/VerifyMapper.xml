@@ -16,7 +16,7 @@
         FROM PLAN_ACTIVITY P
         LEFT JOIN VERIFY_TABLE V
         ON P.ACTIVITY_IDX = V.ACTIVITY_IDX
-        AND V.VERIFY_DATE = TRUNC(SYSDATE)
+        AND V.VERIFY_DATE = CURDATE()
         WHERE P.PLAN_IDX = #{planIdx}
     </select>
 

@@ -16,7 +16,7 @@ public interface ServiceAdminStatMapper {
    * @param adminIdx 데이터 존재 유무를 조회 할 상담원의 인덱스 번호
    * @return {@code int} 0 혹은 1
    */
-  @Select("SELECT COUNT(*) FROM QNA_DAILY_STATS WHERE STAT_DATE = TRUNC(SYSDATE) AND ADMIN_IDX = #{adminIdx}")
+  @Select("SELECT COUNT(*) FROM QNA_DAILY_STATS WHERE STAT_DATE = CURDATE() AND ADMIN_IDX = #{adminIdx}")
   int existsQnaDailyStatsByAdminIdx(int adminIdx);
 
   /**
@@ -24,7 +24,7 @@ public interface ServiceAdminStatMapper {
    * @param adminIdx 데이터 존재 유무를 조회 할 상담원의 인덱스 번호
    * @return {@code int} 0 혹은 1
    */
-  @Select("SELECT COUNT(*) FROM QNA_MONTH_STATS WHERE STAT_MONTH = TO_CHAR(SYSDATE, 'YYYY-MM') AND ADMIN_IDX = #{adminIdx}")
+  @Select("SELECT COUNT(*) FROM QNA_MONTH_STATS WHERE STAT_MONTH = DATE_FORMAT(NOW(), '%Y-%m') AND ADMIN_IDX = #{adminIdx}")
   int existsQnaMonthStatsByAdminIdx(int adminIdx);
 
   /**
@@ -47,8 +47,8 @@ public interface ServiceAdminStatMapper {
    * 월별 상담원 문의 처리 통계 초기 데이터 저장
    * @param adminIdx 초기 데이터를 추가 할 상담원의 인덱스 번호
    */
-  @Insert("INSERT INTO QNA_MONTH_STATS(ADMIN_IDX) VALUES(#{adminIdx})")
-  void setQnaMonthStatsByAdminIdx(int adminIdx);
+  @Insert("INSERT INTO QNA_MONTH_STATS(STAT_MONTH, ADMIN_IDX) VALUES(#{currentMonth}, #{adminIdx})")
+  void setQnaMonthStatsByAdminIdx(String currentMonth, int adminIdx);
 
   /**
    * 요약 상담원 문의 처리 통계 초기 데이터 저장
@@ -96,7 +96,7 @@ public interface ServiceAdminStatMapper {
    * @param findStatus 어떤 상태의 문의를 조회 할 지 설정
    * @return {@code int}
    */
-  @Select("SELECT FLOOR((SYSDATE - RESPONDING_DATE) * 86400) AS DURATION FROM QNA_TABLE WHERE QNA_IDX = #{qnaIdx} AND QNA_STATUS = #{findStatus}")
+  @Select("SELECT TIMESTAMPDIFF(SECOND, RESPONDING_DATE, NOW()) AS DURATION FROM QNA_TABLE WHERE QNA_IDX = #{qnaIdx} AND QNA_STATUS = #{findStatus}")
   int getCompleteQnaDurationByQnaIdx(int qnaIdx, String findStatus);
 
   /**

@@ -5,7 +5,6 @@ import com.godLife.project.dto.infos.ChallengeJoinDTO;
 import com.godLife.project.dto.verify.ChallengeVerifyDTO;
 import com.godLife.project.dto.verify.VerifyRecordDTO;
 import com.godLife.project.enums.ChallengeState;
-import com.godLife.project.mapper.ChallJoinMapper;
 import com.godLife.project.mapper.ChallengeMapper;
 import com.godLife.project.service.interfaces.ChallengeService;
 import lombok.RequiredArgsConstructor;
@@ -296,10 +295,10 @@ public class ChallengeServiceImpl implements ChallengeService {
     // 챌린지 하루 한번 인증
     public boolean hasAlreadyVerifiedToday(Long userIdx, Long challIdx) {
         LocalDate today = LocalDate.now();
-        LocalDateTime startOfDay = today.atStartOfDay();
-        LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
+//        LocalDateTime startOfDay = today.atStartOfDay();
+//        LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
 
-        return challengeMapper.countTodayVerification(userIdx, challIdx, startOfDay, endOfDay) > 0;
+        return challengeMapper.countTodayVerification(userIdx, challIdx, today) > 0;
     }
 
 

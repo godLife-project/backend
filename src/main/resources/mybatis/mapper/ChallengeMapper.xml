@@ -19,7 +19,7 @@
         SELECT
         CT.CHALL_IDX,
         CT.CHALL_TITLE,
-        TO_CHAR(CT.CHALL_DESCRIPTION) AS CHALL_DESCRIPTION,
+        CT.CHALL_DESCRIPTION,
         CT.CHALL_CATEGORY_IDX,
         CT.MAX_PARTICIPANTS,
         CT.CHALL_END_TIME,
@@ -28,25 +28,25 @@
         CT.CHALL_STATE
         FROM CHALL_TABLE CT
         LEFT JOIN CHALL_JOIN CJ ON CT.CHALL_IDX = CJ.CHALL_IDX
-        WHERE CT.CHALL_END_TIME IS NULL OR CT.CHALL_END_TIME > SYSDATE
+        WHERE CT.CHALL_END_TIME IS NULL OR CT.CHALL_END_TIME > NOW()
         GROUP BY
         CT.CHALL_IDX,
         CT.CHALL_TITLE,
-        TO_CHAR(CT.CHALL_DESCRIPTION),
+        CT.CHALL_DESCRIPTION,
         CT.CHALL_CATEGORY_IDX,
         CT.MAX_PARTICIPANTS,
         CT.CHALL_END_TIME,
         CT.CHALL_CREATED_AT,
         CT.CHALL_STATE
         ORDER BY CT.CHALL_CREATED_AT DESC
-        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+        LIMIT #{size} OFFSET #{offset}
     </select>
 
     <!-- 최신 챌린지 총 개수 조회 -->
     <select id="countLatestChallenges" resultType="int">
         SELECT COUNT(*)
         FROM CHALL_TABLE
-        WHERE CHALL_END_TIME IS NULL OR CHALL_END_TIME > SYSDATE
+        WHERE CHALL_END_TIME IS NULL OR CHALL_END_TIME > NOW()
     </select>
 
     <!-- 카테고리별 챌린지 조회 (참여자 수 포함, 페이징 적용) -->
@@ -54,7 +54,7 @@
         SELECT
         CT.CHALL_IDX,
         CT.CHALL_TITLE,
-        TO_CHAR(CT.CHALL_DESCRIPTION) AS CHALL_DESCRIPTION,
+        CT.CHALL_DESCRIPTION,
         CT.CHALL_CATEGORY_IDX,
         CT.MAX_PARTICIPANTS,
         CT.CHALL_END_TIME,
@@ -63,17 +63,17 @@
         FROM CHALL_TABLE CT
         LEFT JOIN CHALL_JOIN CJ ON CT.CHALL_IDX = CJ.CHALL_IDX
         WHERE CT.CHALL_CATEGORY_IDX = #{challCategoryIdx}
-        AND (CT.CHALL_END_TIME IS NULL OR CT.CHALL_END_TIME > SYSDATE)
+        AND (CT.CHALL_END_TIME IS NULL OR CT.CHALL_END_TIME > NOW())
         GROUP BY
         CT.CHALL_IDX,
         CT.CHALL_TITLE,
-        TO_CHAR(CT.CHALL_DESCRIPTION),
+        CT.CHALL_DESCRIPTION,
         CT.CHALL_CATEGORY_IDX,
         CT.MAX_PARTICIPANTS,
         CT.CHALL_END_TIME,
         CT.CHALL_CREATED_AT
         ORDER BY CT.CHALL_CREATED_AT DESC
-        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+        LIMIT #{size} OFFSET #{offset}
     </select>
 
     <!-- 카테고리별 챌린지 총 개수 조회 -->
@@ -100,15 +100,15 @@
         SELECT
         v.START_TIME AS startTime,
         v.END_TIME AS endTime,
-        ( v.end_time - v.start_time ) * 24 * 60 AS elapsedMinutes,
-        cj. Activity AS activity
-        FROM verify_table v
-        JOIN chall_join cj
-        ON v.chall_idx = cj.chall_idx
-        AND v.user_idx = cj.user_idx
-        WHERE v.chall_idx = #{challIdx}
-        AND v.user_idx = #{userIdx}
-        ORDER BY v.start_time DESC
+        TIMESTAMPDIFF(MINUTE, v.START_TIME, v.END_TIME) AS elapsedMinutes,
+        cj. ACTIVITY AS activity
+        FROM VERIFY_TABLE v
+        JOIN CHALL_JOIN cj
+        ON v.CHALL_IDX = cj.CHALL_IDX
+        AND v.USER_IDX = cj.USER_IDX
+        WHERE v.CHALL_IDX = #{challIdx}
+        AND v.USER_IDX = #{userIdx}
+        ORDER BY v.START_TIME DESC
     </select>
 
     <!-- 상세조회시 참가자 조회-->
@@ -126,16 +126,16 @@
 
     <!-- 유저 참여 -->
     <insert id="addUserToChallenge">
-        INSERT INTO CHALL_JOIN (CHALL_JOIN_IDX, chall_idx, user_idx, activity, activity_time)
-        VALUES (CHALL_JOIN_SEQ.NEXTVAL ,#{challIdx}, #{userIdx}, #{activity}, #{activityTime})
+        INSERT INTO CHALL_JOIN (CHALL_IDX, USER_IDX, ACTIVITY, ACTIVITY_TIME)
+        VALUES (#{challIdx}, #{userIdx}, #{activity}, #{activityTime})
     </insert>
 
 
     <!-- 참여인원 확인 메퍼 -->
     <select id="countParticipants" resultType="int">
         SELECT COUNT(*)
-        FROM chall_join
-        WHERE chall_idx = #{challIdx}
+        FROM CHALL_JOIN
+        WHERE CHALL_IDX = #{challIdx}
     </select>
 
 
@@ -143,9 +143,9 @@
     <!-- 인증 기록 저장 -->
     <insert id="insertVerify">
     INSERT INTO VERIFY_TABLE (
-        VERIFY_IDX, CHALL_IDX, USER_IDX,  VERIFY_DATE, START_TIME, END_TIME, ELAPSED_TIME)
+        CHALL_IDX, USER_IDX,  VERIFY_DATE, START_TIME, END_TIME, ELAPSED_TIME)
     VALUES (
-        VERIFY_SEQ.NEXTVAL, #{challIdx}, #{userIdx}, SYSDATE, #{startTime}, #{endTime}, #{elapsedTime}
+        #{challIdx}, #{userIdx}, SYSDATE, #{startTime}, #{endTime}, #{elapsedTime}
     )
     </insert>
 
@@ -172,10 +172,10 @@
     <!-- 하루 한번 인증 -->
     <select id="countTodayVerification" resultType="int">
         SELECT COUNT(*)
-        FROM verify_table
-        WHERE user_idx = #{userIdx}
-        AND chall_idx = #{challIdx}
-        AND verify_date BETWEEN #{startOfDay} AND #{endOfDay}
+        FROM VERIFY_TABLE
+        WHERE USER_IDX = #{userIdx}
+        AND CHALL_IDX = #{challIdx}
+        AND VERIFY_DATE = #{today}
     </select>
 
 
@@ -218,27 +218,27 @@
         UPDATE CHALL_TABLE
         SET CHALL_STATE = '종료됨'
         WHERE CHALL_STATE = '진행중'
-        AND CHALL_END_TIME &lt;= #{now}
+        AND CHALL_END_TIME <![CDATA[ <= ]]> #{now}
     </update>
 
     <!-- 챌린지 존재 확인 -->
     <select id="existsById" resultType="int">
-        SELECT COUNT(*) FROM chall_table WHERE chall_idx = #{challIdx}
+        SELECT COUNT(*) FROM CHALL_TABLE WHERE CHALL_IDX = #{challIdx}
     </select>
 
 
     <!-- 챌린지 제목, 카테고리 내에서 검색 -->
     <select id="searchChallenges" resultType="com.godLife.project.dto.contents.ChallengeDTO">
         SELECT *
-        FROM chall_table
+        FROM CHALL_TABLE
         WHERE 1=1
         <if test="challTitle != null and challTitle != ''">
-            AND LOWER(chall_title) LIKE CONCAT('%', LOWER(#{challTitle}), '%')
+            AND LOWER(CHALL_TITLE) LIKE CONCAT('%', LOWER(#{challTitle}), '%')
         </if>
-        <if test="challCategoryIdx != null and challCategoryIdx != ''">
-            AND chall_category_idx = #{challCategoryIdx}
+        <if test="challCategoryIdx != 0 and challCategoryIdx != ''">
+            AND CHALL_CATEGORY_IDX = #{challCategoryIdx}
         </if>
-        AND chall_state NOT IN ('COMPLETED','END')
+        AND CHALL_STATE NOT IN ('COMPLETED','END')
     </select>
 
 </mapper>

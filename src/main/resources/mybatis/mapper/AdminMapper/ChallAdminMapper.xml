@@ -60,7 +60,8 @@
         CHALL_DESCRIPTION = #{challDescription},
         CHALL_CATEGORY_IDX = #{challCategoryIdx},
         MIN_PARTICIPATION_TIME = #{minParticipationTime},
-        MAX_PARTICIPANTS = #{maxParticipants}
+        MAX_PARTICIPANTS = #{maxParticipants},
+        TOTAL_CLEAR_TIME = #{totalClearTime}
         WHERE CHALL_IDX=#{challIdx}
     </update>
 

@@ -16,12 +16,6 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @EnableCaching
 public class RedisConfig {
 
-  @Bean
-  public RedisConnectionFactory redisConnectionFactory() {
-    // Redis 서버의 호스트와 포트 설정
-    return new LettuceConnectionFactory("localhost", 6379);
-  }
-
   // RedisTemplate 을 통해 데이터 읽고 쓰기 가능
   @Bean
   public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {

@@ -145,7 +145,7 @@
     INSERT INTO VERIFY_TABLE (
         CHALL_IDX, USER_IDX,  VERIFY_DATE, START_TIME, END_TIME, ELAPSED_TIME)
     VALUES (
-        #{challIdx}, #{userIdx}, SYSDATE(), #{startTime}, #{endTime}, #{elapsedTime}
+        #{challIdx}, #{userIdx}, CURDATE(), #{startTime}, #{endTime}, #{elapsedTime}
     )
     </insert>
 

@@ -4,13 +4,6 @@
 
 <mapper namespace="com.godLife.project.mapper.AdminMapper.CompSystemMapper">
     <!--            FAQ CATEGORY 관리 테이블 CRUD Mapper         -->
-
-    <!-- FAQ_CATEGORY LIST 조회 -->
-    <select id="selectAllFaqCate" resultType="com.godLife.project.dto.categories.FaqCateDTO">
-        SELECT *
-        FROM FAQ_CATEGORY
-    </select>
-
     <!-- FAQ CATEGORY 별 조회 -->
     <select id="faqListByCategory" resultType="com.godLife.project.dto.contents.FaQDTO">
         SELECT *
@@ -127,7 +120,6 @@
     <!-- 추가 -->
     <insert id="insertTopMenu" parameterType="com.godLife.project.dto.categories.TopCateDTO">
         INSERT INTO TOP_CATEGORY (
-        TOP_IDX,
         PARENT_IDX,
         TOP_NAME,
         TOP_ADDR,
@@ -135,7 +127,6 @@
         ORD_COL
         )
         VALUES (
-        TOP_CATEGORY_SEQ.NEXTVAL,
         #{parentIdx},
         #{topName},
         #{topAddr},

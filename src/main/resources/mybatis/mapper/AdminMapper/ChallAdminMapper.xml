@@ -23,7 +23,7 @@
         SELECT
         CT.CHALL_IDX,
         CT.CHALL_TITLE,
-        TO_CHAR(CT.CHALL_DESCRIPTION) AS CHALL_DESCRIPTION,
+        CT.CHALL_DESCRIPTION,
         CT.CHALL_CATEGORY_IDX,
         CT.MAX_PARTICIPANTS,
         CT.CHALL_END_TIME,
@@ -32,19 +32,20 @@
         CT.CHALL_STATE
         FROM CHALL_TABLE CT
         LEFT JOIN CHALL_JOIN CJ ON CT.CHALL_IDX = CJ.CHALL_IDX
-        WHERE CT.CHALL_END_TIME IS NULL OR CT.CHALL_END_TIME > SYSDATE
+        WHERE CT.CHALL_END_TIME IS NULL OR CT.CHALL_END_TIME > NOW()
         GROUP BY
         CT.CHALL_IDX,
         CT.CHALL_TITLE,
-        TO_CHAR(CT.CHALL_DESCRIPTION),
+        CT.CHALL_DESCRIPTION,
         CT.CHALL_CATEGORY_IDX,
         CT.MAX_PARTICIPANTS,
         CT.CHALL_END_TIME,
         CT.CHALL_CREATED_AT,
         CT.CHALL_STATE
         ORDER BY CT.CHALL_CREATED_AT DESC
-        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+        LIMIT #{size} OFFSET #{offset}
     </select>
+
 
     <!-- 최신 챌린지 총 개수 조회 -->
     <select id="countLatestChallenges" resultType="int">

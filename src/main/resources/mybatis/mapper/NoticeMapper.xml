@@ -48,7 +48,7 @@
         FROM NOTICE_TABLE
         WHERE IS_POPUP = 'Y'
         AND POPUP_START_DATE <![CDATA[ < ]]> NOW()
-        AND POPUP_END_DATE <![CDATA[ <= ]]> NOW()
+        AND POPUP_END_DATE <![CDATA[ >= ]]> NOW()
     </select>
 
     <!-- 팝업 활성화 -->
@@ -63,7 +63,7 @@
     <!-- 공지사항 작성 -->
     <insert id="createNotice" parameterType="com.godLife.project.dto.contents.NoticeDTO">
         INSERT INTO NOTICE_TABLE (NOTICE_TITLE, NOTICE_SUB, USER_IDX, NOTICE_DATE, IS_POPUP, POPUP_START_DATE, POPUP_END_DATE)
-        VALUES (#{noticeTitle}, #{noticeSub}, #{userIdx}, SYSDATE, #{isPopup}, #{popupStartDate}, #{popupEndDate})
+        VALUES (#{noticeTitle}, #{noticeSub}, #{userIdx}, NOW(), #{isPopup}, #{popupStartDate}, #{popupEndDate})
     </insert>
 
 
@@ -72,7 +72,7 @@
         UPDATE NOTICE_TABLE
         SET NOTICE_TITLE = #{noticeTitle},
             NOTICE_SUB = #{noticeSub},
-            NOTICE_MODIFY = SYSDATE,
+            NOTICE_MODIFY = NOW(),
             IS_POPUP = #{isPopup}
         WHERE NOTICE_IDX = #{noticeIdx}
     </update>

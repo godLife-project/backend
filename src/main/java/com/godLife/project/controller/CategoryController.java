@@ -53,6 +53,9 @@ public class CategoryController {
     @Operation(summary = "카테고리 조회", description = "QNA")
     @GetMapping("/qna")
     public List<QnaParent> qna() { return categoryService.getAllQnaCategories();}
+    // FAQ 카테고리
+    @GetMapping("/faq")
+    public List<FaqCateDTO> faq() { return categoryService.getAllFaQCategories(); }
     /// ====================================================================================================
     /// ================================= DEPRECATED (사용 안 함) ==========================================
     // 숏컷 카테고리(사용안함)

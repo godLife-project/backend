@@ -145,7 +145,7 @@
     INSERT INTO VERIFY_TABLE (
         CHALL_IDX, USER_IDX,  VERIFY_DATE, START_TIME, END_TIME, ELAPSED_TIME)
     VALUES (
-        #{challIdx}, #{userIdx}, SYSDATE, #{startTime}, #{endTime}, #{elapsedTime}
+        #{challIdx}, #{userIdx}, CURDATE(), #{startTime}, #{endTime}, #{elapsedTime}
     )
     </insert>
 
@@ -235,7 +235,7 @@
         <if test="challTitle != null and challTitle != ''">
             AND LOWER(CHALL_TITLE) LIKE CONCAT('%', LOWER(#{challTitle}), '%')
         </if>
-        <if test="challCategoryIdx != 0 and challCategoryIdx != ''">
+        <if test="challCategoryIdx != 0 and challCategoryIdx != null">
             AND CHALL_CATEGORY_IDX = #{challCategoryIdx}
         </if>
         AND CHALL_STATE NOT IN ('COMPLETED','END')

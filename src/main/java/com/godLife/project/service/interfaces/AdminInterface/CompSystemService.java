@@ -11,7 +11,6 @@ import java.util.List;
 @Service
 public interface CompSystemService {
   // FAQ 카테고리 관리
-  List<FaqCateDTO> selectFaqCate();               // FAQ 카테고리 LIST 조회
   int insertFaqCate(FaqCateDTO faqCateDTO);       // FAQ 카테고리 추가
   int updateFaqCate(FaqCateDTO faqCateDTO);       // FAQ 카테고리 수정
   int deleteFaqCate(int faqCategoryIdx);          // FAQ 카테고리 삭제

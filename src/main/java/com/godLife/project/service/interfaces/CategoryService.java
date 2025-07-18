@@ -37,4 +37,7 @@ public interface CategoryService {
     // 유저 레벨 정보 조회
     List<UserLevelDTO> getAllUserLevelInfos();
 
+    // FAQ 카테고리
+    List<FaqCateDTO> getAllFaQCategories();
+
 }

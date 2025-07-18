@@ -218,4 +218,27 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
     }
+
+    // FAQ 카테고리
+    @Override
+    public List<FaqCateDTO> getAllFaQCategories() {
+        try {
+            List<FaqCateDTO> origin = categoryMapper.getAllFaQCategories();
+
+            if (origin == null) {
+                throw new CustomException("faq 카테고리가 조회되지 않습니다.", HttpStatus.NOT_FOUND);
+            }
+            if (origin.isEmpty()) {
+                throw new CustomException("faq 카테고리가 없습니다.", HttpStatus.NO_CONTENT);
+            }
+
+            return origin;
+        } catch (CustomException e) {
+            log.error(e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("알 수 없는 오류가 발생 했습니다.", e);
+            throw e;
+        }
+    }
 }

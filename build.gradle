@@ -38,7 +38,9 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.36'
 
     // Oracle JDBC
-    implementation 'com.oracle.database.jdbc:ojdbc11:23.3.0.23.09'
+    // implementation 'com.oracle.database.jdbc:ojdbc11:23.3.0.23.09'
+    // MariaDB JDBC
+    implementation 'org.mariadb.jdbc:mariadb-java-client:3.5.4'
 
     // MyBatis
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'

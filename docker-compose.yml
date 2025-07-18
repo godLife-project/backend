@@ -1,0 +1,56 @@
+## version: '3.8'
+
+services:
+  mariadb:
+    image: mariadb:10.6
+    container_name: mariadb
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpw
+      MARIADB_DATABASE: god_life_db
+      MARIADB_USER: godlife
+      MARIADB_PASSWORD: godlife_2501
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - godlife-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: springboot-app
+    depends_on:
+      - mariadb
+      - redis
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/god_life_db?characterEncoding=UTF-8&serverTimezone=Asia/Seoul
+      SPRING_DATASOURCE_USERNAME: godlife
+      SPRING_DATASOURCE_PASSWORD: godlife_2501
+
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      SPRING_REDIS_TIMEOUT: 2000
+
+      SPRING_MAIL_HOST: smtp.naver.com
+      SPRING_MAIL_PORT: 465
+      SPRING_MAIL_USERNAME: findyourgodlife@naver.com
+      SPRING_MAIL_PASSWORD: godLife_2501
+
+    ports:
+      - "9090:8080"
+    networks:
+      - godlife-network
+
+networks:
+  godlife-network:
+     driver: bridge

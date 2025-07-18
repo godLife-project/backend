@@ -33,9 +33,9 @@ public class ReportController {
     planReportDTO.setReporterIdx(userIdx);
     planReportDTO.setPlanIdx(planIdx);
 
-    System.out.println("📌 reporterIdx: " + planReportDTO.getReporterIdx());
-    System.out.println("📌 planIdx: " + planReportDTO.getPlanIdx());
-    System.out.println("📌 reportReason: " + planReportDTO.getReportReason());
+//    System.out.println("📌 reporterIdx: " + planReportDTO.getReporterIdx());
+//    System.out.println("📌 planIdx: " + planReportDTO.getPlanIdx());
+//    System.out.println("📌 reportReason: " + planReportDTO.getReportReason());
 
     int result = reportService.planReport(planReportDTO);
 

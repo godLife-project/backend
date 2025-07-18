@@ -46,4 +46,8 @@ public interface CategoryMapper {
     // qna 카테고리
     @Select("SELECT * FROM QNA_CATEGORY WHERE DEPRECATED = #{isDeprecated}")
     List<QnaCateDTO> getAllQnaCategories(boolean isDeprecated);
+
+    // faq 카테고리
+    @Select("SELECT * FROM FAQ_CATEGORY")
+    List<FaqCateDTO> getAllFaQCategories();
 }

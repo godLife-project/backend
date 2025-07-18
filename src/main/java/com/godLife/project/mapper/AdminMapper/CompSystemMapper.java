@@ -16,7 +16,6 @@ import java.util.List;
 public interface CompSystemMapper {
 
   // FAQ 카테고리 관리
-  List<FaqCateDTO> selectAllFaqCate();      // FAQ 카테고리 조회
   List<FaQDTO> faqListByCategory(int faqCategoryIdx); // 카테고리별 조회
   int insertFaqCate(FaqCateDTO faqCateDTO); // FAQ 카테고리 추가
   int updateFaqCate(FaqCateDTO faqCateDTO); // FAQ 카테고리 수정

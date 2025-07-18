@@ -57,7 +57,7 @@
     <!-- 문의 답변 달기 -->
     <insert id="commentReply" parameterType="com.godLife.project.dto.contents.QnaReplyDTO" useGeneratedKeys="true" keyProperty="qnaReplyIdx">
         INSERT INTO QNA_REPLY(QNA_IDX, USER_IDX, CONTENT, CREATED_AT)
-        VALUES(#{qnaIdx}, #{userIdx}, #{content}, SYSDATE)
+        VALUES(#{qnaIdx}, #{userIdx}, #{content}, NOW())
     </insert>
 
     <!-- 문의 답변 수 증가 -->

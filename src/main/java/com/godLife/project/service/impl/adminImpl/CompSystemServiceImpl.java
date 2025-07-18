@@ -25,11 +25,6 @@ public class CompSystemServiceImpl implements CompSystemService {
   private final RedisService redisService;
 
   //                           FAQ 카테고리 관리 테이블
-  // FAQ 카테고리 LIST 조회
-  public List<FaqCateDTO> selectFaqCate() {
-    return compSystemMapper.selectAllFaqCate();
-  }
-
   // FAQ 카테고리 추가
   public int insertFaqCate(FaqCateDTO faqCateDTO) {
     int count = compSystemMapper.countByFaqName(faqCateDTO.getFaqCategoryName());

@@ -26,7 +26,6 @@ public interface CompSystemService {
   int insertTopMenu(TopCateDTO topCateDTO);
   int updateTopMenu(TopCateDTO topCateDTO);
   int deleteTopMenu(int topIdx);
-  void updateOrderTopMenu(List<TopCateDTO> orderedList); // 드래그 앤 드롭용
 
   // ICON 테이블 관리
   int insertIcon(IconDTO iconDTO);           // ICON  추가

@@ -40,7 +40,6 @@ public interface CompSystemMapper {
   int insertTopMenu(TopCateDTO dto);               // TopMenu 카테고리 추가
   int updateTopMenu(TopCateDTO dto);               // TopMenu 카테고리 수정
   int deleteTopMenu(int topIdx);                   // TopMenu 카테고리 삭제
-  void updateOrderTopMenu(@Param("topIdx") int topIdx, @Param("ordCol") int ordCol);    // TopMenu 카테고리 재배열
   int countByTopMenuName(String topName);         // TopMenu 카테고리명 중복체크
   int countByTopMenuNameExceptSelf(@Param("topName") String topName, @Param("topIdx") int topIdx); // 중복체크 (본인제외)
 

@@ -169,14 +169,6 @@ public class CompSystemServiceImpl implements CompSystemService {
   }
 
 
-  // TopMenu 재배열
-  public void updateOrderTopMenu(List<TopCateDTO> orderedList) {
-    for (TopCateDTO dto : orderedList) {
-      compSystemMapper.updateOrderTopMenu(dto.getTopIdx(), dto.getOrdCol());
-    }
-  }
-
-
 
   //                           ICON 관리 테이블
 

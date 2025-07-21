@@ -178,11 +178,6 @@
         AND TOP_IDX != #{topIdx}
     </select>
 
-    <!-- 정렬 순서만 업데이트 -->
-    <update id="updateOrderTopMenu">
-        UPDATE TOP_CATEGORY SET ORD_COL = #{ordCol}
-        WHERE TOP_IDX = #{topIdx}
-    </update>
 
             <!--            ICON 관리 테이블 CRUD Mapper         -->
 

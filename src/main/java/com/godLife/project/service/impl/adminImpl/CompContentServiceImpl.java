@@ -1,4 +1,4 @@
-package com.godLife.project.service.impl.AdminImpl;
+package com.godLife.project.service.impl.adminImpl;
 
 import com.godLife.project.dto.categories.ChallengeCateDTO;
 import com.godLife.project.dto.categories.JobCateDTO;
@@ -6,15 +6,17 @@ import com.godLife.project.dto.categories.TargetCateDTO;
 import com.godLife.project.dto.datas.FireDTO;
 import com.godLife.project.mapper.AdminMapper.CompContentMapper;
 import com.godLife.project.service.interfaces.AdminInterface.CompContentService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class CompContentServiceImpl implements CompContentService {
-  private CompContentMapper compContentMapper;
+  private final CompContentMapper compContentMapper;
 
-  public CompContentServiceImpl(CompContentMapper compContentMapper){this.compContentMapper = compContentMapper;}
+
 //                             목표 카테고리 관리 테이블
 
 

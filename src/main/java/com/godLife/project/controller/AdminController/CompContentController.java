@@ -5,7 +5,10 @@ import com.godLife.project.dto.categories.JobCateDTO;
 import com.godLife.project.dto.categories.TargetCateDTO;
 import com.godLife.project.dto.datas.FireDTO;
 import com.godLife.project.handler.GlobalExceptionHandler;
+import com.godLife.project.service.impl.redis.RedisService;
 import com.godLife.project.service.interfaces.AdminInterface.CompContentService;
+import com.godLife.project.service.interfaces.CategoryService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,19 +19,13 @@ import java.util.Map;
 
 @Slf4j
 @RestController
+@AllArgsConstructor
 @RequestMapping("/api/admin/compContent")
 public class CompContentController {
-  @Autowired
-  private GlobalExceptionHandler handler;
-  
-  @Autowired
+  private final GlobalExceptionHandler handler;
   private final CompContentService compContentService;
-  
-
-  public CompContentController(CompContentService compContentService) {
-    this.compContentService = compContentService;
-  }
-
+  private final RedisService redisService;
+  private final CategoryService categoryService;
 
   //                                  목표
 
@@ -42,6 +39,9 @@ public class CompContentController {
         return ResponseEntity.status(handler.getHttpStatus(409))
                 .body(handler.createResponse(409, "이미 존재하는 카테고리 이름입니다."));
       }
+
+      // 목표 카테고리 최신화
+      redisService.saveListData("category::target", categoryService.getAllTargetCategories(), 'n', 0);
 
       return ResponseEntity.status(handler.getHttpStatus(201))
               .body(handler.createResponse(201, "목표 카테고리 등록 성공"));
@@ -67,6 +67,9 @@ public class CompContentController {
                 .body(handler.createResponse(409, "이미 존재하는 카테고리 이름입니다."));
       }
       if (result > 0) {
+        // 목표 카테고리 최신화
+        redisService.saveListData("category::target", categoryService.getAllTargetCategories(), 'n', 0);
+
         return ResponseEntity.ok(handler.createResponse(200, "목표 카테고리 수정 성공"));
       } else {
         return ResponseEntity.status(handler.getHttpStatus(404))
@@ -87,6 +90,9 @@ public class CompContentController {
       int result = compContentService.softDeleteTargetCategory(idx);
 
       if (result > 0) {
+        // 목표 카테고리 최신화
+        redisService.saveListData("category::target", categoryService.getAllTargetCategories(), 'n', 0);
+
         return ResponseEntity.ok(handler.createResponse(200, "목표 카테고리 삭제 성공"));
       } else {
         return ResponseEntity.status(handler.getHttpStatus(404))
@@ -109,6 +115,9 @@ public class CompContentController {
     try {
       int result = compContentService.insertJobCategory(jobCateDTO);
       if (result > 0) {
+        // 직업 카테고리 최신화
+        redisService.saveListData("category::job", categoryService.getAllJobCategories(), 'n', 0);
+
         return ResponseEntity.ok(handler.createResponse(200, "직업 카테고리 생성 성공"));
       } else {
         return ResponseEntity.status(handler.getHttpStatus(400))
@@ -131,6 +140,9 @@ public class CompContentController {
       int result = compContentService.updateJobCategory(jobCateDTO);
 
       if (result > 0) {
+        // 직업 카테고리 최신화
+        redisService.saveListData("category::job", categoryService.getAllJobCategories(), 'n', 0);
+
         return ResponseEntity.ok(handler.createResponse(200, "직업 카테고리 수정 성공"));
       } else {
         return ResponseEntity.status(handler.getHttpStatus(404))
@@ -149,6 +161,9 @@ public class CompContentController {
     try {
       int result = compContentService.deleteJobCategory(jobIdx);
       if (result > 0) {
+        // 직업 카테고리 최신화
+        redisService.saveListData("category::job", categoryService.getAllJobCategories(), 'n', 0);
+
         return ResponseEntity.ok(handler.createResponse(200, "직업 카테고리 삭제 성공"));
       } else {
         return ResponseEntity.status(handler.getHttpStatus(404))
@@ -175,6 +190,9 @@ public class CompContentController {
                 .body(handler.createResponse(409, "이미 존재하는 등급 이름입니다."));
       }
 
+      // 불꽃 테이블 최신화
+      redisService.saveListData("category::fire", categoryService.getAllFireInfos(), 'n', 0);
+
       return ResponseEntity.status(handler.getHttpStatus(201))
               .body(handler.createResponse(201, "등급(불꽃) 등록 성공"));
 
@@ -195,6 +213,9 @@ public class CompContentController {
       int result = compContentService.updateFire(fireDTO);
 
       if (result > 0) {
+        // 불꽃 테이블 최신화
+        redisService.saveListData("category::fire", categoryService.getAllFireInfos(), 'n', 0);
+
         return ResponseEntity.ok(handler.createResponse(200, "등급(불꽃) 수정 성공"));
       } else {
         return ResponseEntity.status(handler.getHttpStatus(404))
@@ -213,6 +234,9 @@ public class CompContentController {
     try {
       int result = compContentService.deleteFire(lvIdx);
       if (result > 0) {
+        // 불꽃 테이블 최신화
+        redisService.saveListData("category::fire", categoryService.getAllFireInfos(), 'n', 0);
+
         return ResponseEntity.ok(handler.createResponse(200, "등급(불꽃) 삭제 성공"));
       } else {
         return ResponseEntity.status(handler.getHttpStatus(404))
@@ -239,6 +263,9 @@ public class CompContentController {
                 .body(handler.createResponse(409, "이미 존재하는 등급 이름입니다."));
       }
 
+      // 챌린지 카테고리 최신화
+      redisService.saveListData("category::chall", categoryService.getAllChallCategories(), 'n', 0);
+
       return ResponseEntity.status(handler.getHttpStatus(201))
               .body(handler.createResponse(201, "챌린지 카테고리 등록 성공"));
 
@@ -259,6 +286,9 @@ public class CompContentController {
       int result = compContentService.updateChallCate(challengeCateDTO);
 
       if (result > 0) {
+        // 챌린지 카테고리 최신화
+        redisService.saveListData("category::chall", categoryService.getAllChallCategories(), 'n', 0);
+
         return ResponseEntity.ok(handler.createResponse(200, "챌린지 카테고리 수정 성공"));
       } else {
         return ResponseEntity.status(handler.getHttpStatus(404))
@@ -277,6 +307,9 @@ public class CompContentController {
     try {
       int result = compContentService.deleteChallCate(challCategoryIdx);
       if (result > 0) {
+        // 챌린지 카테고리 최신화
+        redisService.saveListData("category::chall", categoryService.getAllChallCategories(), 'n', 0);
+
         return ResponseEntity.ok(handler.createResponse(200, "챌린지 카테고리 삭제 성공"));
       } else {
         return ResponseEntity.status(handler.getHttpStatus(404))

@@ -36,19 +36,43 @@ public class CategoryController {
     // 직업 카테고리
     @Operation(summary = "카테고리 조회", description = "직업")
     @GetMapping("/job")
-    public List<JobCateDTO> job() { return categoryService.getAllJobCategories(); }
+    public List<JobCateDTO> job() {
+        List<JobCateDTO> data = redisService.getListData("category::job", JobCateDTO.class);
+        if (data == null || data.isEmpty()) {
+            return categoryService.getAllJobCategories();
+        }
+        return data;
+    }
     // 관심사 카테고리
     @Operation(summary = "카테고리 조회", description = "관심사")
     @GetMapping("/target")
-    public List<TargetCateDTO> target() { return categoryService.getAllTargetCategories(); }
+    public List<TargetCateDTO> target() {
+        List<TargetCateDTO> data = redisService.getListData("category::target", TargetCateDTO.class);
+        if (data == null || data.isEmpty()) {
+            return categoryService.getAllTargetCategories();
+        }
+        return data;
+    }
     // 챌린지 카테고리
     @Operation(summary = "카테고리 조회", description = "챌린지")
     @GetMapping("/challenge")
-    public List<ChallengeCateDTO> challenge() { return categoryService.getAllChallCategories(); }
+    public List<ChallengeCateDTO> challenge() {
+        List<ChallengeCateDTO> data = redisService.getListData("category::chall", ChallengeCateDTO.class);
+        if (data == null || data.isEmpty()) {
+            return categoryService.getAllChallCategories();
+        }
+        return data;
+    }
     // 아이콘 카테고리
     @Operation(summary = "카테고리 조회", description = "아이콘")
     @GetMapping("/icon")
-    public List<IconDTO> icon() { return categoryService.getUserIconInfos(); }
+    public List<IconDTO> icon() {
+        List<IconDTO> data = redisService.getListData("category::userIcon", IconDTO.class);
+        if (data == null || data.isEmpty()) {
+            return categoryService.getUserIconInfos();
+        }
+        return data;
+    }
     // QNA 카테고리
     @Operation(summary = "카테고리 조회", description = "QNA")
     @GetMapping("/qna")
@@ -73,15 +97,33 @@ public class CategoryController {
     // 아이콘 카테고리
     @Operation(summary = "카테고리 조회", description = "아이콘 (관리자)")
     @GetMapping("/admin/icon")
-    public List<IconDTO> iconAdmin() { return categoryService.getAllIconInfos(); }
+    public List<IconDTO> iconAdmin() {
+        List<IconDTO> data = redisService.getListData("category::adminIcon", IconDTO.class);
+        if (data == null || data.isEmpty()) {
+            return categoryService.getAllIconInfos();
+        }
+        return data;
+    }
 
     // 불꽃 정보 조회
     @GetMapping("/admin/fireInfos")
-    public List<FireDTO> fireInfos() { return categoryService.getAllFireInfos(); }
+    public List<FireDTO> fireInfos() {
+        List<FireDTO> data = redisService.getListData("category::fire", FireDTO.class);
+        if (data == null || data.isEmpty()) {
+            return categoryService.getAllFireInfos();
+        }
+        return data;
+    }
 
     // 유저 레벨 정보 조회
     @GetMapping("/admin/userLevelInfos")
-    public List<UserLevelDTO> userLevelInfos() {return categoryService.getAllUserLevelInfos(); }
+    public List<UserLevelDTO> userLevelInfos() {
+        List<UserLevelDTO> data = redisService.getListData("category::userLv", UserLevelDTO.class);
+        if (data == null || data.isEmpty()) {
+            return categoryService.getAllUserLevelInfos();
+        }
+        return data;
+    }
     /// ====================================================================================================
 
 

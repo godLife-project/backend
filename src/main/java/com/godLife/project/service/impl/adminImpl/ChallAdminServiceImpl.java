@@ -1,10 +1,11 @@
-package com.godLife.project.service.impl.AdminImpl;
+package com.godLife.project.service.impl.adminImpl;
 
 import com.godLife.project.dto.contents.ChallengeDTO;
 import com.godLife.project.dto.infos.ChallengeJoinDTO;
 import com.godLife.project.enums.ChallengeState;
 import com.godLife.project.mapper.AdminMapper.ChallAdminMapper;
 import com.godLife.project.service.interfaces.AdminInterface.ChallAdminService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,12 +19,9 @@ import java.util.Map;
 @Slf4j
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class ChallAdminServiceImpl implements ChallAdminService {
   private final ChallAdminMapper challAdminMapper;
-
-  public ChallAdminServiceImpl(ChallAdminMapper challAdminMapper) {
-    this.challAdminMapper = challAdminMapper;
-  }
 
   // ----------------- 챌린지 작성 -----------------
   @Override

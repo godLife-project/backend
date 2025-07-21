@@ -26,8 +26,8 @@ import java.util.Map;
 @RequestMapping("/api/admin/compSystem")
 @RequiredArgsConstructor
 public class CompSystemController {
-  @Autowired
-  private GlobalExceptionHandler handler;
+
+  private final GlobalExceptionHandler handler;
 
   @Autowired
   private final CompSystemService compSystemService;
@@ -290,6 +290,9 @@ public class CompSystemController {
         return ResponseEntity.status(handler.getHttpStatus(409))
                 .body(handler.createResponse(409, "이미 존재하는 ICON 이름입니다."));
       }
+      // 아이콘 최신화
+      redisService.saveListData("category::userIcon", categoryService.getUserIconInfos(), 'n', 0);
+      redisService.saveListData("category::adminIcon", categoryService.getAllIconInfos(), 'n', 0);
 
       return ResponseEntity.status(handler.getHttpStatus(201))
               .body(handler.createResponse(201, "ICON 등록 성공"));
@@ -312,6 +315,10 @@ public class CompSystemController {
       int result = compSystemService.updateIcon(iconDTO);
 
       if (result > 0) {
+        // 아이콘 최신화
+        redisService.saveListData("category::userIcon", categoryService.getUserIconInfos(), 'n', 0);
+        redisService.saveListData("category::adminIcon", categoryService.getAllIconInfos(), 'n', 0);
+
         return ResponseEntity.ok(handler.createResponse(200, "ICON 수정 성공"));
       } else {
         return ResponseEntity.status(handler.getHttpStatus(404))
@@ -325,11 +332,15 @@ public class CompSystemController {
   }
 
   // ICON 삭제
-  @DeleteMapping("icon/{iconKey}")
+  @DeleteMapping("/icon/{iconKey}")
   public ResponseEntity<Map<String, Object>> deleteIcon(@PathVariable("iconKey") String iconKey){
     try {
       int result = compSystemService.deleteIcon(iconKey);
       if (result > 0) {
+        // 아이콘 최신화
+        redisService.saveListData("category::userIcon", categoryService.getUserIconInfos(), 'n', 0);
+        redisService.saveListData("category::adminIcon", categoryService.getAllIconInfos(), 'n', 0);
+
         return ResponseEntity.ok(handler.createResponse(200, "ICON 삭제 성공"));
       } else {
         return ResponseEntity.status(handler.getHttpStatus(404))

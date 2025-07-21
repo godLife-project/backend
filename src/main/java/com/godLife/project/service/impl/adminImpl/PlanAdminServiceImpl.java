@@ -1,27 +1,20 @@
 package com.godLife.project.service.impl.adminImpl;
 
-import com.godLife.project.dto.categories.JobEtcCateDTO;
-import com.godLife.project.dto.datas.ActivityDTO;
-import com.godLife.project.dto.datas.PlanDTO;
 import com.godLife.project.dto.list.customDTOs.CustomAdminPlanListDTO;
 import com.godLife.project.mapper.AdminMapper.PlanAdminMapper;
 import com.godLife.project.service.interfaces.AdminInterface.PlanAdminService;
-import com.godLife.project.service.interfaces.UserService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.util.List;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class PlanAdminServiceImpl implements PlanAdminService {
 
   private final PlanAdminMapper planAdminMapper;
-
-  public PlanAdminServiceImpl(PlanAdminMapper planAdminMapper){this.planAdminMapper = planAdminMapper;}
 
   // 관리자 루틴 리스트 조회 (페이징 처리)
   @Override

@@ -6,29 +6,20 @@ import com.godLife.project.dto.categories.TargetCateDTO;
 import com.godLife.project.dto.datas.FireDTO;
 import com.godLife.project.handler.GlobalExceptionHandler;
 import com.godLife.project.service.interfaces.AdminInterface.CompContentService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/admin/compContent")
 public class CompContentController {
-  @Autowired
-  private GlobalExceptionHandler handler;
-  
-  @Autowired
+  private final GlobalExceptionHandler handler;
   private final CompContentService compContentService;
-  
-
-  public CompContentController(CompContentService compContentService) {
-    this.compContentService = compContentService;
-  }
-
 
   //                                  목표
 
@@ -42,7 +33,6 @@ public class CompContentController {
         return ResponseEntity.status(handler.getHttpStatus(409))
                 .body(handler.createResponse(409, "이미 존재하는 카테고리 이름입니다."));
       }
-
       return ResponseEntity.status(handler.getHttpStatus(201))
               .body(handler.createResponse(201, "목표 카테고리 등록 성공"));
 

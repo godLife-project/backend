@@ -4,6 +4,7 @@ import com.godLife.project.dto.infos.PlanReportDTO;
 import com.godLife.project.dto.infos.UserReportDTO;
 import com.godLife.project.mapper.AdminMapper.ReportAdminMapper;
 import com.godLife.project.service.interfaces.AdminInterface.ReportAdminService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,13 +13,11 @@ import java.util.List;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class ReportAdminServiceImpl implements ReportAdminService {
 
-  private ReportAdminMapper reportAdminMapper;
+  private final ReportAdminMapper reportAdminMapper;
 
-  public ReportAdminServiceImpl(ReportAdminMapper reportAdminMapper) {
-    this.reportAdminMapper = reportAdminMapper;
-  }
 
   // 유저 신고 ALL 조회
   public List<UserReportDTO> getAllReports(int page, int size) {

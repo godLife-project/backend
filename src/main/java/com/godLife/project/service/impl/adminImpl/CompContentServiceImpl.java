@@ -9,20 +9,19 @@ import com.godLife.project.mapper.AdminMapper.CompContentMapper;
 import com.godLife.project.mapper.CategoryMapper;
 import com.godLife.project.service.impl.redis.RedisService;
 import com.godLife.project.service.interfaces.AdminInterface.CompContentService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class CompContentServiceImpl implements CompContentService {
-  private CompContentMapper compContentMapper;
-  private CategoryMapper categoryMapper;
-  private RedisService redisService;
+  private final CompContentMapper compContentMapper;
+  private final CategoryMapper categoryMapper;
+  private final RedisService redisService;
 
-  public CompContentServiceImpl(CompContentMapper compContentMapper,
-                                CategoryMapper categoryMapper, RedisService redisService){
-    this.compContentMapper = compContentMapper;
-    this.categoryMapper = categoryMapper; this.redisService = redisService;}
+
 //                             목표 카테고리 관리 테이블
 
 

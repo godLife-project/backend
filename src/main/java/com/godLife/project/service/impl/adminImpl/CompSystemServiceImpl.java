@@ -10,7 +10,7 @@ import com.godLife.project.exception.QnaCategoryDeletePendingException;
 import com.godLife.project.mapper.AdminMapper.CompSystemMapper;
 import com.godLife.project.service.impl.redis.RedisService;
 import com.godLife.project.service.interfaces.AdminInterface.CompSystemService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +19,7 @@ import java.util.List;
 
 @Slf4j
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class CompSystemServiceImpl implements CompSystemService {
   private final CompSystemMapper compSystemMapper;
   private final RedisService redisService;

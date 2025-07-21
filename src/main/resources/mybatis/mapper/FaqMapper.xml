@@ -63,15 +63,13 @@
         SELECT f.FAQ_IDX, f.FAQ_TITLE, f.FAQ_ANSWER, c.FAQ_CATEGORY_NAME
         FROM FAQ_TABLE f
         JOIN FAQ_CATEGORY c ON f.FAQ_CATEGORY = c.FAQ_CATEGORY_IDX
-        WHERE
-        <choose>
-            <when test="faqTitle != null and faqTitle != ''">
-                MATCH(f.FAQ_TITLE, f.FAQ_ANSWER) AGAINST (#{faqTitle} IN BOOLEAN MODE)
-            </when>
-            <otherwise>
-                1=1
-            </otherwise>
-        </choose>
+        WHERE 1 = 1
+        <if test="faqTitle != null and faqTitle != ''">
+            AND (
+            f.FAQ_TITLE LIKE CONCAT('%', #{faqTitle}, '%')
+            OR f.FAQ_ANSWER LIKE CONCAT('%', #{faqTitle}, '%')
+            )
+        </if>
         <if test="faqCategoryName != null and faqCategoryName != ''">
             AND c.FAQ_CATEGORY_NAME = #{faqCategoryName}
         </if>

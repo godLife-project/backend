@@ -4,7 +4,7 @@
 
 <mapper namespace="com.godLife.project.mapper.AdminMapper.ReportAdminMapper">
 
-    <!-- 유저 신고 조회 -->
+    <!-- 유저 신고 조회 or 상태별 조회 -->
     <select id="getAllReports" resultType="com.godLife.project.dto.infos.UserReportDTO">
         SELECT
         r.REPORTER_IDX,
@@ -18,6 +18,11 @@
         FROM USER_REPORT r
         JOIN USER_TABLE reporter ON r.REPORTER_IDX = reporter.USER_IDX
         JOIN USER_TABLE reported ON r.REPORTED_IDX = reported.USER_IDX
+        <where>
+            <if test="status != null">
+                r.STATUS = #{status}
+            </if>
+        </where>
         ORDER BY r.REPORT_DATE DESC
         LIMIT #{limit} OFFSET #{offset}
     </select>

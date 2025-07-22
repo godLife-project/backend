@@ -19,18 +19,12 @@ public class ReportAdminServiceImpl implements ReportAdminService {
   private final ReportAdminMapper reportAdminMapper;
 
 
-  // 유저 신고 ALL 조회
-  public List<UserReportDTO> getAllReports(int page, int size) {
+// 유저 신고 조회 (전체 or 상태별)
+  public List<UserReportDTO> getAllReports(Integer status, int page, int size) {
     int offset = (page - 1) * size;
-    return reportAdminMapper.getAllReports(offset, size);
+    return reportAdminMapper.getAllReports(status, size, offset);
   }
 
-  // 유저신고 처리상태별 조회
-  public List<UserReportDTO> getReportsByStatus(int status, int page, int size) {
-
-    int offset = (page - 1) * size;
-    return reportAdminMapper.selectReportsByStatus(status, offset, size);
-  }
 
   // 유저 신고 총 개수
   public int countAllReports() {
@@ -45,24 +39,30 @@ public class ReportAdminServiceImpl implements ReportAdminService {
   // 유저신고 처리 로직
   @Transactional
   public void userReportStateUpdate(UserReportDTO userReportDTO) {
-    // 신고 상태 업데이트
+    Integer isApproved = userReportDTO.getIsApproved();
+    Integer reportIdx = userReportDTO.getUserReportIdx();
+
+    if (isApproved == null || (isApproved != 0 && isApproved != 1)) {
+      throw new IllegalArgumentException("isApproved 값은 0(거절) 또는 1(승인)이어야 합니다.");
+    }
+
+    // 신고 상태를 '처리 완료'로 설정
+    userReportDTO.setStatus(1);
     reportAdminMapper.userReportStateUpdate(userReportDTO);
 
-    // status가 1(처리 완료)일 때만 누적 로직 실행
-    if (userReportDTO.getStatus() == 1) {
-      // 해당 신고글의 REPORTED_IDX 가져오기
-      Integer reportedIdx = reportAdminMapper.findReportedIdxByReportIdx(userReportDTO.getUserReportIdx());
+    // 승인인 경우에만 후속 처리
+    if (isApproved == 1) {
+      Integer reportedIdx = reportAdminMapper.findReportedIdxByReportIdx(reportIdx);
       if (reportedIdx == null) {
-        throw new IllegalArgumentException("REPORTED_IDX를 찾을 수 없습니다");
+        throw new IllegalArgumentException("REPORTED_IDX를 찾을 수 없습니다.");
       }
-
-      // 신고당한 유저의 신고 횟수 증가
+      // 신고 횟수 1 증가
       reportAdminMapper.incrementReportCount(reportedIdx);
 
-      // 정지 조건 검사 및 적용
+      // 현재 신고 횟수 조회
       Integer reportCount = reportAdminMapper.getReportCount(reportedIdx);
       if (reportCount != null && reportCount >= 5) {
-        reportAdminMapper.banUser(reportedIdx);
+        reportAdminMapper.banUser(reportedIdx); // 유저 정지 처리
       }
     }
   }

@@ -55,7 +55,7 @@ Thumbs.db
 /coverage/
 
 ## Docker 설정 파일 제외 (사용 시) ##
-docker-compose.override.yml
+docker-compose.yml
 
 # Ignore Gradle project-specific cache directory
 .gradle

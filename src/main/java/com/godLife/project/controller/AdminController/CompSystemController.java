@@ -262,22 +262,6 @@ public class CompSystemController {
     }
   }
 
-  // 드래그 앤 드롭으로 정렬 순서 업데이트
-  @PutMapping("/topMenu/reorder")
-  public ResponseEntity<Map<String, Object>> reorderTopMenu(@RequestBody List<TopCateDTO> orderedList) {
-    try {
-      compSystemService.updateOrderTopMenu(orderedList);
-      // 탑메뉴 최신화
-      redisService.saveListData("category::topMenu", categoryService.getProcessedAllTopCategories(), 'n', 0);
-
-      return ResponseEntity.ok(handler.createResponse(200, "TopMenu 순서 업데이트 성공"));
-    } catch (Exception e) {
-      log.error("TopMenu 순서 업데이트 오류: {}", e.getMessage(), e);
-      return ResponseEntity.status(handler.getHttpStatus(500))
-              .body(handler.createResponse(500, "서버 오류 발생"));
-    }
-}
-
 
   //                                  ICON 관리 테이블
   // ICON 추가

@@ -9,8 +9,10 @@ import java.util.List;
 
 @Service
 public interface ReportAdminService {
-  List<UserReportDTO> getAllReports(int page, int size);
-  List<UserReportDTO> getReportsByStatus(int status, int page, int size);
+  List<UserReportDTO> getAllReports(@Param("status") Integer status,
+                                    @Param("limit") int limit,
+                                    @Param("offset") int offset); // 유저신고 전체조회 및 상태별 조회
+
   int countAllReports();
   int countReportsByStatus(int status);
 

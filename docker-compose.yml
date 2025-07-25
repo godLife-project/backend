@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: mariadb:11.8.2
@@ -15,6 +13,8 @@ services:
     volumes:
       - db_data:/var/lib/mysql
       - ./init:/docker-entrypoint-initdb.d
+    networks:
+      - godlife-network
 
   redis:
     image: redis:7.0.15
@@ -23,28 +23,30 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    networks:
+      - godlife-network
 
-  app:
+  backend:
+    image: godlife-backend:latest
+    container_name: spring-backend
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: spring_app
-    depends_on:
-      - db
-      - redis
     ports:
-      - "8080:8080"
+      - "9090:9090"
+    depends_on:
+      - redis
+      - db
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mariadb://db:3306/god_life_db
-      SPRING_DATASOURCE_USERNAME: godlife
-      SPRING_DATASOURCE_PASSWORD: godlife_2501
-      SPRING_REDIS_HOST: redis
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
     networks:
-      - godlife_net
+      - godlife-network
+
+networks:
+  godlife-network:
+    driver: bridge
 
 volumes:
   db_data:
   redis_data:
-
-networks:
-  godlife_net:

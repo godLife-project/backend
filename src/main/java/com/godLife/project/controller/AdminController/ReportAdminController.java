@@ -27,51 +27,43 @@ public class ReportAdminController {
     this.reportAdminService = reportAdminService;
   }
 
+  // 유저 신고 조회 (전체 or 상태별)
   @GetMapping("/userReport")
   public Map<String, Object> getAllReports(
           @RequestParam(defaultValue = "1") int page,
           @RequestParam(defaultValue = "10") int size,
           @RequestParam(required = false) Integer status) {
 
-    // 전체 신고 수
+    // 전체 신고 수 조회 (전체 또는 상태별)
     int total = (status == null)
             ? reportAdminService.countAllReports()
             : reportAdminService.countReportsByStatus(status);
 
-    // 페이징된 신고 리스트 조회
-    List<UserReportDTO> reports;
-    if (status == null) {
-      reports = reportAdminService.getAllReports(page, size);
-    } else {
-      reports = reportAdminService.getReportsByStatus(status, page, size);
-    }
+    // 페이징된 신고 리스트 조회 (상태별 또는 전체)
+    List<UserReportDTO> reports = reportAdminService.getAllReports(status, page, size);
 
-    // 응답용 Map 생성
     Map<String, Object> response = new HashMap<>();
+    response.put("total", total);
+    response.put("reports", reports);
     response.put("page", page);
     response.put("size", size);
-    response.put("total", total);
-    response.put("list", reports);
 
     return response;
   }
 
-  // 유저 신고 처리
   @PostMapping("/userReportState")
   public ResponseEntity<Map<String, Object>> userReportStateUpdate(
           @RequestParam("userReportIdx") int userReportIdx,
-          @RequestParam("status") int status) {
+          @RequestParam("isApproved") int isApproved) {
     try {
       UserReportDTO dto = new UserReportDTO();
       dto.setUserReportIdx(userReportIdx);
-      dto.setStatus(status); // 클라이언트가 넘긴 값으로 처리
+      dto.setIsApproved(isApproved);
 
-      reportAdminService.userReportStateUpdate(dto);
+      reportAdminService.userReportStateUpdate(dto); // 내부에서 status=1로 처리
 
-      String message = (status == 1) ? "신고가 처리 완료되었습니다." : "신고 상태가 미처리로 변경되었습니다.";
-      return ResponseEntity.ok(
-              handler.createResponse(200, message)
-      );
+      String message = (isApproved == 1) ? "신고가 승인되어 처리 완료되었습니다." : "신고가 거절되어 처리 완료되었습니다.";
+      return ResponseEntity.ok(handler.createResponse(200, message));
 
     } catch (IllegalArgumentException e) {
       log.error("잘못된 요청 값으로 인한 처리 실패: {}", e.getMessage(), e);

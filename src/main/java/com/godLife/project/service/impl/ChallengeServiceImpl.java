@@ -310,9 +310,18 @@ public class ChallengeServiceImpl implements ChallengeService {
     }
 
 
-    // 챌린지 검색
     public List<ChallengeDTO> searchChallenges(String challTitle, Integer challCategoryIdx, int offset, int size, String sort) {
-        return challengeMapper.searchChallenges(challTitle, challCategoryIdx, offset, size, sort);
+        List<ChallengeDTO> challenges = challengeMapper.searchChallenges(challTitle, challCategoryIdx, offset, size, sort);
+
+        for (ChallengeDTO challenge : challenges) {
+            int challIdx = Math.toIntExact(challenge.getChallIdx());
+
+            // 현재 참여자 수 조회
+            int participantCount = challengeMapper.countParticipants((long) challIdx);
+            challenge.setCurrentParticipants(participantCount);
+        }
+
+        return challenges;
     }
 }
 

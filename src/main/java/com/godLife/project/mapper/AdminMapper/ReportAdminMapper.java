@@ -9,8 +9,9 @@ import java.util.List;
 
 @Mapper
 public interface ReportAdminMapper {
-  List<UserReportDTO> getAllReports(@Param("offset") int offset, @Param("limit") int limit);
-  List<UserReportDTO> selectReportsByStatus(@Param("status") int status, @Param("offset") int offset, @Param("limit") int limit);
+  List<UserReportDTO> getAllReports(@Param("status") Integer status,
+                                    @Param("limit") int limit,
+                                    @Param("offset") int offset);
   int countAllReports();
   int countReportsByStatus(@Param("status") int status);
 

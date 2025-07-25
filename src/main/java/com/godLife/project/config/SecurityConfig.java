@@ -1,14 +1,15 @@
 package com.godLife.project.config;
 
-import com.godLife.project.jwt.CustomLogoutFilter;
-import com.godLife.project.jwt.JWTFilter;
-import com.godLife.project.jwt.JWTUtil;
-import com.godLife.project.jwt.LoginFilter;
-import com.godLife.project.service.jwt.RefreshService;
+import com.godLife.project.handler.CustomAccessDeniedHandler;
+import com.godLife.project.jwt.*;
+import com.godLife.project.service.interfaces.UserService;
+import com.godLife.project.service.interfaces.jwtInterface.RefreshService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.NonNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,6 +23,7 @@ import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -29,18 +31,27 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-  //AuthenticationManager가 인자로 받을 AuthenticationConfiguraion 객체 생성자 주입
-  private final AuthenticationConfiguration authenticationConfiguration;
+    @Value("${cors.allowed-origins}")
+    private String allowedOrigins;
 
-  private final JWTUtil jwtUtil;
+    //AuthenticationManager가 인자로 받을 AuthenticationConfiguraion 객체 생성자 주입
+    private final AuthenticationConfiguration authenticationConfiguration;
+
+    private final JWTUtil jwtUtil;
 
   private final RefreshService refreshService;
 
-  public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil, RefreshService refreshService) {
+  private final UserService userService;
+
+  private final CustomAccessDeniedHandler accessDeniedHandler;
+
+  public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil, RefreshService refreshService, @Lazy UserService userService, CustomAccessDeniedHandler accessDeniedHandler) {
 
     this.authenticationConfiguration = authenticationConfiguration;
     this.jwtUtil = jwtUtil;
     this.refreshService = refreshService;
+    this.userService = userService;
+    this.accessDeniedHandler = accessDeniedHandler;
   }
 
   //AuthenticationManager Bean 등록
@@ -60,7 +71,9 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     // csrf disable
-    http.csrf(AbstractHttpConfigurer::disable);
+    http.csrf(csrf -> csrf
+        .ignoringRequestMatchers("/ws-stomp/**")
+        .disable());
     // Form 로그인 방식 disable
     http.formLogin(AbstractHttpConfigurer::disable);
     // http basic 인증 방식 disable
@@ -68,24 +81,64 @@ public class SecurityConfig {
 
     // 경로별 인가 작업
     http.authorizeHttpRequests(auth -> auth
-        // 스웨거 관련
-        .requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**", "/favicon.ico")
-        .permitAll()
-        // 카테고리 관련
-        .requestMatchers("/api/categories/**").permitAll()
-        // 추가 경로 제외
-        .requestMatchers("/", "/api/user/join", "/api/user/checkId/*", "/api/test1").permitAll()
-        // refresh 토큰 검증 api경로
-        .requestMatchers("/api/reissue").permitAll()
-        // 특정 권한만 접근 가능
-        .requestMatchers("/admin").hasAuthority("7")
-        .anyRequest().authenticated()
+    // 지정한 엔드포인트는 로그인시 접근 가능 (유저 권한)
+        // 웹소켓 통신 허용
+            .requestMatchers("/ws-stomp/**").permitAll()
+        // 테스트 용 (유저 권한)
+            .requestMatchers("/api/test/auth/**").authenticated()
+        // 루틴 관련
+            .requestMatchers("/api/plan/auth/**").authenticated()
+        // 인증 관련
+            .requestMatchers("/api/verify/auth/**").authenticated()
+        // 리스트 관련
+            .requestMatchers("/api/list/auth/**").authenticated()
+        // 신고 관련
+            .requestMatchers("/api/report/auth/**").authenticated()
+        // 챌린지 관련
+            .requestMatchers("/api/challenges/auth/**").authenticated()
+        // 마이페이지 관련
+            .requestMatchers("/api/myPage/auth/**").authenticated()
+        // QnA 관련
+            .requestMatchers("/api/qna/auth/**").authenticated()
+        // 업로드 관련
+            .requestMatchers("/api/upload/auth/**").authenticated()
+
+
+
+    // 지정한 엔드포인트는 해당 권한 등급이 없으면 로그인을 해도 접근 못함 (관리자)
+        // 관리자 권한 카테고리 조회
+            .requestMatchers("/api/categories/admin/**").hasAnyAuthority("2", "3", "4", "5", "6", "7")
+        // 테스트 용 (관리자 권한)
+            .requestMatchers("/api/admin").hasAuthority("7")
+        // 관리자 권한 챌린지 작성
+        .requestMatchers("/api/challenges/admin/create").hasAnyAuthority("2", "3", "4", "5", "6", "7")
+        .requestMatchers("/api/admin").hasAuthority("7")
+        // 관리자 권한 챌린지 관련
+        .requestMatchers("/api/challenges/admin/**").hasAnyAuthority("2", "3", "4", "5", "6", "7")
+        // 관리자 권한 공지사항 관련
+        .requestMatchers("/api/notice/admin/**").hasAnyAuthority("2", "3", "4", "5", "6", "7")
+        // 서비스 관리자 권한
+        .requestMatchers("/api/service/admin/**").hasAnyAuthority("3", "4", "6", "7")
+        // 관리자 권한 페이지 관련
+        .requestMatchers("/api/admin/users/authority/**").hasAuthority("7")
+        //관리자 페이지 관련
+        .requestMatchers("/api/admin/**").hasAnyAuthority("2", "3", "4", "5", "6", "7")
+
+
+    // 그 외 모든 접근 허용 (비 로그인 접근)
+        .anyRequest().permitAll()
+    );
+
+    // 예외 처리 핸들러 등록
+    http.exceptionHandling(ex ->
+        ex.accessDeniedHandler(accessDeniedHandler)
     );
 
     // 필터 적용
-    http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
-    http.addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshService), UsernamePasswordAuthenticationFilter.class);
+    http.addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshService, userService), UsernamePasswordAuthenticationFilter.class);
+    http.addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
     http.addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshService), LogoutFilter.class);
+
 
     // 세션 비활성화
     http.sessionManagement((session) -> session
@@ -93,27 +146,28 @@ public class SecurityConfig {
 
     // CORS 허용
     http
-        .cors((corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
+      .cors((corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
 
-          @Override
-          public CorsConfiguration getCorsConfiguration(@NonNull HttpServletRequest request) {
+        @Override
+        public CorsConfiguration getCorsConfiguration(@NonNull HttpServletRequest request) {
 
-            CorsConfiguration configuration = new CorsConfiguration();
+          CorsConfiguration configuration = new CorsConfiguration();
 
-            configuration.setAllowedOrigins(List.of("http://localhost:3000", "https://3a57-182-229-89-82.ngrok-free.app"));
-            configuration.setAllowedMethods(Collections.singletonList("*"));
-            configuration.setAllowCredentials(true);
-            configuration.setAllowedHeaders(Collections.singletonList("*"));
-            configuration.setMaxAge(3600L);
+          configuration.setAllowedOriginPatterns(Arrays.asList(allowedOrigins.split(", ")));
+          configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+          configuration.setAllowCredentials(true);
+          configuration.setAllowedHeaders(Collections.singletonList("*"));
+          configuration.setMaxAge(3600L);
 
-            configuration.setExposedHeaders(Collections.singletonList("Authorization"));
+          configuration.addAllowedOriginPattern("/ws-stomp/**");
+          configuration.setExposedHeaders(List.of("Authorization", "Access-Control-Allow-Origin"));
 
-            return configuration;
-          }
-        })));
-
-
-
+          return configuration;
+        }
+      })));
     return http.build();
   }
+
 }
+
+

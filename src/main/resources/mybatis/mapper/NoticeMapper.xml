@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godLife.project.mapper.NoticeMapper">
+
+    <!-- 공지사항 List 조회 - 페이지네이션 적용 -->
+    <select id="getNoticeList" resultType="com.godLife.project.dto.contents.NoticeDTO">
+        SELECT
+        n.notice_idx AS noticeIdx,
+        n.notice_title AS noticeTitle,
+        n.notice_sub AS noticeSub,
+        n.notice_date AS noticeDate,
+        n.notice_modify AS noticeModify,
+        a.user_name AS writeName
+        FROM NOTICE_TABLE n
+        JOIN USER_TABLE a ON n.user_idx = a.user_idx
+        ORDER BY n.notice_date DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <!-- 공지사항 개수 조회 -->
+    <select id="totalNoticeCount" resultType="int">
+        SELECT COUNT(*) FROM NOTICE_TABLE
+    </select>
+
+    <!-- 공지사항 상세 조회 (작성자 이름 포함) -->
+    <select id="getNoticeDetail" resultType="com.godLife.project.dto.contents.NoticeDTO">
+        SELECT
+        N.NOTICE_IDX,
+        N.NOTICE_TITLE,
+        N.NOTICE_SUB,
+        N.NOTICE_DATE,
+        N.NOTICE_MODIFY,
+        N.USER_IDX,
+        U.USER_NAME AS write_Name,
+        N.IS_POPUP,
+        N.POPUP_START_DATE,
+        N.POPUP_END_DATE
+        FROM NOTICE_TABLE N
+        LEFT JOIN USER_TABLE U ON N.USER_IDX = U.USER_IDX
+        WHERE N.NOTICE_IDX = #{noticeIdx}
+    </select>
+
+    <!-- 활성화된 팝업 공지사항 조회 -->
+    <select id="getActivePopupNoticeList" resultType="com.godLife.project.dto.contents.NoticeDTO">
+        SELECT *
+        FROM NOTICE_TABLE
+        WHERE IS_POPUP = 'Y'
+        AND POPUP_START_DATE <![CDATA[ < ]]> NOW()
+        AND POPUP_END_DATE <![CDATA[ >= ]]> NOW()
+    </select>
+
+    <!-- 팝업 활성화 -->
+    <update id="setNoticePopup" parameterType="com.godLife.project.dto.contents.NoticeDTO">
+        UPDATE NOTICE_TABLE
+        SET IS_POPUP = #{isPopup},
+        POPUP_START_DATE = #{popupStartDate},
+        POPUP_END_DATE = #{popupEndDate}
+        WHERE NOTICE_IDX = #{noticeIdx}
+    </update>
+
+    <!-- 공지사항 작성 -->
+    <insert id="createNotice" parameterType="com.godLife.project.dto.contents.NoticeDTO">
+        INSERT INTO NOTICE_TABLE (NOTICE_TITLE, NOTICE_SUB, USER_IDX, NOTICE_DATE, IS_POPUP, POPUP_START_DATE, POPUP_END_DATE)
+        VALUES (#{noticeTitle}, #{noticeSub}, #{userIdx}, NOW(), #{isPopup}, #{popupStartDate}, #{popupEndDate})
+    </insert>
+
+
+    <!-- 수정 쿼리문 -->
+    <update id="modifyNotice">
+        UPDATE NOTICE_TABLE
+        SET NOTICE_TITLE = #{noticeTitle},
+            NOTICE_SUB = #{noticeSub},
+            NOTICE_MODIFY = NOW(),
+            IS_POPUP = #{isPopup}
+        WHERE NOTICE_IDX = #{noticeIdx}
+    </update>
+
+    <!-- 삭제 쿼리문 -->
+    <delete id="deleteNotice">
+        DELETE FROM NOTICE_TABLE
+        WHERE NOTICE_IDX = #{noticeIdx}
+    </delete>
+</mapper>

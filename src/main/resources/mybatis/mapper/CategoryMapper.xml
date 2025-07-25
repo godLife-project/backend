@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godLife.project.mapper.CategoryMapper">
+
+  <!-- 직업 카테고리 조회 -->
+  <select id="getAllJOBCategories" resultType="com.godLife.project.dto.categories.JobCateDTO">
+    SELECT
+    JC.JOB_IDX AS IDX,
+    JC.JOB_NAME AS NAME,
+    JC.ICON_KEY,
+    IT.ICON,
+    IT.COLOR
+    FROM JOB_CATEGORY JC
+    LEFT JOIN ICON_TABLE IT ON JC.ICON_KEY = IT.ICON_KEY
+    WHERE JC.VISIBLE = 1
+      AND JC.IS_DELETED = 0
+    ORDER BY JC.JOB_IDX
+  </select>
+
+  <!-- 관심사 카테고리 조회 -->
+  <select id="getAllTargetCategories" resultType="com.godLife.project.dto.categories.TargetCateDTO">
+    SELECT
+    TC.TARGET_IDX AS IDX,
+    TC.TARGET_NAME AS NAME,
+    TC.ICON_KEY,
+    IT.ICON,
+    IT.COLOR
+    FROM TARGET_CATEGORY TC
+    LEFT JOIN ICON_TABLE IT ON TC.ICON_KEY = IT.ICON_KEY
+    WHERE IS_DELETED = 0
+    ORDER BY TC.TARGET_IDX
+  </select>
+
+  <!-- 챌린지 카테고리 조회 -->
+  <select id="getAllChallCategories" resultType="com.godLife.project.dto.categories.ChallengeCateDTO">
+    SELECT
+    j.CHALL_CATEGORY_IDX AS challCateIdx,
+    j.CHALL_NAME AS challName,
+    j.ICON_KEY AS iconKey,
+    i.ICON AS icon,
+    i.COLOR AS color
+    FROM CHALL_CATEGORY j
+    LEFT JOIN ICON_TABLE i ON j.ICON_KEY = i.ICON_KEY
+    WHERE j.IS_DELETED = 0
+  </select>
+
+</mapper>

@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godLife.project.mapper.ListMapper">
+    <resultMap id="PlanListResultMap" type="com.godLife.project.dto.list.PlanListDTO">
+        <association property="planInfos" javaType="com.godLife.project.dto.list.customDTOs.CustomPlanListDTO">
+            <result property="rank" column="RANK"/>
+            <result property="planIdx" column="PLAN_IDX"/>
+            <result property="userNick" column="USER_NICK"/>
+            <result property="planTitle" column="PLAN_TITLE"/>
+            <result property="planSubDate" column="PLAN_SUB_DATE"/>
+            <result property="viewCount" column="VIEW_COUNT"/>
+            <result property="likeCount" column="LIKE_COUNT"/>
+            <result property="forkCount" column="FORK_COUNT"/>
+            <result property="isActive" column="IS_ACTIVE"/>
+            <result property="isCompleted" column="IS_COMPLETED"/>
+            <result property="isShared" column="IS_SHARED"/>
+        </association>
+
+        <association property="fireInfos" javaType="com.godLife.project.dto.list.customDTOs.CustomFireDTO">
+            <result property="lvIdx" column="LV_IDX"/>
+            <result property="fireName" column="FIRE_NAME"/>
+            <result property="fireColor" column="FIRE_COLOR"/>
+            <result property="fireEffect" column="FIRE_EFFECT"/>
+        </association>
+
+        <association property="targetInfos" javaType="com.godLife.project.dto.list.customDTOs.CustomTargetDTO">
+            <result property="name" column="TARGET_NAME"/>
+            <result property="iconKey" column="TARGET_ICON_KEY"/>
+            <result property="icon" column="TARGET_ICON"/>
+            <result property="color" column="TARGET_COLOR"/>
+        </association>
+
+        <association property="jobDefault" javaType="com.godLife.project.dto.list.customDTOs.CustomJobDTO">
+            <result property="name" column="JOB_NAME"/>
+            <result property="iconKey" column="JOB_ICON_KEY"/>
+            <result property="icon" column="JOB_ICON"/>
+            <result property="color" column="JOB_COLOR"/>
+        </association>
+
+        <association property="jobEtc" javaType="com.godLife.project.dto.list.customDTOs.CustomEtcJobDTO">
+            <result property="name" column="ETC_JOB_NAME"/>
+            <result property="iconKey" column="ETC_ICON_KEY"/>
+            <result property="icon" column="ETC_ICON"/>
+            <result property="color" column="ETC_COLOR"/>
+        </association>
+    </resultMap>
+
+    <!-- ///////////////////////////////////////////  쿼리 재활용 조각  ///////////////////////////////////////////// -->
+    <!-- 상태 필터 (상위 쿼리에서 재사용) -->
+    <sql id="statusFilter">
+        <choose>
+            <!-- 랭크 모드 -->
+            <when test="mode == 'rank'">
+                AND P.IS_COMPLETED = 0
+                AND P.IS_ACTIVE = 1
+                AND P.CERT_EXP >= 100
+            </when>
+            <!-- 추천 모드 -->
+            <when test="mode == 'myLike'">
+            </when>
+            <!-- 기본 모드 -->
+            <otherwise>
+                <choose>
+                    <when test="mode == 'private' and status == 0">
+
+                    </when>
+                    <when test="status != 3">
+                        <choose>
+                            <when test="status == 4">
+                                AND P.IS_COMPLETED = 1
+                                AND P.IS_ACTIVE = 1
+                            </when>
+                            <otherwise>
+                                AND P.IS_COMPLETED = 0
+                            </otherwise>
+                        </choose>
+                        <if test="status == 1">
+                            AND P.IS_ACTIVE = 1
+                        </if>
+                        <if test="status == 2">
+                            AND P.IS_ACTIVE = 0
+                        </if>
+                    </when>
+                    <otherwise>
+                        AND P.IS_COMPLETED = 1
+                        AND P.IS_ACTIVE = 0
+                    </otherwise>
+                </choose>
+            </otherwise>
+        </choose>
+    </sql>
+
+    <!-- 검색 필터 (상위 쿼리에서 재사용) -->
+    <sql id="searchFilter">
+        <if test="keywords != null and keywords != ''">
+            AND MATCH(PS.SEARCH_TEXT) AGAINST(#{keywords} IN BOOLEAN MODE)
+        </if>
+    </sql>
+
+    <!-- 목표 카테고리 필터 (상위 쿼리에서 재사용) -->
+    <sql id="targetCategoryFilter">
+        <if test="target != null and target.size() > 0 ">
+            AND P.TARGET_IDX IN
+            <foreach item="item" index="index" collection="target" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
+
+    <!-- 직업 카테고리 필터 (상위 쿼리에서 재사용) -->
+    <sql id="jobCategoryFilter">
+        <if test="job != null and job.size() > 0 ">
+            AND P.JOB_IDX IN
+            <foreach item="item" index="index" collection="job" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
+
+    <!-- 공통 부분 (JOIN 및 WHERE 절) -->
+    <sql id="commonJoin">
+        INNER JOIN USER_TABLE U ON P.USER_IDX = U.USER_IDX
+        INNER JOIN PLAN_SEARCH PS ON P.PLAN_IDX = PS.PLAN_IDX
+        INNER JOIN FIRE_TABLE F ON P.CERT_EXP BETWEEN F.MIN_EXP AND F.MAX_EXP
+        INNER JOIN TARGET_CATEGORY T ON P.TARGET_IDX = T.TARGET_IDX
+        LEFT JOIN ICON_TABLE IT ON T.ICON_KEY = IT.ICON_KEY
+        INNER JOIN JOB_CATEGORY J ON P.JOB_IDX = J.JOB_IDX
+        LEFT JOIN ICON_TABLE IJ ON J.ICON_KEY = IJ.ICON_KEY
+        LEFT JOIN JOB_ETC_CATEGORY ETC ON P.PLAN_IDX = ETC.PLAN_IDX
+        LEFT JOIN ICON_TABLE IE ON ETC.ICON_KEY = IE.ICON_KEY
+    </sql>
+
+    <!-- 공통 SELECT 컬럼 부분 -->
+    <sql id="commonSelectColumns">
+        <if test="mode == 'rank'">
+            P.IS_DELETED,
+            P.CERT_EXP,
+        </if>
+        P.IS_SHARED,
+        P.PLAN_IDX,
+        U.USER_NICK || ' ' || U.NICK_TAG AS USER_NICK,
+        P.PLAN_TITLE,
+        P.PLAN_SUB_DATE,
+        P.VIEW_COUNT,
+        P.LIKE_COUNT,
+        P.FORK_COUNT,
+        P.IS_ACTIVE,
+        P.IS_COMPLETED,
+        F.LV_IDX,
+        F.FIRE_NAME,
+        F.FIRE_COLOR,
+        F.FIRE_EFFECT,
+        T.TARGET_NAME,
+        <if test="mode == 'rank'">P.TARGET_IDX,</if>
+        T.ICON_KEY AS TARGET_ICON_KEY,
+        IT.ICON AS TARGET_ICON,
+        IT.COLOR AS TARGET_COLOR,
+        J.JOB_NAME AS JOB_NAME,
+        <if test="mode == 'rank'">P.JOB_IDX,</if>
+        J.ICON_KEY AS JOB_ICON_KEY,
+        IJ.ICON AS JOB_ICON,
+        IJ.COLOR AS JOB_COLOR,
+        ETC.JOB_NAME AS ETC_JOB_NAME,
+        ETC.ICON_KEY AS ETC_ICON_KEY,
+        IE.ICON AS ETC_ICON,
+        IE.COLOR AS ETC_COLOR,
+        PS.SEARCH_TEXT
+    </sql>
+
+    <!-- 공통 ORDER BY 부분 -->
+    <sql id="commonOrderBy">
+        <choose>
+            <!-- 등록일 기준 정렬 -->
+            <when test="sort == 'latest'">
+                P.PLAN_SUB_DATE
+                <choose>
+                    <when test="order == 'desc'"> DESC</when>
+                    <otherwise> asc</otherwise>
+                </choose>
+            </when>
+            <!-- 조회수 기준 정렬 -->
+            <when test="sort == 'view'">
+                P.VIEW_COUNT
+                <choose>
+                    <when test="order == 'desc'"> DESC</when>
+                    <otherwise> asc</otherwise>
+                </choose>
+            </when>
+            <!-- 추천수 기준 정렬 -->
+            <when test="sort == 'like'">
+                P.LIKE_COUNT
+                <choose>
+                    <when test="order == 'desc'"> DESC</when>
+                    <otherwise> asc</otherwise>
+                </choose>
+            </when>
+            <!-- 포크수 기준 정렬 -->
+            <when test="sort == 'fork'">
+                P.FORK_COUNT
+                <choose>
+                    <when test="order == 'desc'"> DESC</when>
+                    <otherwise> asc</otherwise>
+                </choose>
+            </when>
+            <!-- 불꽃 경험치 기준 정렬 -->
+            <when test="sort == 'fire'">
+                P.CERT_EXP
+                <choose>
+                    <when test="order == 'desc'"> DESC</when>
+                    <otherwise> asc</otherwise>
+                </choose>
+            </when>
+            <!-- 예외 발생시 최신순 정렬 -->
+            <otherwise>
+                P.PLAN_SUB_DATE DESC
+            </otherwise>
+        </choose>
+    </sql>
+    <!-- /////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->
+
+    <!-- (개인용) 전체 조회 -->
+    <select id="getMyPlansByUserIdx" parameterType="int" resultType="com.godLife.project.dto.list.customDTOs.CustomPlanDTO">
+        SELECT
+            PLAN_IDX, PLAN_TITLE, END_TO, PLAN_SUB_END,
+            IS_SHARED, IS_ACTIVE, PLAN_IMP, CERT_EXP,
+            REPEAT_DAYS, FIRE_STATE
+        FROM PLAN_TABLE
+        WHERE USER_IDX = #{userIdx} AND IS_DELETED = 0 AND IS_COMPLETED = 0
+        ORDER BY IS_ACTIVE DESC, PLAN_IMP DESC, PLAN_SUB_START IS NULL, PLAN_SUB_START DESC
+    </select>
+
+    <!-- (공용) 전체 조회 쿼리 -->
+    <select id="getAllPlanList" parameterType="map" resultMap="PlanListResultMap">
+        <choose>
+            <!-- 랭크 모드 -->
+            <when test="mode == 'rank'">
+                SELECT *
+                    FROM (
+                        SELECT
+                            ROW_NUMBER() OVER (ORDER BY ((P.CERT_EXP / 5) * 0.4) + (P.LIKE_COUNT * 0.7) + (P.FORK_COUNT * 1.2) DESC) AS RANK,
+                            <!-- 공통 SELECT -->
+                            <include refid="commonSelectColumns" />
+                        FROM PLAN_TABLE P
+                        <include refid="commonJoin" />
+                        WHERE P.IS_SHARED = 1 AND P.IS_DELETED = 0
+                        <include refid="statusFilter" />
+                    ) RANKED
+            </when>
+
+            <!-- 기본 모드 -->
+            <otherwise>
+                SELECT
+                    ROW_NUMBER() OVER (
+                    ORDER BY <include refid="commonOrderBy" />
+                    ) AS RANK,
+                    <!-- 공통 SELECT -->
+                    <include refid="commonSelectColumns" />
+
+                FROM PLAN_TABLE P
+                <include refid="commonJoin" />
+
+                WHERE P.IS_DELETED = 0
+                <choose>
+                    <when test="mode == 'private'">
+                        AND P.USER_IDX = #{userIdx}
+                    </when>
+                    <otherwise>
+                        AND P.IS_SHARED = 1
+                    </otherwise>
+                </choose>
+                <include refid="statusFilter" />
+                <include refid="searchFilter" />
+                <include refid="targetCategoryFilter" />
+                <include refid="jobCategoryFilter" />
+            </otherwise>
+        </choose>
+
+        <if test="mode == 'rank' and ((keywords != null and keywords != '') or (target != null and target.size() > 0) or (job != null and job.size() > 0))">
+            WHERE 1=1
+            <if test="target != null and target.size() > 0 ">
+                AND RANKED.TARGET_IDX IN
+                <foreach item="item" index="index" collection="target" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="job != null and job.size() > 0 ">
+                AND RANKED.JOB_IDX IN
+                <foreach item="item" index="index" collection="job" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="keywords != null and keywords != ''">
+                AND MATCH(RANKED.SEARCH_TEXT) AGAINST(#{keyword} IN BOOLEAN MODE)
+            </if>
+        </if>
+        ORDER BY
+        <choose>
+            <!-- 랭크 모드 -->
+            <when test="mode == 'rank'">
+                RANKED.RANK
+            </when>
+            <!-- 기본 모드 -->
+            <otherwise>
+                <include refid="commonOrderBy" />
+            </otherwise>
+        </choose>
+
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <!-- 좋아요 한 루틴 리스트 조회 -->
+    <select id="getLikePlanList" parameterType="map" resultMap="PlanListResultMap">
+        SELECT
+        ROW_NUMBER() OVER (
+        ORDER BY L.LIKE_TIMESTAMP
+        <choose>
+            <when test="order == 'desc'"> DESC</when>
+            <otherwise> asc</otherwise>
+        </choose>
+        ) AS RANK,
+        <!-- 공통 SELECT -->
+        <include refid="commonSelectColumns" />
+
+        FROM LIKE_TABLE L
+        LEFT JOIN PLAN_TABLE P ON L.PLAN_IDX = P.PLAN_IDX
+        <include refid="commonJoin" />
+
+        WHERE L.USER_IDX = #{userIdx}
+        AND P.IS_DELETED = 0
+        AND P.IS_SHARED = 1
+        <include refid="searchFilter" />
+        <include refid="targetCategoryFilter" />
+        <include refid="jobCategoryFilter" />
+
+        ORDER BY L.LIKE_TIMESTAMP
+        <choose>
+            <when test="order == 'desc'"> DESC</when>
+            <otherwise> asc</otherwise>
+        </choose>
+
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+
+
+    <!-- 총 페이지 수 조회 쿼리 -->
+    <select id="getTotalPlanCount" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        <choose>
+            <when test="mode == 'myLike'">
+                FROM LIKE_TABLE L
+                LEFT JOIN PLAN_TABLE P ON L.PLAN_IDX = P.PLAN_IDX
+                <include refid="commonJoin" />
+            </when>
+            <otherwise>
+                FROM PLAN_TABLE P
+                <include refid="commonJoin" />
+            </otherwise>
+        </choose>
+
+        WHERE P.IS_DELETED = 0
+        <choose>
+            <when test="mode == 'private'">
+                AND P.USER_IDX = #{userIdx}
+            </when>
+            <when test="mode == 'myLike'">
+                AND L.USER_IDX = #{userIdx}
+                AND P.IS_SHARED = 1
+            </when>
+            <otherwise>
+                AND P.IS_SHARED = 1
+            </otherwise>
+        </choose>
+        <include refid="statusFilter" />
+        <include refid="searchFilter" />
+        <include refid="targetCategoryFilter" />
+        <include refid="jobCategoryFilter" />
+    </select>
+
+    <!-- 문의 상태 필터 쿼리 조각 -->
+    <sql id="qnaStatusFilter">
+        <choose>
+            <when test="status == 'wait'">
+                AND QNA_STATUS = 'WAIT'
+            </when>
+            <when test="status == 'connect'">
+                AND QNA_STATUS = 'CONNECT'
+            </when>
+            <when test="status == 'responding'">
+                AND QNA_STATUS = 'RESPONDING'
+            </when>
+            <when test="status == 'complete'">
+                AND QNA_STATUS = 'COMPLETE'
+            </when>
+            <when test="status == 'sleep'">
+                AND QNA_STATUS = 'SLEEP'
+            </when>
+            <otherwise> </otherwise>
+        </choose>
+    </sql>
+
+    <!-- 문의 검색 쿼리 조각 -->
+    <sql id="qnaSearchFilter">
+        <if test="keywords != null and keywords != ''">
+            AND MATCH(TITLE) AGAINST(#{keywords} IN BOOLEAN MODE)
+        </if>
+    </sql>
+
+    <!-- 문의 리스트 조회 -->
+    <select id="getQnaList" parameterType="map" resultType="com.godLife.project.dto.list.QnaListDTO">
+        SELECT ROW_NUMBER() OVER (
+            ORDER BY
+            <if test="sort == 'answer'">
+                A_COUNT DESC,
+            </if>
+            CREATED_AT
+                <choose>
+                    <when test="order == 'desc'"> DESC</when>
+                    <otherwise> asc</otherwise>
+                </choose>
+        ) AS NUM, QNA_IDX, TITLE, CREATED_AT, MODIFIED_AT, CATEGORY, A_COUNT, QNA_STATUS
+        FROM QNA_TABLE
+        WHERE Q_USER_IDX = #{qUserIdx}
+          AND QNA_STATUS != #{notStatus}
+        <!-- 문의 상태 필터 쿼리 -->
+        <include refid="qnaStatusFilter" />
+        <!-- 문의 검색 쿼리 -->
+        <include refid="qnaSearchFilter" />
+
+        ORDER BY
+            <if test="sort == 'answer'">
+                A_COUNT DESC,
+            </if>
+            CREATED_AT
+            <choose>
+                <when test="order == 'desc'"> DESC</when>
+                <otherwise> asc</otherwise>
+            </choose>
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <!-- 조회할 문의 리스트의 총 문의 수 -->
+    <select id="getTotalQnaCount" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM QNA_TABLE
+        WHERE Q_USER_IDX = #{qUserIdx}
+        AND QNA_STATUS != #{notStatus}
+        <!-- 문의 상태 필터 쿼리 -->
+        <include refid="qnaStatusFilter" />
+        <!-- 문의 검색 쿼리 -->
+        <include refid="qnaSearchFilter" />
+    </select>
+
+
+</mapper>

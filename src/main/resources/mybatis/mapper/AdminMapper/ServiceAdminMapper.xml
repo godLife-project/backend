@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godLife.project.mapper.AdminMapper.ServiceAdminMapper">
+
+    <!-- 고객관리자 로그아웃 처리 -->
+    <delete id="setCenterLogoutByAdmin3467" parameterType="String">
+        DELETE FROM SERVICE_CENTER sc
+        WHERE EXISTS (
+        SELECT 1
+        FROM USER_TABLE ut
+        JOIN REFRESH_TOKEN rt ON ut.USER_ID = rt.USERNAME
+        WHERE rt.REFRESH = #{refreshToken}
+        AND ut.USER_IDX = sc.USER_IDX
+        )
+    </delete>
+
+    <!-- 매칭된 혹은 응대중 인 문의 수 업데이트 -->
+    <update id="setMatchedByQuestionCount" parameterType="map">
+        UPDATE SERVICE_CENTER
+        SET MATCHED = (
+            SELECT COUNT(A_USER_IDX)
+            FROM QNA_TABLE
+            WHERE A_USER_IDX = #{userIdx}
+            AND NOT QNA_STATUS IN
+            <foreach collection="notStatus" item="status" open="(" separator=", " close=")">
+                #{status}
+            </foreach>
+        )
+        WHERE USER_IDX = #{userIdx}
+    </update>
+
+    <!-- 관리자 상태 비/활성화 하기 -->
+    <update id="switchAdminStatus" parameterType="int">
+        UPDATE SERVICE_CENTER SET STATUS = 1 - STATUS WHERE USER_IDX = #{userIdx}
+    </update>
+
+</mapper>

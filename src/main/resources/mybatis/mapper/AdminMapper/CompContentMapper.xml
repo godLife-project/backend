@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godLife.project.mapper.AdminMapper.CompContentMapper">
+    <!--            목표 카테고리 CRUD Mapper         -->
+
+    <!-- 추가 -->
+    <insert id="insertTargetCategory" parameterType="com.godLife.project.dto.categories.TargetCateDTO">
+        INSERT INTO TARGET_CATEGORY (TARGET_NAME, ICON_KEY)
+        VALUES (#{name}, #{iconKey})
+    </insert>
+    <!-- 수정 -->
+    <update id="updateTargetCategory" parameterType="com.godLife.project.dto.categories.TargetCateDTO">
+        UPDATE target_category
+        <set>
+            <if test="name != null">
+                target_name = #{name},
+            </if>
+            <if test="iconKey != null">
+                icon_key = #{iconKey},
+            </if>
+        </set>
+        WHERE target_idx = #{idx}
+    </update>
+
+    <!-- 삭제 -->
+    <update id="softDeleteTargetCategory" parameterType="int">
+        UPDATE TARGET_CATEGORY
+        SET IS_DELETED = 1
+        WHERE TARGET_IDX = #{idx}
+    </update>
+
+    <!-- 중복 카테고리 확인 -->
+    <select id = "countByTargetCateName" parameterType="String" resultType="int">
+        SELECT COUNT(*)
+        FROM TARGET_CATEGORY
+        WHERE TARGET_NAME = #{name}
+    </select>
+    <!-- 수정시 중복체크 자기자신 제외 -->
+    <select id="countTargetCateNameExceptSelf" resultType="int">
+        SELECT COUNT(*)
+        FROM TARGET_CATEGORY
+        WHERE TARGET_NAME = #{name}
+        AND TARGET_IDX != #{idx}
+    </select>
+
+
+    <!--            직업 카테고리 CRUD Mapper         -->
+
+    <!-- 작성 -->
+    <insert id="insertJobCategory" parameterType="com.godLife.project.dto.categories.JobCateDTO">
+        INSERT INTO JOB_CATEGORY (JOB_NAME, ICON_KEY)
+        VALUES (#{name}, #{iconKey})
+    </insert>
+
+    <!-- 수정 -->
+    <update id="updateJobCategory" parameterType="com.godLife.project.dto.categories.JobCateDTO">
+        UPDATE JOB_CATEGORY
+        <set>
+            <if test="name != null">
+                job_name = #{name},
+            </if>
+            <if test="iconKey != null">
+                icon_key = #{iconKey},
+            </if>
+        </set>
+        WHERE JOB_IDX = #{idx}
+    </update>
+
+    <!-- 삭제 -->
+    <update id="deleteJobCategory" parameterType="int">
+        UPDATE JOB_CATEGORY
+        SET IS_DELETED = 1
+        WHERE JOB_IDX = #{idx}
+    </update>
+
+    <!-- 중복 카테고리 확인 -->
+    <select id = "countByJobCateName" parameterType="String" resultType="int">
+        SELECT COUNT(*)
+        FROM JOB_CATEGORY
+        WHERE JOB_NAME = #{name}
+    </select>
+    <!-- 수정시 중복체크 자기자신 제외 -->
+    <select id="countJobCateNameExceptSelf" resultType="int">
+        SELECT COUNT(*)
+        FROM JOB_CATEGORY
+        WHERE JOB_NAME = #{name}
+        AND JOB_IDX != #{idx}
+    </select>
+
+
+
+    <!--            등급 관리 테이블 CRUD Mapper         -->
+
+    <!-- 등급 추가 -->
+    <insert id="insertFire" parameterType="com.godLife.project.dto.datas.FireDTO">
+        INSERT INTO FIRE_TABLE (MIN_EXP, MAX_EXP, FIRE_NAME, FIRE_COLOR, FIRE_EFFECT)
+        VALUES (#{minExp}, #{maxExp}, #{fireName}, #{fireColor}, #{fireEffect})
+    </insert>
+
+    <!-- 등급 수정 -->
+    <update id="updateFire" parameterType="com.godLife.project.dto.datas.FireDTO">
+        UPDATE FIRE_TABLE
+        <set>
+            <if test="minExp != null">
+                MIN_EXP = #{minExp},
+            </if>
+            <if test="maxExp != null">
+                MAX_EXP = #{maxExp},
+            </if>
+            <if test="fireName != null">
+                FIRE_NAME = #{fireName},
+            </if>
+            <if test="fireColor != null">
+                FIRE_COLOR = #{fireColor},
+            </if>
+            <if test="fireEffect != null">
+                FIRE_EFFECT = #{fireEffect},
+            </if>
+        </set>
+        WHERE LV_IDX = #{lvIdx}
+    </update>
+
+    <!-- 등급(불꽃) 삭제 -->
+    <delete id="deleteFire" parameterType="int">
+        DELETE FROM FIRE_TABLE WHERE LV_IDX = #{lvIdx}
+    </delete>
+
+    <!-- 중복 등급(불꽃) 확인 -->
+    <select id = "countByFireName" parameterType="String" resultType="int">
+        SELECT COUNT(*)
+        FROM FIRE_TABLE
+        WHERE FIRE_NAME = #{fireName}
+    </select>
+    <!-- 이름 중복 체크 (수정용 - 자기 자신 제외) -->
+    <select id="countByTargetCateNameExceptId" resultType="int">
+        SELECT COUNT(*)
+        FROM FIRE_TABLE
+        WHERE FIRE_NAME = #{fireName}
+        AND LV_IDX != #{lvIdx}
+    </select>
+    <!-- EXP 범위 중복 체크 (추가용) -->
+    <select id="countExpOverlap" resultType="int">
+        SELECT COUNT(*)
+        FROM FIRE_TABLE
+        WHERE NOT (
+        MAX_EXP &lt; #{minExp} OR MIN_EXP &gt; #{maxExp}
+        )
+    </select>
+    <!-- EXP 범위 중복 체크 (수정용 - 자기 자신 제외) -->
+    <select id="countExpOverlapExceptId" resultType="int">
+        SELECT COUNT(*)
+        FROM FIRE_TABLE
+        WHERE NOT (
+        MAX_EXP &lt; #{minExp} OR MIN_EXP &gt; #{maxExp}
+        )
+        AND LV_IDX != #{lvIdx}
+    </select>
+
+    <!--            챌린지 카테고리 테이블 CRUD Mapper         -->
+
+    <!-- 카테고리 추가 -->
+    <insert id="insertChallCate" parameterType="com.godLife.project.dto.categories.ChallengeCateDTO">
+        INSERT INTO CHALL_CATEGORY (CHALL_NAME, ICON_KEY)
+        VALUES (#{challName}, #{iconKey})
+    </insert>
+
+
+
+    <!-- 중복 카테고리 확인 -->
+    <select id = "countByChallCateName" parameterType="String" resultType="int">
+        SELECT COUNT(*)
+        FROM CHALL_CATEGORY
+        WHERE CHALL_NAME = #{challName}
+    </select>
+
+    <!-- 수정 -->
+    <update id="updateChallCate" parameterType="com.godLife.project.dto.categories.ChallengeCateDTO">
+        UPDATE CHALL_CATEGORY
+        <set>
+            <if test="challName != null">
+                CHALL_NAME = #{challName},
+            </if>
+            <if test="iconKey != null">
+                icon_key = #{iconKey},
+            </if>
+        </set>
+        WHERE CHALL_CATEGORY_IDX = #{challCateIdx}
+    </update>
+
+    <!-- 삭제 -->
+    <update  id="deleteChallCate" parameterType="int">
+        UPDATE CHALL_CATEGORY
+        SET IS_DELETED = 1
+        WHERE CHALL_CATEGORY_IDX = #{idx}
+    </update>
+
+
+    <!-- 조회 쿼리문 -->
+    <!-- 목표 조회
+    <select id="targetCategoryList" resultType="com.godLife.project.dto.categories.TargetCateDTO">
+        SELECT
+        t.TARGET_IDX AS idx,
+        t.TARGET_NAME AS name,
+        t.ICON_KEY AS iconKey,
+        NVL(i.ICON, 'default-icon') AS icon,
+        NVL(i.COLOR, '#999999') AS color
+        FROM TARGET_CATEGORY t
+        LEFT JOIN ICON_TABLE i ON t.ICON_KEY = i.ICON_KEY
+        WHERE IS_DELETED = FALSE
+    </select>
+
+        < 직업 >
+        <select id="getAllJobCategories" resultType="com.godLife.project.dto.categories.JobCateDTO">
+        SELECT
+        j.JOB_IDX AS idx,
+        j.JOB_NAME AS name,
+        j.ICON_KEY AS iconKey,
+        i.ICON AS icon,
+        i.COLOR AS color
+        FROM JOB_CATEGORY j
+        LEFT JOIN ICON_TABLE i ON j.ICON_KEY = i.ICON_KEY
+    </select>
+
+        < 등급 >
+    <select id="selectAllFireGrades" resultType="com.godLife.project.dto.datas.FireDTO">
+        SELECT
+        LV_IDX as lvIdx,
+        MIN_EXP as minExp,
+        MAX_EXP as maxExp,
+        FIRE_NAME as fireName,
+        FIRE_COLOR as fireColor,
+        FIRE_EFFECT as fireEffect
+        FROM
+        FIRE_TABLE
+        ORDER BY
+        MIN_EXP ASC
+    </select>
+
+        < 챌린지 >
+        <select id="selectChallCate" resultType="com.godLife.project.dto.categories.ChallengeCateDTO">
+        SELECT
+        j.CHALL_CATEGORY_IDX AS challCateIdx,
+        j.CHALL_NAME AS challName,
+        j.ICON_KEY AS iconKey,
+        i.ICON AS icon,
+        i.COLOR AS color
+        FROM CHALL_CATEGORY j
+        LEFT JOIN ICON_TABLE i ON j.ICON_KEY = i.ICON_KEY
+    </select>
+    -->
+</mapper>

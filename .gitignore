@@ -1,6 +1,5 @@
 HELP.md
 target/
-!.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
@@ -14,7 +13,7 @@ target/
 .sts4-cache
 
 ### IntelliJ IDEA ###
-.idea
+.idea/
 *.iws
 *.iml
 *.ipr
@@ -28,9 +27,41 @@ target/
 build/
 !**/src/main/**/build/
 !**/src/test/**/build/
+/out/
 
 ### VS Code ###
 .vscode/
 
 ## 환경변수 파일 제외 ##
 .env
+application-secret.properties
+application-secret.yml
+config/application-secret.properties
+config/application-secret.yml
+src/main/resources/application-secret.properties
+src/main/resources/application-secret.yml
+
+## 로그 및 캐시 파일 제외 ##
+logs/
+*.log
+debug.log
+
+## 시스템 불필요 파일 제외 ##
+.DS_Store
+Thumbs.db
+
+## 테스트 리포트 및 커버리지 제외 ##
+/test-output/
+/coverage/
+
+## Docker 설정 파일 제외 (사용 시) ##
+docker-compose.override.yml
+
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build
+
+# 이미지 업로드 파일 제외
+uploads/

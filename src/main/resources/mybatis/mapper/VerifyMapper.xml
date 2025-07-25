@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godLife.project.mapper.VerifyMapper">
+
+    <!-- 전체 조회 -->
+    <select id="getVerifyRate" parameterType="int" resultType="double">
+        SELECT
+        CASE
+        WHEN COUNT(DISTINCT P.ACTIVITY_IDX) = 0 THEN 0
+        ELSE ROUND(
+        (COUNT(DISTINCT V.ACTIVITY_IDX) / COUNT(DISTINCT P.ACTIVITY_IDX)) * 100, 2
+        )
+        END AS VERIFY_RATE
+        FROM PLAN_ACTIVITY P
+        LEFT JOIN VERIFY_TABLE V
+        ON P.ACTIVITY_IDX = V.ACTIVITY_IDX
+        AND V.VERIFY_DATE = CURDATE()
+        WHERE P.PLAN_IDX = #{planIdx}
+    </select>
+
+    <!-- 모든 루틴 불꽃 활성화 여부 조회 -->
+    <select id="checkAllFireIsActivateByUserIdx" parameterType="int" resultType="com.godLife.project.dto.verify.CheckAllFireActivateDTO">
+        SELECT USER_IDX,
+        CASE
+        WHEN COUNT(*) = SUM(CASE WHEN FIRE_STATE = 1 THEN 1 ELSE 0 END) THEN 1
+        ELSE 0
+        END AS FIRE_MATCH
+        FROM PLAN_TABLE
+        WHERE IS_ACTIVE = 1
+        AND IS_COMPLETED = 0
+        AND IS_DELETED = 0
+        <choose>
+            <when test="userIdx != 0">
+                AND USER_IDX = #{userIdx}
+                GROUP BY USER_IDX
+            </when>
+            <otherwise>
+                GROUP BY USER_IDX
+                HAVING CASE
+                WHEN COUNT(*) = SUM(CASE WHEN FIRE_STATE = 1 THEN 1 ELSE 0 END) THEN 1
+                ELSE 0
+                END = 0
+            </otherwise>
+        </choose>
+    </select>
+
+
+</mapper>

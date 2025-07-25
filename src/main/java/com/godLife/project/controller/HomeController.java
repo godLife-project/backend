@@ -1,11 +1,9 @@
 package com.godLife.project.controller;
 
-import com.godLife.project.service.TestService;
+import com.godLife.project.service.interfaces.TestService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-
-import java.util.List;
 
 @Controller
 public class HomeController {
@@ -19,9 +17,6 @@ public class HomeController {
     @GetMapping("/")
     public String home(Model model) {
         model.addAttribute("message", "hello, thymeleaf!");
-        List<String> testDTOS = testService.getJobName();
-        System.out.println(testDTOS);
-        model.addAttribute("testDTOS", testDTOS);
         return "index";
     }
 }

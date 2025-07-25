@@ -1,6 +1,6 @@
 package com.godLife.project.jwt;
 
-import com.godLife.project.dto.jwt.CustomUserDetails;
+import com.godLife.project.dto.jwtDTO.CustomUserDetails;
 import com.godLife.project.dto.datas.UserDTO;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
@@ -8,6 +8,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,6 +17,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+@Slf4j
 public class JWTFilter extends OncePerRequestFilter {
 
   private final JWTUtil jwtUtil;
@@ -47,26 +49,39 @@ public class JWTFilter extends OncePerRequestFilter {
       jwtUtil.isExpired(accessToken);
     } catch (ExpiredJwtException e) {
 
-      //response body
-      PrintWriter writer = response.getWriter();
-      writer.print("access token expired");
-
-      //response status code
+      // JSON 형식으로 응답 보내기
+      response.setContentType("application/json");
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      return;
+
+      // JSON 데이터
+      String jsonResponse = "{\"message\": \"access token expired\"}";
+
+      // PrintWriter로 JSON 응답 출력
+      PrintWriter writer = response.getWriter();
+      writer.print(jsonResponse);
+      writer.flush();  // 데이터를 전송
+
+      log.error("JWT access 토큰 만료: {}", e.getMessage());
     }
 
     // 토큰이 access인지 확인 (발급시 페이로드에 명시)
     String category = jwtUtil.getCategory(accessToken);
 
     if (!category.equals("access")) {
-
-      //response body
-      PrintWriter writer = response.getWriter();
-      writer.print("invalid access token");
-
-      //response status code
+      // JSON 형식으로 응답 보내기
+      response.setContentType("application/json");
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+      // JSON 데이터
+      String jsonResponse = "{\"message\": \"invalid access token\"}";
+
+      // PrintWriter로 JSON 응답 출력
+      PrintWriter writer = response.getWriter();
+      writer.print(jsonResponse);
+      writer.flush();  // 데이터를 전송
+
+      log.error("유효하지 않은 access 토큰 사용: {}", category);
+
       return;
     }
 

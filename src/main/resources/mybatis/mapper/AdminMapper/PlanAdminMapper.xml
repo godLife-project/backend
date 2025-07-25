@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godLife.project.mapper.AdminMapper.PlanAdminMapper">
+
+
+    <select id="selectAdminPlanList" resultType="com.godLife.project.dto.list.customDTOs.CustomAdminPlanListDTO">
+        SELECT
+        r.PLAN_IDX,
+        r.PLAN_TITLE,
+        r.TARGET_IDX,
+        r.PLAN_SUB_DATE,
+        r.USER_IDX
+        FROM PLAN_TABLE r
+        INNER JOIN USER_TABLE u ON r.USER_IDX = u.USER_IDX
+        WHERE u.AUTHORITY_IDX BETWEEN 2 AND 7
+        ORDER BY r.PLAN_SUB_DATE DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+
+    <select id="getTotalAdminPlanCount" resultType="int">
+        SELECT COUNT(*)
+        FROM PLAN_TABLE r
+        INNER JOIN USER_TABLE u ON r.USER_IDX = u.USER_IDX
+        WHERE u.AUTHORITY_IDX BETWEEN 2 AND 7
+    </select>
+
+    <select id="selectAdminPlanListByTargetIdx" resultType="com.godLife.project.dto.list.customDTOs.CustomAdminPlanListDTO">
+        SELECT
+        r.PLAN_IDX,
+        r.PLAN_TITLE,
+        r.TARGET_IDX,
+        r.PLAN_SUB_DATE,
+        r.USER_IDX
+        FROM PLAN_TABLE r
+        INNER JOIN USER_TABLE u ON r.USER_IDX = u.USER_IDX
+        WHERE r.TARGET_IDX = #{targetIdx}
+        AND u.AUTHORITY_IDX BETWEEN 2 AND 7
+        ORDER BY r.PLAN_SUB_DATE DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="selectPlanList" resultType="com.godLife.project.dto.list.customDTOs.CustomAdminPlanListDTO">
+        SELECT
+        r.PLAN_IDX,
+        r.PLAN_TITLE,
+        r.TARGET_IDX,
+        r.PLAN_SUB_DATE,
+        r.USER_IDX
+        FROM PLAN_TABLE r
+        INNER JOIN USER_TABLE u ON r.USER_IDX = u.USER_IDX
+        WHERE u.AUTHORITY_IDX = 1
+        ORDER BY r.PLAN_SUB_DATE DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+</mapper>

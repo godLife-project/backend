@@ -2,11 +2,15 @@ package com.godLife.project.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.godLife.project.dto.datas.UserDTO;
-import com.godLife.project.service.jwt.RefreshService;
+import com.godLife.project.dto.response.LoginResponseDTO;
+import com.godLife.project.service.interfaces.AdminInterface.serviceCenter.ServiceAdminService;
+import com.godLife.project.service.interfaces.UserService;
+import com.godLife.project.service.interfaces.jwtInterface.RefreshService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,6 +23,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 
+@Slf4j
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
   private final AuthenticationManager authenticationManager;
@@ -27,12 +32,15 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
   private final RefreshService refreshService;
 
-  public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, RefreshService refreshService) {
+  private final UserService userService;
+
+  public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, RefreshService refreshService, UserService userService) {
 
     super.setFilterProcessesUrl("/api/user/login");
     this.authenticationManager = authenticationManager;
     this.jwtUtil = jwtUtil;
     this.refreshService = refreshService;
+    this.userService = userService;
   }
 
   @Override
@@ -52,6 +60,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, password, null);
             return authenticationManager.authenticate(authToken);
         } catch (IOException e) {
+          log.error("로그인 중 JSON 파싱 에러: {}", e.getMessage());
             throw new AuthenticationException("Failed to parse JSON request") {};
         }
 
@@ -74,7 +83,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
   //로그인 성공시 실행하는 메소드 (여기서 JWT를 발급하면 됨)
   @Override
-  protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) {
+  protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException{
 
 //    CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
 //
@@ -98,12 +107,34 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     GrantedAuthority auth = iterator.next();
     String role = auth.getAuthority();
 
+    // 유저 정보 조회
+    UserDTO tempUserDTO = userService.findByUserId(username);
+    int isBanned = tempUserDTO.getIsBanned();
+
+    // 전송할 데이터 DTO
+    LoginResponseDTO loginUserDTO = new LoginResponseDTO();
+    loginUserDTO.setUserIdx(tempUserDTO.getUserIdx());      // 유저 고유 인덱스
+    loginUserDTO.setUserName(tempUserDTO.getUserName());    // 유저 이름
+    loginUserDTO.setUserNick(tempUserDTO.getUserNick());    // 유저 닉네임
+    loginUserDTO.setNickTag(tempUserDTO.getNickTag());      // 닉네임 중복 태그
+    loginUserDTO.setJobIdx(tempUserDTO.getJobIdx());        // 유저 직업
+    loginUserDTO.setTargetIdx(tempUserDTO.getTargetIdx());  // 유저 관심사
+    loginUserDTO.setCombo(tempUserDTO.getCombo());          // 유저 콤보
+    loginUserDTO.setUserExp(tempUserDTO.getUserExp());      // 유저 경험치
+    loginUserDTO.setUserLv(tempUserDTO.getUserLv());        // 유저 레벨
+    if (tempUserDTO.getAuthorityIdx() >= 2) {
+      loginUserDTO.setRoleStatus(true);                     // 유저 권한이 아닐 경우 true
+    loginUserDTO.setReportCount(tempUserDTO.getReportCount()); // 신고 횟수
+    loginUserDTO.setIsBanned(tempUserDTO.getIsBanned());       // 정지 여부
+    }
+
+
     Long accessExp = 600000L;     // 10분
     Long refreshExp = 86400000L;  // 24시간
 
     //토큰 생성
-    String access = jwtUtil.createJwt("access", username, role, accessExp);
-    String refresh = jwtUtil.createJwt("refresh", username, role, refreshExp);
+    String access = jwtUtil.createJwt("access", username, role,  isBanned, accessExp);
+    String refresh = jwtUtil.createJwt("refresh", username, role, isBanned, refreshExp);
 
     // Refresh 토큰 저장
     refreshService.addRefreshToken(username, refresh, refreshExp);
@@ -112,6 +143,12 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     response.setHeader("Authorization", "Bearer " + access);
     response.addCookie(createCookie("refresh", refresh, request));
     response.setStatus(HttpStatus.OK.value());
+
+    // JSON 형태로 응답
+    response.setContentType("application/json");
+    response.setCharacterEncoding("UTF-8");
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.writeValue(response.getWriter(), loginUserDTO);
 
   }
 
@@ -127,7 +164,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     response.getWriter().write("{\"error\": \"아이디 혹은 비밀번호가 일치하지 않습니다.\"}");
   }
 
-  private Cookie createCookie(String key, String value,  HttpServletRequest request) {
+  private Cookie createCookie(String key, String value, HttpServletRequest request) {
 
     Cookie cookie = new Cookie(key, value);
     cookie.setMaxAge(24*60*60); // 생명 주기 : 24시간
@@ -135,8 +172,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     cookie.setHttpOnly(true);
 
     // 🔹 현재 요청이 HTTPS인지 확인하여 Secure 적용
-    if (request.isSecure()) {
+    boolean isSecure = request.isSecure() || "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"));
+    if (isSecure) {
       cookie.setSecure(true);
+      cookie.setAttribute("SameSite", "None");
     }
 
     return cookie;

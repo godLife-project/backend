@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godLife.project.mapper.AdminMapper.CompSystemMapper">
+    <!--            FAQ CATEGORY 관리 테이블 CRUD Mapper         -->
+    <!-- FAQ CATEGORY 별 조회 -->
+    <select id="faqListByCategory" resultType="com.godLife.project.dto.contents.FaQDTO">
+        SELECT *
+        FROM FAQ_TABLE
+        WHERE FAQ_CATEGORY = #{faqCategory}
+    </select>
+
+    <!-- FAQ_CATEGORY 추가 -->
+    <insert id="insertFaqCate" parameterType="com.godLife.project.dto.categories.FaqCateDTO">
+        INSERT INTO FAQ_CATEGORY (FAQ_CATEGORY_NAME)
+        VALUES (#{faqCategoryName})
+    </insert>
+
+    <!-- FAQ_CATEGORY 수정 -->
+    <update id="updateFaqCate" parameterType="com.godLife.project.dto.categories.FaqCateDTO">
+        UPDATE FAQ_CATEGORY
+        SET FAQ_CATEGORY_NAME = #{faqCategoryName}
+        WHERE FAQ_CATEGORY_IDX = #{faqCategoryIdx}
+    </update>
+
+    <!-- FAQ_CATEGORY에 속한 FAQ 먼저 삭제 -->
+    <delete id="deleteFaqByCate" parameterType="int">
+        DELETE FROM FAQ_TABLE
+        WHERE FAQ_CATEGORY = #{faqCategory}
+    </delete>
+
+    <!-- FAQ_CATEGORY 삭제 -->
+    <delete id="deleteFaqCate" parameterType="int">
+        DELETE FROM FAQ_CATEGORY WHERE FAQ_CATEGORY_IDX = #{faqCategoryIdx}
+    </delete>
+
+    <!-- 참조 개수 조회 -->
+    <select id="countFaqByCategory" parameterType="int" resultType="int">
+        SELECT COUNT(*) FROM FAQ_TABLE WHERE FAQ_CATEGORY = #{faqCategoryIdx}
+    </select>
+
+    <!-- 중복 카테고리 확인 -->
+    <select id = "countByFaqName" parameterType="String" resultType="int">
+        SELECT COUNT(*)
+        FROM FAQ_CATEGORY
+        WHERE FAQ_CATEGORY_NAME = #{faqCategoryName}
+    </select>
+
+
+    <!--            QNA CATEGORY 관리 테이블 CRUD Mapper         -->
+
+    <!-- QNA_CATEGORY LIST 조회 -->
+<!--    <select id="selectAllQnaCate" resultType="com.godLife.project.dto.categories.QnaCateDTO">-->
+<!--        SELECT *-->
+<!--        FROM QNA_CATEGORY-->
+<!--    </select>-->
+
+    <!-- QNA CATEGORY 별 조회 -->
+    <select id="qnaListByCategory" resultType="com.godLife.project.dto.list.QnaListDTO">
+        SELECT *
+        FROM QNA_TABLE
+        WHERE CATEGORY = #{category}
+    </select>
+
+    <!-- QNA 카테고리 추가 -->
+    <insert id="insertQnaCate" parameterType="com.godLife.project.dto.categories.QnaCateDTO">
+        INSERT INTO QNA_CATEGORY (PARENT_IDX, CATEGORY_NAME, CATEGORY_LEVEL)
+        VALUES (#{parentIdx}, #{categoryName}, #{categoryLevel})
+    </insert>
+
+    <!-- QNA_CATEGORY 수정 -->
+    <update id="updateQnaCate" parameterType="com.godLife.project.dto.categories.QnaCateDTO">
+        UPDATE QNA_CATEGORY
+        <set>
+            <if test="categoryName != null and categoryName != ''">
+                CATEGORY_NAME = #{categoryName},
+            </if>
+            <if test="parentIdx != null">
+                PARENT_IDX = #{parentIdx},
+            </if>
+            <if test="categoryLevel != null">
+                CATEGORY_LEVEL = #{categoryLevel},
+            </if>
+            UPDATE_DATE = CURRENT_DATE
+        </set>
+        WHERE CATEGORY_IDX = #{categoryIdx}
+    </update>
+
+    <!-- QNA_CATEGORY에 속한 QNA 먼저 삭제 -->
+    <delete id="deleteQnaByCate" parameterType="int">
+        DELETE FROM QNA_TABLE
+        WHERE CATEGORY = #{category}
+    </delete>
+
+    <!-- QNA_CATEGORY 삭제 -->
+    <delete id="deleteQnaCate" parameterType="int">
+        DELETE FROM QNA_CATEGORY WHERE CATEGORY_IDX = #{categoryIdx}
+    </delete>
+
+    <!-- 자식 카테고리 삭제 -->
+    <delete id="deleteChildQnaCategories" parameterType="int">
+        DELETE FROM QNA_CATEGORY WHERE PARENT_IDX = #{parentIdx}
+    </delete>
+
+    <!-- 참조 개수 조회 -->
+    <select id="countQnaByCategory" parameterType="int" resultType="int">
+        SELECT COUNT(*) FROM QNA_TABLE WHERE CATEGORY = #{category}
+    </select>
+
+    <!-- 자식 카테고리 개수 확인 -->
+    <select id="countQnaChildCategories" resultType="int">
+        SELECT COUNT(*) FROM QNA_CATEGORY
+        WHERE PARENT_IDX = #{parentIdx}
+    </select>
+
+
+    <!-- 자기 자신을 제외한 중복 카테고리 확인 -->
+    <select id="countByQnaNameExcludeSelf" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM QNA_CATEGORY
+        WHERE CATEGORY_NAME = #{categoryName}
+        AND CATEGORY_IDX != #{categoryIdx}
+    </select>
+
+
+    <!--            TOP MENU 관리 테이블 CRUD Mapper         -->
+
+
+    <!-- 추가 -->
+    <insert id="insertTopMenu" parameterType="com.godLife.project.dto.categories.TopCateDTO">
+        INSERT INTO TOP_CATEGORY (
+        PARENT_IDX,
+        TOP_NAME,
+        TOP_ADDR,
+        CATEGORY_LEVEL,
+        ORD_COL
+        )
+        VALUES (
+        #{parentIdx},
+        #{topName},
+        #{topAddr},
+        #{categoryLevel},
+        #{ordCol}
+        )
+    </insert>
+
+    <!-- 수정 -->
+    <update id="updateTopMenu" parameterType="com.godLife.project.dto.categories.TopCateDTO">
+        UPDATE TOP_CATEGORY
+        <set>
+            <if test="parentIdx != 0">
+                PARENT_IDX = #{parentIdx},
+            </if>
+            <if test="topName != null and topName != ''">
+                TOP_NAME = #{topName},
+            </if>
+            <if test="topAddr != null and topAddr != ''">
+                TOP_ADDR = #{topAddr},
+            </if>
+            <if test="categoryLevel != 0">
+                CATEGORY_LEVEL = #{categoryLevel},
+            </if>
+            <if test="ordCol != 0">
+                ORD_COL = #{ordCol},
+            </if>
+        </set>
+        WHERE TOP_IDX = #{topIdx}
+    </update>
+
+    <!-- 삭제 -->
+    <delete id="deleteTopMenu" parameterType="int">
+        DELETE FROM TOP_CATEGORY WHERE TOP_IDX = #{topIdx}
+    </delete>
+
+    <!-- 중복 카테고리 확인 -->
+    <select id = "countByTopMenuName" parameterType="String" resultType="int">
+        SELECT COUNT(*)
+        FROM TOP_CATEGORY
+        WHERE TOP_NAME = #{topName}
+    </select>
+
+    <!-- 본인 제외 중복 검사 -->
+    <select id="countByTopMenuNameExceptSelf" resultType="int">
+        SELECT COUNT(*)
+        FROM TOP_CATEGORY
+        WHERE TOP_NAME = #{topName}
+        AND TOP_IDX != #{topIdx}
+    </select>
+
+
+            <!--            ICON 관리 테이블 CRUD Mapper         -->
+
+    <!-- 추가 -->
+    <insert id="insertIcon" parameterType="com.godLife.project.dto.datas.IconDTO">
+        INSERT INTO ICON_TABLE (ICON_KEY, ICON, COLOR, VISIBLE)
+        VALUES (#{iconKey}, #{icon}, #{color}, #{visible})
+    </insert>
+
+    <!-- 수정 -->
+    <update id="updateIcon" parameterType="com.godLife.project.dto.datas.IconDTO">
+        UPDATE ICON_TABLE
+        <set>
+            <if test="iconKey != null and iconKey != ''">
+                ICON_KEY = #{iconKey},
+            </if>
+            <if test="icon != null and icon != ''">
+                ICON = #{icon},
+            </if>
+            <if test="color != null">
+                COLOR = #{color},
+            </if>
+            <if test="visible != null">
+                VISIBLE = #{visible},
+            </if>
+        </set>
+        WHERE ICON_KEY = #{originalIconKey}
+    </update>
+
+    <!-- 삭제 -->
+    <delete id="deleteIcon" parameterType="String">
+        DELETE FROM ICON_TABLE WHERE ICON_KEY = #{iconKey}
+    </delete>
+
+    <!-- 중복 카테고리 확인 -->
+    <select id = "countByIconName" parameterType="String" resultType="int">
+        SELECT COUNT(*)
+        FROM ICON_TABLE
+        WHERE ICON_KEY = #{iconKey}
+    </select>
+
+    <!-- 자기 자신 제외 -->
+    <select id="countByIconKeyExcludingSelf" resultType="int">
+        SELECT COUNT(*)
+        FROM ICON_TABLE
+        WHERE ICON_KEY = #{newKey}
+        AND ICON_KEY != #{originalKey}
+    </select>
+
+    <!--
+        < 탑메뉴 조회 >
+    <select id="selectTopMenu" resultType="com.godLife.project.dto.categories.TopCateDTO">
+        SELECT * FROM TOP_CATEGORY ORDER BY ORD_IDX ASC
+    </select>
+        < 아이콘 조회 >
+    <select id="selectIcon" resultType="com.godLife.project.dto.datas.IconDTO">
+        SELECT * FROM ICON_TABLE
+    </select>
+
+    -->
+</mapper>

@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.godLife.project.mapper.QnaMapper">
+
+    <!-- 1:1 문의 작성 -->
+    <insert id="createQna" parameterType="com.godLife.project.dto.contents.QnaDTO" useGeneratedKeys="true" keyProperty="qnaIdx">
+        INSERT INTO QNA_TABLE(Q_USER_IDX, TITLE, CONTENT, CREATED_AT, CATEGORY, QNA_STATUS)
+        VALUES(#{qUserIdx}, #{title}, #{content}, NOW(), #{category}, 'WAIT')
+    </insert>
+
+    <!-- 'WAIT' 상태 문의 리스트용 정보 가져오기 -->
+    <select id="getlistAllWaitQna" resultType="com.godLife.project.dto.qnaWebsocket.QnaWaitListDTO">
+        SELECT Q.QNA_IDX, Q.Q_USER_IDX, U.USER_NAME, Q.TITLE, Q.CREATED_AT, Q.MODIFIED_AT, Q.CATEGORY, Q.QNA_STATUS
+        FROM QNA_TABLE Q
+        INNER JOIN USER_TABLE U ON Q.Q_USER_IDX = U.USER_IDX
+        WHERE Q.QNA_STATUS = 'WAIT'
+        ORDER BY Q.CREATED_AT
+    </select>
+
+    <select id="getWaitSingleQna" parameterType="int" resultType="com.godLife.project.dto.qnaWebsocket.QnaWaitListDTO">
+        SELECT Q.QNA_IDX, Q.Q_USER_IDX, U.USER_NAME, Q.TITLE, Q.CREATED_AT, Q.MODIFIED_AT, Q.CATEGORY, Q.QNA_STATUS
+        FROM QNA_TABLE Q
+        INNER JOIN USER_TABLE U ON Q.Q_USER_IDX = U.USER_IDX
+        WHERE Q.QNA_STATUS = 'WAIT'
+        AND Q.QNA_IDX = #{qnaIdx}
+    </select>
+
+    <!-- 매칭된 문의 리스트 조회 -->
+    <select id="getlistAllMatchedQna" parameterType="map" resultType="com.godLife.project.dto.qnaWebsocket.QnaMatchedListDTO">
+        SELECT Q.QNA_IDX, Q.Q_USER_IDX, U.USER_NAME, Q.TITLE, Q.CREATED_AT, Q.MODIFIED_AT, Q.CATEGORY, Q.QNA_STATUS, Q.Q_COUNT
+        FROM QNA_TABLE Q
+        INNER JOIN USER_TABLE U ON Q.Q_USER_IDX = U.USER_IDX
+        WHERE Q.QNA_STATUS NOT IN
+        <foreach collection="notStatus" item="status" open="(" separator=", " close=")">
+            #{status}
+        </foreach>
+        AND Q.A_USER_IDX = #{adminIdx}
+        ORDER BY Q.CREATED_AT
+    </select>
+
+    <!-- 매칭된 단일 문의 리스트 조회 -->
+    <select id="getMatchedSingleQna" parameterType="map" resultType="com.godLife.project.dto.qnaWebsocket.QnaMatchedListDTO">
+        SELECT Q.QNA_IDX, Q.Q_USER_IDX, U.USER_NAME, Q.TITLE, Q.CREATED_AT, Q.MODIFIED_AT, Q.CATEGORY, Q.QNA_STATUS, Q.Q_COUNT
+        FROM QNA_TABLE Q
+        INNER JOIN USER_TABLE U ON Q.Q_USER_IDX = U.USER_IDX
+        WHERE Q.QNA_STATUS NOT IN
+        <foreach collection="notStatus" item="status" open="(" separator=", " close=")">
+            #{status}
+        </foreach>
+        AND Q.A_USER_IDX = #{adminIdx}
+        AND Q.QNA_IDX = #{qnaIdx}
+        ORDER BY Q.CREATED_AT
+    </select>
+
+    <!-- 문의 답변 달기 -->
+    <insert id="commentReply" parameterType="com.godLife.project.dto.contents.QnaReplyDTO" useGeneratedKeys="true" keyProperty="qnaReplyIdx">
+        INSERT INTO QNA_REPLY(QNA_IDX, USER_IDX, CONTENT, CREATED_AT)
+        VALUES(#{qnaIdx}, #{userIdx}, #{content}, NOW())
+    </insert>
+
+    <!-- 문의 답변 수 증가 -->
+    <update id="increaseReplyCount" parameterType="map">
+        UPDATE QNA_TABLE
+        SET
+        <choose>
+            <when test="isWriter == true">
+                Q_COUNT = Q_COUNT + 1
+            </when>
+            <otherwise>
+                A_COUNT = A_COUNT + 1
+            </otherwise>
+        </choose>
+        , QNA_STATUS = #{setStatus}
+        WHERE QNA_IDX = #{qnaIdx}
+        AND QNA_STATUS NOT IN
+        <foreach collection="notStatus" open="(" separator=", " close=")" item="status">
+            #{status}
+        </foreach>
+    </update>
+
+    <!-- 1:1 문의 답변 조회 -->
+    <select id="getQnaReplyByQnaIdx" parameterType="int" resultType="com.godLife.project.dto.qnaWebsocket.QnaReplyListDTO">
+        SELECT R.QNA_REPLY_IDX, U.USER_NICK, U.NICK_TAG, R.CONTENT, R.CREATED_AT, R.MODIFIED_AT
+        FROM QNA_REPLY R
+        INNER JOIN USER_TABLE U ON R.USER_IDX = U.USER_IDX
+        WHERE QNA_IDX = #{qnaIdx}
+        ORDER BY CREATED_AT
+    </select>
+
+    <!-- 문의 상세 추가 정보 조회 -->
+    <resultMap id="extraQnaDetail" type="com.godLife.project.dto.list.QnaDetailDTO">
+        <result property="title" column="TITLE" />
+        <result property="createdAt" column="CREATED_AT" />
+        <result property="modifiedAt" column="MODIFIED_AT" />
+        <result property="category" column="CATEGORY" />
+        <result property="qnaStatus" column="QNA_STATUS" />
+    </resultMap>
+    <select id="getQnaExtraDetailByQnaIdx" parameterType="int" resultMap="extraQnaDetail">
+        SELECT TITLE, CREATED_AT, MODIFIED_AT, CATEGORY, QNA_STATUS
+        FROM QNA_TABLE
+        WHERE QNA_IDX = #{qnaIdx}
+        AND QNA_STATUS != 'DELETED'
+    </select>
+
+    <!-- 답변 수 초기화 -->
+    <update id="setClearReplyCountByQnaIdx" parameterType="map">
+        UPDATE QNA_TABLE SET
+        <choose>
+            <when test="isWriter == true">
+                A_COUNT = 0
+            </when>
+            <otherwise>
+                Q_COUNT = 0
+            </otherwise>
+        </choose>
+        WHERE QNA_IDX = #{qnaIdx}
+    </update>
+
+    <!-- 문의 수정 -->
+    <update id="modifyQnA" parameterType="map">
+        UPDATE QNA_TABLE
+        SET
+            TITLE = #{modifyDTO.title},
+            CONTENT = #{modifyDTO.content},
+            MODIFIED_AT = NOW(),
+            CATEGORY = #{modifyDTO.category}
+        WHERE QNA_IDX = #{modifyDTO.qnaIdx}
+        AND Q_USER_IDX = #{modifyDTO.qUserIdx}
+        AND QNA_STATUS IN
+        <foreach collection="setStatus" item="status" open="(" separator=", " close=")">
+            #{status}
+        </foreach>
+    </update>
+
+    <!-- 가장 최근 답변 조회 -->
+    <select id="getRecentComment" parameterType="int" resultType="com.godLife.project.dto.qnaWebsocket.QnaReplyListDTO">
+        SELECT R.*, U.USER_NICK, U.NICK_TAG
+        FROM QNA_REPLY R
+        INNER JOIN USER_TABLE U ON R.USER_IDX = U.USER_IDX
+        WHERE R.QNA_IDX = #{qnaIdx}
+        ORDER BY R.CREATED_AT DESC
+        LIMIT 1
+    </select>
+
+    <!-- 답변 수정 -->
+    <update id="modifyReply" parameterType="com.godLife.project.dto.contents.QnaReplyDTO">
+        UPDATE QNA_REPLY
+        SET MODIFIED_AT = SYSDATE,
+        CONTENT = #{content}
+        WHERE QNA_REPLY_IDX = #{qnaReplyIdx}
+        AND QNA_IDX = #{qnaIdx}
+        AND USER_IDX = #{userIdx}
+    </update>
+
+    <!-- 문의 삭제 -->
+    <update id="deleteQna" parameterType="map">
+        UPDATE QNA_TABLE
+        SET QNA_STATUS = 'DELETED',
+        Q_COUNT = 0,
+        A_COUNT = 0
+        WHERE QNA_IDX = #{qnaIdx}
+        AND Q_USER_IDX = #{userIdx}
+    </update>
+
+    <!-- 문의 상태 전환 -->
+    <update id="setQnaStatus" parameterType="map">
+        UPDATE QNA_TABLE
+        SET QNA_STATUS = #{setStatus}
+        WHERE QNA_IDX = #{qnaIdx}
+        AND QNA_STATUS IN
+        <foreach collection="findStatus" item="status" open="(" separator=", " close=")">
+            #{status}
+        </foreach>
+    </update>
+
+
+</mapper>

@@ -34,12 +34,12 @@ build/
 
 ## 환경변수 파일 제외 ##
 .env
-application.properties
-application.yml
-config/application.properties
-config/application.yml
-src/main/resources/application.properties
-src/main/resources/application.yml
+application-secret.properties
+application-secret.yml
+config/application-secret.properties
+config/application-secret.yml
+src/main/resources/application-secret.properties
+src/main/resources/application-secret.yml
 
 ## 로그 및 캐시 파일 제외 ##
 logs/

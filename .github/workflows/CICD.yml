@@ -26,15 +26,15 @@ jobs:
             ./gradlew clean build -x test
 
       - name: Login to DockerHub
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build Docker
-        run: docker build --platform linux/amd64 -t ${{ secrets.DOCKERHUB_USERNAME }}/godLife_server .
+        run: docker build --platform linux/amd64 -t ${{ secrets.DOCKERHUB_USERNAME }}/godlife_server .
       - name: Push Docker
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/godLife_server:latest
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/godlife_server:latest
         
   deploy:
     needs: build
@@ -71,7 +71,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script_stop: true
           script: |
-            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/godLife_server:latest
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/godlife_server:latest
             sudo docker-compose -f docker-compose-${{env.TARGET_UPSTREAM}}.yml up -d
       
       - name: Check deploy server URL

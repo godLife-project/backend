@@ -70,8 +70,8 @@ jobs:
           username: ubuntu
           host: ${{ secrets.GODLIFE_SERVER_IP }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          script_stop: true
           script: |
+            set -e
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/godlife_server:latest
             sudo docker-compose -f docker-compose-${{env.TARGET_UPSTREAM}}.yml up -d
       

@@ -21,6 +21,8 @@ public class RedissonConfig {
     Config config = new Config();
     config.useSingleServer()
             .setAddress("redis://" + redisHost + ":" + redisPort)
+            .setRetryAttempts(5)
+            .setRetryInterval(2000) // 밀리초
             .setConnectionMinimumIdleSize(1)
             .setConnectionPoolSize(5);
     return Redisson.create(config);

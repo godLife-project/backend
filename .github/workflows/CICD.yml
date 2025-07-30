@@ -83,6 +83,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -e
+            echo "현재 업스트림: $CURRENT_UPSTREAM"
             echo "마리아DB 컨테이너 상태 확인 중..."
             if sudo docker ps -a --format '{{.Names}}' | grep -q '^mariadb$'; then
               if sudo docker ps -a --format '{{.Names}}' | grep -q "^$CURRENT_UPSTREAM$"; then

@@ -83,14 +83,14 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -e
-            CURRENT_UPSTREAM=${{ env.CURRENT_UPSTREAM }}
-            echo "현재 업스트림: $CURRENT_UPSTREAM"
+            TARGET_UPSTREAM=${{ env.TARGET_UPSTREAM }}
+            echo "신규 업스트림: $TARGET_UPSTREAM"
             echo "마리아DB 컨테이너 상태 확인 중..."
             if sudo docker ps -a --format '{{.Names}}' | grep -q '^mariadb$'; then
-              if sudo docker ps -a --format '{{.Names}}' | grep -q "^$CURRENT_UPSTREAM$"; then
+              if sudo docker ps -a --format '{{.Names}}' | grep -q "^$TARGET_UPSTREAM$"; then
                 # mariadb와 CURRENT_UPSTREAM 컨테이너 생성 시각 (timestamp로 변환)
                 MARIADB_CREATED=$(sudo docker inspect -f '{{.Created}}' mariadb)
-                UPSTREAM_CREATED=$(sudo docker inspect -f '{{.Created}}' "$CURRENT_UPSTREAM")
+                UPSTREAM_CREATED=$(sudo docker inspect -f '{{.Created}}' "$TARGET_UPSTREAM")
             
                 # UTC ISO 형식을 UNIX timestamp로 변환
                 MARIADB_TS=$(date -d "$MARIADB_CREATED" +%s)
@@ -106,7 +106,7 @@ jobs:
                   echo "⏩ mariadb가 너무 오래 전에 생성됨 → 트리거 스킵"
                 fi
               else
-                echo "❌ CURRENT_UPSTREAM 컨테이너가 존재하지 않음"
+                echo "❌ $TARGET_UPSTREAM 컨테이너가 존재하지 않음"
               fi
             else
               echo "⚠️ mariadb 컨테이너가 존재하지 않음 → 트리거 스킵"

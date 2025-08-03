@@ -120,7 +120,7 @@ jobs:
 
                   for sql in "${FILES[@]}"; do
                     echo "▶ 실행 중: $sql"
-                    sudo docker exec -i mariadb mariadb --protocol=tcp -h 127.0.0.1 -u root -p1234 god_life_db < "$sql"
+                    sudo docker exec -i mariadb mariadb --protocol=socket -S /var/run/mysqld/mysqld.sock -u root -p1234 god_life_db < "$sql"
                   done
 
                   echo "✅ 트리거 실행 완료"

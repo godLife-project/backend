@@ -101,7 +101,7 @@ jobs:
             
                 if [ "$DIFF" -ge 0 ] && [ "$DIFF" -le 10 ]; then
                   echo "✅ Spring 컨테이너보다 10초 이내에 생성된 mariadb → 트리거 스크립트 실행"
-                  bash /home/ubuntu/mariadb_init/init-trigger-push/run-triggers.sh
+                  sudo bash /home/ubuntu/mariadb_init/init-trigger-push/run-triggers.sh
                 else
                   echo "⏩ mariadb가 너무 오래 전에 생성됨 → 트리거 스킵"
                 fi

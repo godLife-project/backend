@@ -86,8 +86,6 @@ jobs:
             TARGET_UPSTREAM=${{ env.TARGET_UPSTREAM }}
             echo "신규 업스트림: $TARGET_UPSTREAM"
             echo "마리아DB 컨테이너 상태 확인 중..."
-
-            sudo su
             
             if sudo docker ps -a --format '{{.Names}}' | grep -q '^mariadb$'; then
               echo "✅ 마리아DB 컨테이너 동작 확인"
@@ -122,7 +120,7 @@ jobs:
 
                   for sql in "${FILES[@]}"; do
                     echo "▶ 실행 중: $sql"
-                    docker exec -i "$CONTAINER_NAME" mariadb --protocol=tcp -u root -p1234 god_life_db < "$sql"
+                    sudo docker exec -i "$CONTAINER_NAME" mariadb --protocol=tcp -u root -p1234 god_life_db < "$sql"
                   done
 
                   echo "✅ 트리거 실행 완료"

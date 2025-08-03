@@ -105,25 +105,9 @@ jobs:
             
                 if [ "$DIFF" -ge 0 ] && [ "$DIFF" -le 10 ]; then
                   echo "✅ Spring 컨테이너보다 10초 이내에 생성된 mariadb → 트리거 스크립트 실행"
-
-                  CONTAINER_NAME=mariadb
-                  TRIGGER_DIR="/home/ubuntu/mariadb_init/init-trigger-push/init-triggers"
-                  echo "초기 트리거 추가 진행.."
-
-                  shopt -s nullglob
-                  FILES=("$TRIGGER_DIR"/03_trigger*.sql)
-
-                  if [ ${#FILES[@]} -eq 0 ]; then
-                    echo "❌ 트리거 SQL 파일이 존재하지 않습니다. 경로를 확인하세요: $TRIGGER_DIR"
-                    exit 1
-                  fi
-
-                  for sql in "${FILES[@]}"; do
-                    echo "▶ 실행 중: $sql"
-                    sudo docker exec -i mariadb mariadb --protocol=tcp -h mariadb -u root -p1234 god_life_db < "$sql"
-                  done
-
-                  echo "✅ 트리거 실행 완료"
+                  cd /home/ubuntu/mariadb_init/init-trigger-push
+                  chmod +x run-triggers.sh
+                  ./run-triggers.sh
                   
                 else
                   echo "⏩ mariadb가 너무 오래 전에 생성됨 → 트리거 스킵"

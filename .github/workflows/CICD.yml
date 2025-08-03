@@ -86,8 +86,14 @@ jobs:
             TARGET_UPSTREAM=${{ env.TARGET_UPSTREAM }}
             echo "신규 업스트림: $TARGET_UPSTREAM"
             echo "마리아DB 컨테이너 상태 확인 중..."
+
+            sudo su
+            
             if sudo docker ps -a --format '{{.Names}}' | grep -q '^mariadb$'; then
+              echo "✅ 마리아DB 컨테이너 동작 확인"
+              echo "$TARGET_UPSTREAM 컨테이너 상태 확인 중..."
               if sudo docker ps -a --format '{{.Names}}' | grep -q "^$TARGET_UPSTREAM$"; then
+                echo "✅ $TARGET_UPSTREAM 컨테이너 동작 확인"
                 # mariadb와 CURRENT_UPSTREAM 컨테이너 생성 시각 (timestamp로 변환)
                 MARIADB_CREATED=$(sudo docker inspect -f '{{.Created}}' mariadb)
                 UPSTREAM_CREATED=$(sudo docker inspect -f '{{.Created}}' "$TARGET_UPSTREAM")
@@ -101,7 +107,26 @@ jobs:
             
                 if [ "$DIFF" -ge 0 ] && [ "$DIFF" -le 10 ]; then
                   echo "✅ Spring 컨테이너보다 10초 이내에 생성된 mariadb → 트리거 스크립트 실행"
-                  sudo bash /home/ubuntu/mariadb_init/init-trigger-push/run-triggers.sh
+
+                  CONTAINER_NAME=mariadb
+                  TRIGGER_DIR="/home/ubuntu/mariadb_init/init-trigger-push/init-triggers"
+                  echo "초기 트리거 추가 진행.."
+
+                  shopt -s nullglob
+                  FILES=("$TRIGGER_DIR"/03_trigger*.sql)
+
+                  if [ ${#FILES[@]} -eq 0 ]; then
+                    echo "❌ 트리거 SQL 파일이 존재하지 않습니다. 경로를 확인하세요: $TRIGGER_DIR"
+                    exit 1
+                  fi
+
+                  for sql in "${FILES[@]}"; do
+                    echo "▶ 실행 중: $sql"
+                    docker exec -i "$CONTAINER_NAME" mariadb --protocol=tcp -u root -p1234 god_life_db < "$sql"
+                  done
+
+                  echo "✅ 트리거 실행 완료"
+                  
                 else
                   echo "⏩ mariadb가 너무 오래 전에 생성됨 → 트리거 스킵"
                 fi

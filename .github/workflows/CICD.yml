@@ -67,7 +67,7 @@ jobs:
       - name: Docker compose
         uses: appleboy/ssh-action@master
         with:
-          username: ubuntu
+          username: ${{ secrets.EC2_USER }}
           host: ${{ secrets.GODLIFE_SERVER_IP }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
@@ -85,7 +85,7 @@ jobs:
       - name: Change nginx upstream
         uses: appleboy/ssh-action@master
         with:
-          username: ubuntu
+          username: ${{ secrets.EC2_USER }}
           host: ${{ secrets.GODLIFE_SERVER_IP }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
@@ -95,7 +95,7 @@ jobs:
       - name: Stop current server
         uses: appleboy/ssh-action@master
         with:
-          username: ubuntu
+          username: ${{ secrets.EC2_USER }}
           host: ${{ secrets.GODLIFE_SERVER_IP }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |

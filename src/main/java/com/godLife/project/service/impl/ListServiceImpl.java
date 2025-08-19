@@ -52,7 +52,7 @@ public class ListServiceImpl implements ListService {
         myPlanDTO.setFireInfos(planMapper.detailFireByPlanIdx(planIdx)); // 불꽃 레벨 정보 추가
 
         // 직업 정보 추가
-        if (jobIdx == 999) {
+        if (jobIdx == 19) {
           myPlanDTO.setJobAddedInfos(planMapper.getJobEtcInfoByPlanIdx(planIdx));
         }
         else {

@@ -3,7 +3,6 @@ package com.godLife.project.jwt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.godLife.project.dto.datas.UserDTO;
 import com.godLife.project.dto.response.LoginResponseDTO;
-import com.godLife.project.service.interfaces.AdminInterface.serviceCenter.ServiceAdminService;
 import com.godLife.project.service.interfaces.UserService;
 import com.godLife.project.service.interfaces.jwtInterface.RefreshService;
 import jakarta.servlet.FilterChain;
@@ -22,6 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
@@ -129,8 +129,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     }
 
 
-    Long accessExp = 600000L;     // 10분
-    Long refreshExp = 86400000L;  // 24시간
+    // Long accessExp = TimeUnit.MINUTES.toMillis(10);     // 10분
+    Long accessExp = TimeUnit.MINUTES.toMillis(5);  // 5분
+    // Long accessExp = TimeUnit.SECONDS.toMillis(10); // 10초
+    Long refreshExp = TimeUnit.HOURS.toMillis(24);  // 24시간
 
     //토큰 생성
     String access = jwtUtil.createJwt("access", username, role,  isBanned, accessExp);

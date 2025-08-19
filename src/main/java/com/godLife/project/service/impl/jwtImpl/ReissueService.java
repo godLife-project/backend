@@ -12,17 +12,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.TimeUnit;
+
 @Service
 public class ReissueService {
   private final JWTUtil jwtUtil;
 
   private final RefreshService refreshService;
-  private final UserService userService;
 
-  public ReissueService(JWTUtil jwtUtil, RefreshService refreshService, UserService userService) {
+  public ReissueService(JWTUtil jwtUtil, RefreshService refreshService) {
     this.jwtUtil = jwtUtil;
     this.refreshService = refreshService;
-    this.userService = userService;
   }
 
   public ResponseEntity<?> reissueToken(HttpServletRequest request, HttpServletResponse response) {
@@ -69,8 +69,10 @@ public class ReissueService {
 
 
 
-    Long accessExp = 600000L;     // 10분
-    Long refreshExp = 86400000L;  // 24시간
+    // Long accessExp = TimeUnit.MINUTES.toMillis(10);     // 10분
+    Long accessExp = TimeUnit.MINUTES.toMillis(5);  // 5분
+    // Long accessExp = TimeUnit.SECONDS.toMillis(10); // 10초
+    Long refreshExp = TimeUnit.HOURS.toMillis(24);  // 24시간
 
     // 4. 새로운 access 토큰 생성
     String newAccess = jwtUtil.createJwt("access", username, role, isBanned ,accessExp);

@@ -60,8 +60,10 @@ public class JWTFilter extends OncePerRequestFilter {
       PrintWriter writer = response.getWriter();
       writer.print(jsonResponse);
       writer.flush();  // 데이터를 전송
+      writer.close();
 
       log.error("JWT access 토큰 만료: {}", e.getMessage());
+      return;
     }
 
     // 토큰이 access인지 확인 (발급시 페이로드에 명시)
@@ -79,6 +81,7 @@ public class JWTFilter extends OncePerRequestFilter {
       PrintWriter writer = response.getWriter();
       writer.print(jsonResponse);
       writer.flush();  // 데이터를 전송
+      writer.close();
 
       log.error("유효하지 않은 access 토큰 사용: {}", category);
 

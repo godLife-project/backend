@@ -47,8 +47,8 @@ public class PlanServicelmpl implements PlanService {
         planMapper.insertActivity(activityDTO);
       }
 
-      if (planDTO.getJobIdx() == 999) {
-        JobEtcCateDTO jobEtcCateDTO = new JobEtcCateDTO();
+      if (planDTO.getJobIdx() == 19) {
+        JobEtcCateDTO jobEtcCateDTO;
         jobEtcCateDTO = planDTO.getJobEtcCateDTO();
         jobEtcCateDTO.setPlanIdx(planIdx);
 
@@ -87,7 +87,7 @@ public class PlanServicelmpl implements PlanService {
       // 루틴 인증 횟수 조회
       planDTO.setVerifyCount(planMapper.getVerifyCountByPlanIdx(planIdx));
 
-      if (planDTO.getJobIdx() == 999) {
+      if (planDTO.getJobIdx() == 19) {
         planDTO.setJobEtcCateDTO(planMapper.getJobEtcInfoByPlanIdx(planIdx));
       }
       else {
@@ -158,7 +158,7 @@ public class PlanServicelmpl implements PlanService {
   }
   // 기타 직업 수정 및 추가 함수
   private void processJobEtc(int planIdx, int jobIdx, JobEtcCateDTO jobEtcCateDTO) {
-    if (jobIdx != 999) { // 999 선택 안할 시 로직 건너뜀.
+    if (jobIdx != 19) { // 999 선택 안할 시 로직 건너뜀.
       System.out.println("기타 직업 삽입 무시함.");
       return;
     }

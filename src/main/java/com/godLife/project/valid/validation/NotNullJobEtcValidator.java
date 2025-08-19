@@ -11,7 +11,7 @@ public class NotNullJobEtcValidator implements ConstraintValidator<NotNullJobEtc
   @Override
   public boolean isValid(PlanDTO planDTO, ConstraintValidatorContext context) {
     // jobIdx가 999가 아닐 경우 유효성 검사 통과
-    if (planDTO.getJobIdx() != 999) {
+    if (planDTO.getJobIdx() != 19) {
       return true;
     }
     JobEtcCateDTO jobEtc = planDTO.getJobEtcCateDTO();

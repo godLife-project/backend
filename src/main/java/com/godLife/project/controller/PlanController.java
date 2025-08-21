@@ -6,6 +6,7 @@ import com.godLife.project.dto.request.PlanRequestDTO;
 import com.godLife.project.handler.GlobalExceptionHandler;
 import com.godLife.project.service.interfaces.PlanService;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,24 @@ public class PlanController {
   private final GlobalExceptionHandler handler;
 
   private final PlanService planService;
+
+  // 쿠키 생성 메소드
+  private Cookie createCookie(String key, String value, int maxAge, HttpServletRequest request) {
+
+    Cookie cookie = new Cookie(key, value);
+    cookie.setMaxAge(maxAge);
+    cookie.setPath("/");
+    cookie.setHttpOnly(true);
+
+    // 🔹 현재 요청이 HTTPS인지 확인하여 Secure 적용
+    boolean isSecure = request.isSecure() || "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"));
+    if (isSecure) {
+      cookie.setSecure(true);
+      cookie.setAttribute("SameSite", "None");
+    }
+
+    return cookie;
+  }
 
   // 루틴 작성 API
   @PostMapping("/auth/write")
@@ -58,7 +77,8 @@ public class PlanController {
   @GetMapping("/detail/{planIdx}")
   public ResponseEntity<Map<String, Object>> detail(@PathVariable int planIdx,
                                                     @CookieValue(value = "viewed_plans", required = false) String viewedPlans,
-                                                    HttpServletResponse response) {
+                                                    HttpServletResponse response,
+                                                    HttpServletRequest request) {
     Map<String, Object> message = new HashMap<>();
     try {
 
@@ -91,13 +111,7 @@ public class PlanController {
         }
 
         // 마지막에 추가된 값으로 쿠키 설정
-        Cookie cookie = new Cookie("viewed_plans", updatedViewedPlans.toString());
-        cookie.setMaxAge(60 * 60); // 1시간 유지
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setAttribute("SameSite", "None");
-        response.addCookie(cookie);
+        response.addCookie(createCookie("viewed_plans", updatedViewedPlans.toString(), 60 * 60, request));
       } else {
         System.out.println("쿠키 있음 조회수 그대로");
       }

@@ -32,7 +32,8 @@ public interface ListMapper {
                                    @Param("sort") String sort,
                                    @Param("order") String order,
                                    @Param("keywords") String keywords,
-                                   @Param("userIdx") int userIdx);
+                                   @Param("userIdx") int userIdx,
+                                   @Param("isNotExist") boolean isNotExist);
   // 좋아요 한 루틴 리스트 조회
   List<PlanListDTO> getLikePlanList(@Param("mode") String mode,
                                    @Param("offset") int offset,
@@ -41,7 +42,8 @@ public interface ListMapper {
                                    @Param("job") List<Integer> job,
                                    @Param("order") String order,
                                    @Param("keywords") String keywords,
-                                   @Param("userIdx") int userIdx);
+                                   @Param("userIdx") int userIdx,
+                                   @Param("isNotExist") boolean isNotExist);
 
   // 루틴 리스트 총 게시글 수 조회
   int getTotalPlanCount(@Param("mode") String mode,
@@ -49,7 +51,8 @@ public interface ListMapper {
                         @Param("target") List<Integer> target,
                         @Param("job") List<Integer> job,
                         @Param("keywords") String keywords,
-                        @Param("userIdx") int userIdx);
+                        @Param("userIdx") int userIdx,
+                        @Param("isNotExist") boolean isNotExist);
 
   /**
    * 문의 리스트 조회
@@ -66,7 +69,8 @@ public interface ListMapper {
                               @Param("status") String status,
                               @Param("sort") String sort,
                               @Param("order") String order,
-                              @Param("keywords") String keywords);
+                              @Param("keywords") String keywords,
+                              @Param("isNotExist") boolean isNotExist);
 
   /**
    * 조회 할 문의 리스트의 총 문의 수
@@ -77,6 +81,7 @@ public interface ListMapper {
   int getTotalQnaCount(@Param("qUserIdx") int qUserIdx,
                        @Param("notStatus") String notStatus,
                        @Param("status") String status,
-                       @Param("keywords") String keywords);
+                       @Param("keywords") String keywords,
+                       @Param("isNotExist") boolean isNotExist);
 
 }

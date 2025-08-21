@@ -95,7 +95,14 @@
     <!-- 검색 필터 (상위 쿼리에서 재사용) -->
     <sql id="searchFilter">
         <if test="keywords != null and keywords != ''">
-            AND MATCH(PS.SEARCH_TEXT) AGAINST(#{keywords} IN BOOLEAN MODE)
+            <choose>
+                <when test="isNotExist == true">
+                    AND PS.SEARCH_TEXT LIKE CONCAT('%', #{keywords}, '%')
+                </when>
+                <otherwise>
+                    AND MATCH(PS.SEARCH_TEXT) AGAINST(#{keywords} IN BOOLEAN MODE)
+                </otherwise>
+            </choose>
         </if>
     </sql>
 
@@ -140,7 +147,7 @@
         </if>
         P.IS_SHARED,
         P.PLAN_IDX,
-        U.USER_NICK || ' ' || U.NICK_TAG AS USER_NICK,
+        CONCAT(U.USER_NICK, ' ', U.NICK_TAG) AS USER_NICK,
         P.PLAN_TITLE,
         P.PLAN_SUB_DATE,
         P.VIEW_COUNT,
@@ -292,7 +299,14 @@
                 </foreach>
             </if>
             <if test="keywords != null and keywords != ''">
-                AND MATCH(RANKED.SEARCH_TEXT) AGAINST(#{keyword} IN BOOLEAN MODE)
+                <choose>
+                    <when test="isNotExist == true">
+                        AND PS.SEARCH_TEXT LIKE CONCAT('%', #{keywords}, '%')
+                    </when>
+                    <otherwise>
+                        AND MATCH(PS.SEARCH_TEXT) AGAINST(#{keywords} IN BOOLEAN MODE)
+                    </otherwise>
+                </choose>
             </if>
         </if>
         ORDER BY
@@ -404,7 +418,15 @@
     <!-- 문의 검색 쿼리 조각 -->
     <sql id="qnaSearchFilter">
         <if test="keywords != null and keywords != ''">
-            AND MATCH(TITLE) AGAINST(#{keywords} IN BOOLEAN MODE)
+
+            <choose>
+                <when test="isNotExist == true">
+                    AND TITLE LIKE CONCAT('%', #{keywords}, '%')
+                </when>
+                <otherwise>
+                    AND MATCH(TITLE) AGAINST(#{keywords} IN BOOLEAN MODE)
+                </otherwise>
+            </choose>
         </if>
     </sql>
 

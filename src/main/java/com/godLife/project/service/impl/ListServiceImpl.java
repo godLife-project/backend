@@ -92,8 +92,14 @@ public class ListServiceImpl implements ListService {
 //        System.out.println(keywords);
 //      }
 
-      List<PlanListDTO> plans = listMapper.getAllPlanList(mode, offset, size, status, target, job, sort, order, search, userIdx);
-      int totalPlans = listMapper.getTotalPlanCount(mode, status, target, job, search, userIdx);
+      boolean isNotExist = false; // 검색을 통한 루틴 존재 여부
+      List<PlanListDTO> plans = listMapper.getAllPlanList(mode, offset, size, status, target, job, sort, order, search, userIdx, isNotExist);
+      if (plans == null || plans.isEmpty()) {
+        isNotExist = true;
+        plans = listMapper.getAllPlanList(mode, offset, size, status, target, job, sort, order, search, userIdx, isNotExist);
+      }
+
+      int totalPlans = listMapper.getTotalPlanCount(mode, status, target, job, search, userIdx, isNotExist);
 
       Map<String, Object> response = new HashMap<>();
       response.put("plans", plans);
@@ -135,8 +141,15 @@ public class ListServiceImpl implements ListService {
 //        keywords = parseKeywords(search);
 //        System.out.println(keywords);
 //      }
-      List<PlanListDTO> plans = listMapper.getLikePlanList(mode, offset, size, target, job, order, search, userIdx);
-      int totalPlans = listMapper.getTotalPlanCount(mode, status, target, job, search, userIdx);
+
+      boolean isNotExist = false;
+      List<PlanListDTO> plans = listMapper.getLikePlanList(mode, offset, size, target, job, order, search, userIdx, isNotExist);
+      if (plans == null || plans.isEmpty()) {
+        isNotExist = true;
+        plans = listMapper.getLikePlanList(mode, offset, size, target, job, order, search, userIdx, isNotExist);
+      }
+
+      int totalPlans = listMapper.getTotalPlanCount(mode, status, target, job, search, userIdx, isNotExist);
 
       Map<String, Object> response = new HashMap<>();
       response.put("plans", plans);
@@ -175,13 +188,24 @@ public class ListServiceImpl implements ListService {
 //        keywords = parseKeywords(search);
 //      }
 
-      List<QnaListDTO> QnAs = listMapper.getQnaList(qUserIdx, notStatus, offset, size, status, sort, order, search);
+      boolean isNotExist = false;
+      List<QnaListDTO> QnAs = listMapper.getQnaList(qUserIdx, notStatus, offset, size, status, sort, order, search, isNotExist);
 
       if (QnAs == null || QnAs.isEmpty()) {
-        throw new CustomException("문의가 존재하지 않습니다.", HttpStatus.NO_CONTENT);
+        if (search == null) {
+          throw new CustomException("문의가 존재하지 않습니다.", HttpStatus.NO_CONTENT);
+        }
+
+        isNotExist = true;
+        QnAs = listMapper.getQnaList(qUserIdx, notStatus, offset, size, status, sort, order, search, isNotExist);
+
+        if (QnAs == null || QnAs.isEmpty()) {
+          throw new CustomException("문의가 존재하지 않습니다.", HttpStatus.NO_CONTENT);
+        }
       }
 
-      int totalQna = listMapper.getTotalQnaCount(qUserIdx, notStatus, status, search);
+
+      int totalQna = listMapper.getTotalQnaCount(qUserIdx, notStatus, status, search, isNotExist);
 
       Map<String, Object> response = new HashMap<>();
       response.put("QnAs", QnAs);

@@ -4,8 +4,11 @@ import com.godLife.project.dto.categories.JobEtcCateDTO;
 import com.godLife.project.dto.datas.ActivityDTO;
 import com.godLife.project.dto.datas.PlanDTO;
 import com.godLife.project.dto.request.PlanRequestDTO;
+import com.godLife.project.handler.GlobalExceptionHandler;
 import com.godLife.project.mapper.PlanMapper;
 import com.godLife.project.service.interfaces.PlanService;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,13 +18,13 @@ import java.util.List;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class PlanServicelmpl implements PlanService {
 
   private final PlanMapper planMapper;
 
-  public PlanServicelmpl(PlanMapper planMapper) {
-    this.planMapper = planMapper;
-  }
+  private final GlobalExceptionHandler handler;
+
 
   // 루틴 작성 로직
   @Override
@@ -71,13 +74,26 @@ public class PlanServicelmpl implements PlanService {
   // 루틴 상세 보기 로직
   @Override
   @Transactional
-  public PlanDTO detailRoutine(int planIdx, int isDeleted) {
+  public PlanDTO detailRoutine(int planIdx, int isDeleted, HttpServletRequest request) {
     // 루틴 완료 처리
     planMapper.updateCompleteByPlanIdx(planIdx);
 
     // 루틴 조회
     PlanDTO planDTO = planMapper.detailPlanByPlanIdx(planIdx, isDeleted);
     if (planDTO != null) {
+      if (planDTO.getIsShared() == 0) { // 비공개 루틴일 경우,
+        String authHeader = request.getHeader("Authorization"); // 토큰 유무 확인
+
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+          int userIdx = handler.getUserIdxFromToken(authHeader);
+
+          if (userIdx != planDTO.getUserIdx()) { // 작성자가 아닌 경우
+            return new PlanDTO();
+          }
+        } else { // 토큰이 없는 경우
+          return new PlanDTO();
+        }
+      }
       // 활동 조회
       planDTO.setActivities(planMapper.detailActivityByPlanIdx(planIdx));
       // 관심사 정보 조회

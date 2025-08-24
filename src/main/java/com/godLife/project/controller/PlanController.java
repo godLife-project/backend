@@ -10,7 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +21,7 @@ import java.util.NoSuchElementException;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 @RequestMapping("/api/plan")
 public class PlanController {
 
@@ -79,9 +80,7 @@ public class PlanController {
                                                     @CookieValue(value = "viewed_plans", required = false) String viewedPlans,
                                                     HttpServletResponse response,
                                                     HttpServletRequest request) {
-    Map<String, Object> message = new HashMap<>();
     try {
-
       Map<Integer, Long> viewedPlansMap = new HashMap<>();
       if (viewedPlans != null && !viewedPlans.isEmpty()) {
         String[] viewedPlansArray = viewedPlans.split("_");
@@ -119,11 +118,10 @@ public class PlanController {
       // 삭제 여부 설정   0: 삭제 X 1: 삭제 O
       int isDeleted = 0;
       // 해당 인덱스의 루틴 조회
-      PlanDTO planDTO = planService.detailRoutine(planIdx, isDeleted);
+      PlanDTO planDTO = planService.detailRoutine(planIdx, isDeleted, request);
 
       // planDTO가 null이면 예외 발생
       if (planDTO == null) {
-        System.out.println("루틴 없음");
         throw new NoSuchElementException("조회하려는 루틴이 존재하지 않습니다.");
       }
 
@@ -132,12 +130,12 @@ public class PlanController {
 
     } catch (NoSuchElementException e) {
       String msg = "루틴 조회 실패,, 조회하려는 루틴이 존재하지 않습니다.";
-      System.out.println(e);
+      log.info("PlanController - detail :: {}", e.getMessage());
       return ResponseEntity.status(handler.getHttpStatus(404)).body(handler.createResponse(404, msg));
 
     } catch (Exception e) {
       String msg = "서버 내부 오류로 인해 루틴 조회에 실패했습니다.";
-      System.out.println(e);
+      log.error("PlanController - detail :: {}", msg, e);
       return ResponseEntity.status(handler.getHttpStatus(500)).body(handler.createResponse(500, msg));
     }
   }
@@ -276,23 +274,31 @@ public class PlanController {
   public ResponseEntity<Map<String, Object>> checkLike(@RequestHeader(value = "Authorization", required = false) String authHeader,
                                                        @PathVariable int planIdx) {
 
+    // 토큰 만료 여부
+    Boolean isExpired = false;
+
     // userIdx 조회
     if (authHeader != null) {
+      // 토큰 만료 검증
+      isExpired = handler.validToken(authHeader);
+
+    }
+
+    if (!isExpired) {
+      assert authHeader != null;
       int userIdx = handler.getUserIdxFromToken(authHeader);
-      boolean result = planService.checkLike(planIdx, userIdx);
 
-      return ResponseEntity.status(handler.getHttpStatus(200))
-          .body(handler.createResponse(200, result));
-    }
-    else {
-      int userIdx = 0;
       boolean result = planService.checkLike(planIdx, userIdx);
 
       return ResponseEntity.status(handler.getHttpStatus(200))
           .body(handler.createResponse(200, result));
     }
 
+    int userIdx = 0;
+    boolean result = planService.checkLike(planIdx, userIdx);
 
+    return ResponseEntity.status(handler.getHttpStatus(200))
+        .body(handler.createResponse(200, result));
 
   }
 

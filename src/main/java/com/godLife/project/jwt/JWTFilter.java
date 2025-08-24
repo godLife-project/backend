@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -29,6 +31,15 @@ public class JWTFilter extends OncePerRequestFilter {
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
+
+    RequestMatcher matcherAuth = new AntPathRequestMatcher("/api/*/auth/**");
+    RequestMatcher matcherAdmin1 = new AntPathRequestMatcher("/api/*/admin/**");
+    RequestMatcher matcherAdmin2 = new AntPathRequestMatcher("/api/admin/**");
+
+    if (!(matcherAuth.matches(request) || matcherAdmin1.matches(request) || matcherAdmin2.matches(request))) {
+      filterChain.doFilter(request, response);
+      return;
+    }
 
     // 헤더에서 access키에 담긴 토큰을 꺼냄
     String authorization = request.getHeader("Authorization");

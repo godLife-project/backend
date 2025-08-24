@@ -6,6 +6,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -34,6 +36,16 @@ public class ReportCheckFilter extends OncePerRequestFilter {
         // log.info("ReportCheckFilter 실행됨. 토큰: {}", token);
 
         if (token != null) {
+
+            RequestMatcher matcherAuth = new AntPathRequestMatcher("/api/*/auth/**");
+            RequestMatcher matcherAdmin1 = new AntPathRequestMatcher("/api/*/admin/**");
+            RequestMatcher matcherAdmin2 = new AntPathRequestMatcher("/api/admin/**");
+
+            if (!(matcherAuth.matches(request) || matcherAdmin1.matches(request) || matcherAdmin2.matches(request))) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
             try {
                 jwtUtil.validateToken(token);
 

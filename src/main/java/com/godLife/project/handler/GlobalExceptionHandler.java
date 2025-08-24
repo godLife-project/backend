@@ -5,7 +5,9 @@ import com.godLife.project.dto.list.QnaListDTO;
 import com.godLife.project.exception.CustomException;
 import com.godLife.project.jwt.JWTUtil;
 import com.godLife.project.mapper.VerifyMapper;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -134,5 +136,18 @@ public class GlobalExceptionHandler {
     response.put("message", message);
     response.put("data", data);
     return response;
+  }
+
+  public Boolean validToken(String authHeader) {
+    try {
+      String token = authHeader.replace("Bearer ", "");
+      jwtUtil.isExpired(token);
+
+      return false;
+    } catch (ExpiredJwtException e) {
+
+      // 토큰이 만료될 경우 true 리턴
+      return true;
+    }
   }
 }

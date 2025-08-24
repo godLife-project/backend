@@ -2,6 +2,7 @@ package com.godLife.project.service.interfaces;
 
 import com.godLife.project.dto.datas.PlanDTO;
 import com.godLife.project.dto.request.PlanRequestDTO;
+import jakarta.servlet.http.HttpServletRequest;
 
 public interface PlanService {
 
@@ -9,7 +10,7 @@ public interface PlanService {
   int insertPlanWithAct(PlanDTO planDTO);
 
   // 루틴과 활동 상세 조회
-  PlanDTO detailRoutine(int planIdx, int isDeleted);
+  PlanDTO detailRoutine(int planIdx, int isDeleted, HttpServletRequest request);
 
   // 루틴과 활동 수정
   int modifyPlanWithAct(PlanDTO planDTO, int isDeleted);
